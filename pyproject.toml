@@ -1,0 +1,28 @@
+[tool.poetry]
+name = "ewxpwsdb"
+version = "0.1.0"
+description = "package for collecting and harmonizing weather data from diverse models of weather stations into a database"
+authors = ["Pat Bills <billspat@msu.edu>"]
+readme = "README.md"
+packages = [{include = "ewxpwsdb", from = "src"}]
+license = "MIT"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+SQLAlchemy = ">=2.0.0,<2.1.0"
+pydantic = "^2"
+alembic = "~1.12"
+pandas  = "~2.1"
+psycopg2-binary = "~2.9"
+sqlmodel = "^0.0.14"
+python-dotenv = "^1.0.0"
+requests = "^2.31.0"
+
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^7.4.4"
+ipykernel = "^6.29.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
