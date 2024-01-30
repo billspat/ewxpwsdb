@@ -41,7 +41,7 @@ def read_station_table(tsv_file_path:str)->dict:
     return(weatherstation_data)
 
 
-def import_station_records(weatherstation_data:list):
+def import_station_records(weatherstation_data:list, engine = engine):
     """ this has side effect of insert records into the database"""
     # uses the global var 'engine' imported above
     with Session(engine) as session:
@@ -52,12 +52,19 @@ def import_station_records(weatherstation_data:list):
 
         # actually insert data, will fail if there are duplicate records
         session.commit()
+        return True
 
-def import_station_table(tsv_file:str):
+def import_station_file(tsv_file:str, engine=engine):
     """add all records from the station tsv file into the database"""
     # uses the global var 'engine' imported above
     station_list = read_station_table(tsv_file)
-    import_station_records(station_list)
+    if station_list:
+        return(import_station_records(station_list, engine))
+    else:
+        # no stations to import
+        return False
+    
+
     
         
 
