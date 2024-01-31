@@ -12,8 +12,12 @@ from ewxpwsdb.db.database import engine, Session
 def read_station_table(tsv_file_path:str)->dict:
     """read CSV in standard station config format, and flatten into dict useable by station configs. 
     this method does not create stations, only formats a config file for use by package or testing
-    csv_file_path: path to CSV file
-    returns: list configs
+    Note this does not attempt to validate the data, it is a generic TSV file reader.  
+
+    Args:
+        tsv_file_path: path to file in TSV format. Must be tab separated due to bug in dictreader
+        
+    returns: list of dictionary with fields from TSV file.  
     """
 
     weatherstation_data = []
@@ -41,8 +45,15 @@ def read_station_table(tsv_file_path:str)->dict:
     return(weatherstation_data)
 
 
-def import_station_records(weatherstation_data:list, engine = engine):
-    """ this has side effect of insert records into the database"""
+def import_station_records(weatherstation_data:list, engine=engine):
+    """Given records, inserts rows into station table eg for populating a new DB.  Records must have a station_type that is 
+    also alrady in the table 'stationtype' due to foreign key constraints
+
+    Args:
+        weatherstation_data (list): list of dictionary eg. from csvdictreader with columns matching WeatherStation Model. 
+        engine (Engine, optional):  SQLAlchemy/SQLModel Engine from create_engine().  Defaults to global engine created in database.py
+    """
+
     # uses the global var 'engine' imported above
     with Session(engine) as session:
         # will fail if any one of these records has a problem
@@ -54,9 +65,32 @@ def import_station_records(weatherstation_data:list, engine = engine):
         session.commit()
         return True
 
+
+def import_station_types(engine = engine):
+    """Insert the station types from API modules, for populating a new DB. 
+
+    Args:
+        engine (Engine, optional):  SQLAlchemy/SQLModel Engine from create_engine().  Defaults to global engine created in database.py
+    """
+
+    from ewxpwsdb.db.models import StationType
+    from ewxpwsdb.weather_apis import STATION_TYPE_LIST
+
+    station_type_objects = [StationType(station_type=station_type ) for station_type in STATION_TYPE_LIST]
+    
+    with Session(engine) as session:
+        session.bulk_save_objects(station_type_objects)
+        session.commit()
+
+
 def import_station_file(tsv_file:str, engine=engine):
-    """add all records from the station tsv file into the database"""
-    # uses the global var 'engine' imported above
+    """Reads TSV file and inserts all rows as station records for populating a new DB. 
+
+    Args:
+        tsv_file (str): path to a TSV file with station data.  See read_station_table() above for details
+        engine (Engine, optional):  SQLAlchemy/SQLModel Engine from create_engine().  Defaults to global engine created in database.py
+    """
+    
     station_list = read_station_table(tsv_file)
     if station_list:
         return(import_station_records(station_list, engine))
