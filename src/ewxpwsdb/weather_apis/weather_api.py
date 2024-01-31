@@ -280,10 +280,8 @@ class WeatherAPI(ABC):
         
         dt = datetime.fromisoformat(datetime_str)
         #
-        if not is_tz_aware(dt):
-            station_timezone_str = self.config._tzlist[self.config.tz]
-            # add station timezone
-            dt = dt.replace(tzinfo = ZoneInfo(station_timezone_str))
+        if not is_tz_aware(dt):            
+            dt = dt.replace(tzinfo = ZoneInfo(self.weather_station.timezone))
         else:
             # the string already has a timezone, could be anytimezone
             # should that be an error condition?
