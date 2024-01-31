@@ -85,7 +85,7 @@ def test_that_the_db_has_tables(db_engine):
     from sqlalchemy import inspect
     inspector = inspect(db_engine)
     created_db_tables = list(inspector.get_table_names())
-    for expected_table in ['WeatherStation', 'Reading', 'stationtype']:
+    for expected_table in ['WeatherStation', 'Reading', 'stationtype','APIResponse']:
         assert expected_table.lower() in created_db_tables
 
 def test_import_of_data(db_with_data):
