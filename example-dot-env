@@ -1,0 +1,3 @@
+EWXPWSDB_URL=postgresql://localhost:5432/ewxpws
+# postgresql+psycopg2://user:password@host:port/dbname[?key=value&key=value...]
+
