@@ -42,6 +42,9 @@ def init_db(engine=engine):
     """create new blank tables etc for the db URLin the engine. 
     This requires that the database in the URL already exists on the server in the URL."""
     SQLModel.metadata.create_all(engine)
+    from ewxpwsdb.db.importdata import import_station_types
+    import_station_types(engine)
+    
 
 def get_session(engine = engine):
     """ session generator"""
