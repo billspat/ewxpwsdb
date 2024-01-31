@@ -1,11 +1,13 @@
 #!/usr/bin/env python
 
-from sqlalchemy.exc import IntegrityError
+from typing import Any
 
+from sqlalchemy.exc import IntegrityError
+from sqlalchemy import Engine
 import pytest, os
 from pydantic import ValidationError
 from ewxpwsdb.db.database import Session, init_db, engine, get_session, create_engine
-from ewxpwsdb.db.models import WeatherStation, Reading
+from ewxpwsdb.db.models import WeatherStation, Reading, StationType
 from ewxpwsdb.db.importdata import import_station_file, read_station_table
 
 
@@ -30,11 +32,11 @@ def rm_sqlite_file(db_url):
     
 
 @pytest.fixture(scope = 'module')
-def test_db_url(request):
+def test_db_url(request: pytest.FixtureRequest)->str:
     return request.config.getoption("--dburl")
 
 @pytest.fixture(scope = 'module')
-def db_engine(test_db_url):
+def db_engine(test_db_url: str):
     # need to create new test-only db, 
     # would like to use a database.py module method rather than sqlmodel code here explicitly 
     engine = create_engine(url = test_db_url, echo=True)
@@ -46,7 +48,7 @@ def db_engine(test_db_url):
 
 
 @pytest.fixture(scope = 'module')
-def db_session(db_engine):
+def db_session(db_engine: Engine):
     session = Session(db_engine)
     yield session
     # remove any changes made to the db
@@ -54,7 +56,7 @@ def db_session(db_engine):
     session.close()
 
 @pytest.fixture(scope = 'module')
-def test_station_data(request):
+def test_station_data(request: pytest.FixtureRequest):
     station_file = request.config.getoption("--file")
     # check that it exists
     stations = read_station_table(station_file)
@@ -62,7 +64,7 @@ def test_station_data(request):
 
 
 @pytest.fixture(scope = 'module')
-def db_with_data(db_engine, request):
+def db_with_data(db_engine: Engine, request: pytest.FixtureRequest):
     if not request.config.getoption("--no-import"):   
         station_file = request.config.getoption("--file")
         # will raise exception if there is a problem
@@ -73,13 +75,13 @@ def db_with_data(db_engine, request):
         # BUT could delete all the data if we wanted
 
 
-def test_db_connection(db_engine):
+def test_db_connection(db_engine: Engine):
     """"""
     from sqlalchemy import Engine
     assert isinstance(db_engine, Engine)
 
 
-def test_that_the_db_has_tables(db_engine):
+def test_that_the_db_has_tables(db_engine: Engine):
     """Tables in the database are created when db_engine fixture is made.   """
 
     from sqlalchemy import inspect
@@ -88,7 +90,24 @@ def test_that_the_db_has_tables(db_engine):
     for expected_table in ['WeatherStation', 'Reading', 'stationtype','APIResponse']:
         assert expected_table.lower() in created_db_tables
 
-def test_import_of_data(db_with_data):
+def test_that_station_types_has_entries_after_init(db_engine: Engine):
+    # db_engine fixture runs db_init that should create station types
+
+    with Session(db_engine) as session:
+        statement = select(StationType)
+        results = session.exec(statement)
+        station_types = results.all()
+
+    assert station_types is not None
+    assert len(station_types) > 2
+
+    
+    from ewxpwsdb.weather_apis import STATION_TYPE_LIST
+    for st in station_types:
+        assert st.station_type in STATION_TYPE_LIST
+
+
+def test_import_of_data(db_with_data: Any):
     """ test that this fixture actually imports data.  uses command line arg for file source"""
     with Session(db_with_data) as session:
         statement = select(WeatherStation)
@@ -97,7 +116,7 @@ def test_import_of_data(db_with_data):
         assert len(stations)> 0
         # check that there is data in all the fields
 
-def test_duplicate_insert(db_with_data, test_station_data):
+def test_duplicate_insert(db_with_data: Any, test_station_data: dict):
     # insert a dup.  must be run after the db has data
     dup_station = test_station_data[2]
     dup_ws = WeatherStation.model_validate(dup_station)
@@ -109,4 +128,6 @@ def test_duplicate_insert(db_with_data, test_station_data):
 
     # we shouldn't get to this
     assert(True)
+
+
 
