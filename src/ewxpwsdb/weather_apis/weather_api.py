@@ -17,7 +17,7 @@ from requests import Response
 
 
 from ewxpwsdb import __version__ # from importlib.metadata import version didn't work
-from ewxpwsdb.time_intervals import is_tz_aware, UTCInterval
+from ewxpwsdb.time_intervals import is_tz_aware, UTCInterval, is_utc
 from ewxpwsdb.db.models import WeatherStation, Reading, APIResponse
 from . import STATION_TYPE 
 
@@ -141,8 +141,8 @@ class WeatherAPI(ABC):
     def get_readings(self, start_datetime : datetime = None, end_datetime : datetime = None)->list[APIResponse]:
         """prepare start/end times and other params generically and then call station-specific method with that.
 
-        parameters:
-            start_datetime: optional, date time in UTC time zone that the readings start. Defaults to current time - station sampling interval 
+        args:
+            start_datetime: optional, timezone-aware datetime in UTC that the readings start. Defaults to current time - station sampling interval 
             end_datetime: date time in UTC time zone.  If start_datetime is empty this is ignored, defaults to start_datetime + station sampling interval (5, 10, 15 minutes)
         
         returns:
@@ -288,7 +288,21 @@ class WeatherAPI(ABC):
             pass
 
         return(dt.astimezone(timezone.utc))
+    
+
+    def dt_local_from_utc(self, dt:datetime):
+        """given a timezone-aware datetime in UTC, convert to station local time.
         
+        args:
+            dt (datetime): datetime in UTC format
+        """
+        
+        if not is_utc(dt):
+            raise ValueError("datetime must be timezone aware and UTC")
+        
+        return(dt.astimezone(tz=ZoneInfo(self.weather_station.timezone)))
+
+
     def get_test_reading(self):
         """ test that current config is working and station is online
         returns:

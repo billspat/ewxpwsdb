@@ -31,7 +31,7 @@ class SpectrumAPI(WeatherAPI):
         
         # convert UTC date to timezone of station for request
         # use the converter in config obj to get python-friendly tz string
-        dt = dt.replace(tzinfo=timezone.utc).astimezone(tz=ZoneInfo(self.weather_station.timezone))
+        dt = self.dt_local_from_utc(dt) # .replace(tzinfo=timezone.utc).astimezone(tz=ZoneInfo(self.weather_station.timezone))
         return(dt.strftime('%m-%d-%Y %H:%M'))
     
     def _get_readings(self,start_datetime:datetime, end_datetime:datetime):
