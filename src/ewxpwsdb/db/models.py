@@ -55,34 +55,25 @@ class Reading(SQLModel, table=True):
     """a reading of a weather stations sensors, as reported by the API and harmonized to EWX standard"""
     id: Optional[int] = Field(default=None, primary_key=True, description="database assigned id number")
     apiresponse_id: int = Field(foreign_key="apiresponse.id",description = "unique ID of the request event to link with raw api output")
-    
+    data_datetime: datetime = Field(description = "timestamp of start time for this reading")    
     request_id: str = Field(description = "code generated ID for ensuring linkage")
-    # metadata
     weatherstation_id: int = Field(foreign_key="weatherstation.id", description="link to the weather station that generated this reading ")
     station_sampling_interval: int = Field(description = "number of minutes for sampling interval for this station, 5, 15 or 30.")
-
-    reading_datetime: datetime = Field(description = "timestamp of start time for this reading")
-    
-
     # sensors
     # TODO use decimal for accuracy    
     atemp : Optional[float] = Field(default=None, description="air temperature, celsius") 
     pcpn  : Optional[float] = Field(default=None, description="precipitation, mm, > 0")   
     relh  : Optional[float] = Field(default=None, description="relative humdity, percent")
     lws0  : Optional[float] = Field(default=None, description="this is an nominal reading or 0 or 1 (wet / not wet)")  
-
-    # optional fields that might be valuable
-    # weatherstation_code: str = Field(foreign_key="weatherstation.station_code", description="link to the weather station that this readng from via human assigned code")
-
+    #
     @classmethod
     def model_validate_from_station(cls, sensor_data, api_response: APIResponse):
         """ add required metadata to dict of transformed weather data"""
         r = sensor_data # start with this dict and add meta data
-        r['apiresponse_id']      = api_response.id
+        r['apiresponse_id']      = api_response.id    
         # redundant columns to reduce the need for joins
         r['request_id']          = api_response.request_id
         r['weatherstation_id']   = api_response.weatherstation_id
         r['station_sampling_interval']   = api_response.station_sampling_interval
-
         return(cls.model_validate(r))
 

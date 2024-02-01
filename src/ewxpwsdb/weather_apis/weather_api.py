@@ -175,18 +175,17 @@ class WeatherAPI(ABC):
             logging.error(f"Error getting reading from station {self.id}: {e}")
             raise e
 
-        # ensure what is returned is _always_ a list of responses
+        # ensure what is returned is _always_ a list
         if not isinstance(responses, list):
             responses = [responses]
-            # list of requests.response obj
 
         self.current_request_datetime = request_datetime
         self.current_responses = responses
 
         # convert each to our serializer model 
 
-        # TODO fix the end data time may not be correct if it spans multiple days!!!!
-        self.current_api_response_records = [self._add_response_metadata(r, start_datetime, end_datetime, request_datetime) for r in responses]
+        self.current_api_response_records = [self._add_response_metadata(r, interval.start, interval.end, request_datetime) for r in responses]
+
 
         return(self.current_api_response_records)
 
