@@ -34,13 +34,13 @@ this is a running list of things to get working for this sprint:
 - [x] re-work "weather station" classes from previoius versions to new API-focused design
     - [x] Base classes
     - [x] constants
-    - [x] Davis
+    - [ ] Davis
     - [x] Spectrum
     - [ ] Onset
     - [ ] Zentra
 
-- [ ] get transform working (*returns empty list currently for spectrum*)
-    - [ ] Spectrum
+- [x] debug components get transform working (*returns empty list currently for spectrum*)
+    - [x] Spectrum
     - [ ] others
 
 - [ ] Davis API has changed and errors with stale time stamp. add tests for timezone conversion code 
@@ -49,7 +49,10 @@ this is a running list of things to get working for this sprint:
 
 
  *future fixes*
- -[ ] for db/models.py: use pydantic validation for input/output data for a robust system.  here are some reminders...
+ - [ ] rename WeatherStation to just Station throughout the code to make it easier to work with.  
+ 
+ - [ ] for db/models.py: use pydantic validation for input/output data for a robust system.  here are some reminders...
+ 
 ```Python
 from pydantic import field_validator
 from ewxpwsdb.time_intervals import is_valid_timezone, TimeZoneStr
