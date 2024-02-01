@@ -230,43 +230,53 @@ class WeatherAPI(ABC):
         data: optional input used to load in data if transform of existing data dictionary is required.
         Usage from stored data
         dict_api_record = db.get_by_data(something) or get_by_req_id(request_id)
-        api_response = optional WeatherAPIData (object or dict)
+        Args:
+            api_response_records (list[APIResponse], optional): APIresponse model objects, not simple Response. see models.py
+                    Note that until these are inserted into the database, they don't have ID 
+                    values and this method will fail since Reading.apiresponse_id is a required field
+
         """
 
         # if no data was sent, use data stored from latest request
         api_response_records = api_response_records or self.current_api_response_records
-
-        readings = []
+        
+        all_response_readings = []
         # run-time conversion and validation to allow for list of dictionaries for example
         try:
+
             for api_response_record in api_response_records:
-                if not isinstance(api_response_record, APIResponse):
-                    api_response_record = APIResponse.model_validate(api_response_record)
+                # call station subclass private method to convert response content into a list of sensor readings
+                # TODO create class to hold sensor data, currently just a dictionary
+                sensor_data =  self._transform(api_response_record.response_text)
+                
+                # build Reading model objects with sensor data and meta data from response model
+                if sensor_data is not None:
+                    logging.debug(f"transformed_reading type {type(sensor_data)}: {sensor_data}")
+                
+                    # api responses may contain a single reading or a list of readings
+                    
+                    # convert and accumulate readings for all of the request responses in the list
+                    if isinstance(sensor_data, list):
+                        # convert those to Reading model objects with meta data
+                        readings = [Reading.model_validate_from_station(data, api_response_record) for data in sensor_data]
+                        all_response_readings.extend(readings)
 
-                    # call station subclass to interpret response content into a list
-                    # TODO create class to hold sensor data, currently just a dictionary
-                    sensor_data =  self._transform(api_response_record.response_text)
-                    if sensor_data is not None:
-                        logging.debug(f"transformed_reading type {type(sensor_data)}: {sensor_data}")
-                        
-
-                        reading = Reading.new_from_transform(sensor_data, api_response_record)
-                        
-                        readings.append(reading)
-                        ### TODO create READING OBJECT FROM THIS AND THE METADATA
                     else:
-                        logging.debug(f"could not transform {api_response_record.response_text}")
-  
-        
+                        # convert to Reading model object with meta data
+                        reading = Reading.new_from_transform(sensor_data, api_response_record)
+                        all_response_readings.append(reading)
+    
+                else:
+                    logging.debug(f"could not transform {api_response_record.response_text}")
+
+            self.current_readings = all_response_readings                       
+
         except Exception as e:
             print(f'could not transform: {e}')
-            return []
-        
-
-        self.current_readings =readings
+            self.current_readings = []
 
         
-        return readings
+        return self.current_readings
         
     #### station class utilities
     def dt_utc_from_str(self, datetime_str: str)->datetime:
