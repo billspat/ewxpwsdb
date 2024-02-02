@@ -4,11 +4,10 @@ The import datafile _must_ be tab delimited
 If using single quotes as a quote character, the reader _still_ splits the line on commas even if it's inside the quotes.  this is incorrect behavior. 
 """
 import os, warnings, logging, json, csv
+from sqlmodel import Session
 from ewxpwsdb.db.models import WeatherStation
 
-# globals 
-from ewxpwsdb.db.database import engine, Session
-
+# 
 def read_station_table(tsv_file_path:str)->dict:
     """read CSV in standard station config format, and flatten into dict useable by station configs. 
     this method does not create stations, only formats a config file for use by package or testing
@@ -45,7 +44,7 @@ def read_station_table(tsv_file_path:str)->dict:
     return(weatherstation_data)
 
 
-def import_station_records(weatherstation_data:list, engine=engine):
+def import_station_records(weatherstation_data:list, engine):
     """Given records, inserts rows into station table eg for populating a new DB.  Records must have a station_type that is 
     also alrady in the table 'stationtype' due to foreign key constraints
 
@@ -66,7 +65,7 @@ def import_station_records(weatherstation_data:list, engine=engine):
         return True
 
 
-def import_station_types(engine = engine):
+def import_station_types(engine):
     """Insert the station types from API modules, for populating a new DB. 
 
     Args:
@@ -83,7 +82,7 @@ def import_station_types(engine = engine):
         session.commit()
 
 
-def import_station_file(tsv_file:str, engine=engine):
+def import_station_file(tsv_file:str, engine):
     """Reads TSV file and inserts all rows as station records for populating a new DB. 
 
     Args:
