@@ -1,3 +1,8 @@
+"""
+Subclass of WeatherAPI for the Davis type weather stations with methods for 
+requesting data (_get_readings) and transforming data (_transform) called by 
+methods in the parent class.
+"""
 
 import hashlib, hmac
 import json

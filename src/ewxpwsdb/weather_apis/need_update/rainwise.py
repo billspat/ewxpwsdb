@@ -1,4 +1,10 @@
-# RAINWISE ###################
+"""
+Subclass of WeatherAPI for the Rainwise type weather stations with methods for 
+requesting data (_get_readings) and transforming data (_transform) called by 
+methods in the parent class.
+"""
+#####  REQUIRES UPDATE TO WORK WITH CURRENT SYSTEM
+
 
 import json
 from requests import get
@@ -6,11 +12,12 @@ from datetime import datetime, timezone
 from zoneinfo import ZoneInfo  
 
 
-from oldstations import STATION_TYPE
-from oldstations.models import WeatherStationConfig
-from oldstations.weather_station import WeatherStation
+from . import STATION_TYPE
+from ewxpwsdb.weather_apis.weather_api import WeatherAPIConfig, WeatherAPI
+from ewxpwsdb.db.models import WeatherStation
 
-class RainwiseConfig(WeatherStationConfig):
+
+class RainwiseConfig(WeatherAPIConfig):
         station_type   : STATION_TYPE = 'RAINWISE'
         username       : str = None
         sid            : str # Site id, assigned by Rainwise.
@@ -18,7 +25,7 @@ class RainwiseConfig(WeatherStationConfig):
         mac            : str # MAC of the weather station. Must be in the group assigned to username.
         ret_form       : str # Values xml or json; returns the data as JSON or XML.
 
-class RainwiseStation(WeatherStation):
+class RainwiseAPI(WeatherAPI):
     """ WeatherStation subclass for Rainwise API http://api.rainwise.net """
     StationConfigClass = RainwiseConfig
     station_type = 'RAINWISE'

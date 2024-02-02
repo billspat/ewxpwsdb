@@ -1,5 +1,7 @@
 """
-classes and types to support data acquisition from weather station vendor web APIs. 
+parent classes and types to support data acquisition from weather station vendor web APIs. 
+The class WeatherAPI is abstract and must be sub-classed and is not used directly. 
+
 """
 
 # #TODO see some code in models.py that should be here that is a new way to organize the data classes for validation and loading

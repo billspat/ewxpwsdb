@@ -1,10 +1,18 @@
+"""
+Subclass of WeatherAPI for the Onset type weather stations with methods for 
+requesting data (_get_readings) and transforming data (_transform) called by 
+methods in the parent class.
+"""
+#####  REQUIRES UPDATE TO WORK WITH CURRENT SYSTEM
+
+
 import json
 from requests import post, Session, Request
 from datetime import datetime, timezone
 
-from oldstations import STATION_TYPE
-from oldstations.models import WeatherStationConfig
-from oldstations.weather_station import WeatherStation
+from . import STATION_TYPE
+from ewxpwsdb.weather_apis.weather_api import WeatherAPIConfig, WeatherAPI
+from ewxpwsdb.db.models import WeatherStation
 
 ## CONSTANT
 # LOCOMOS stations output leaf wetness in average millivolts.  

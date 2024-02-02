@@ -1,4 +1,9 @@
-# ONSET ###################
+"""
+Subclass of WeatherAPI for the Onset type weather stations with methods for 
+requesting data (_get_readings) and transforming data (_transform) called by 
+methods in the parent class.
+"""
+#####  REQUIRES UPDATE TO WORK WITH CURRENT SYSTEM
 
 import json, logging
 from requests import get, post  # Session, Request
@@ -6,9 +11,11 @@ from datetime import datetime, timezone
 
 from pydantic import Field
 
+
 from . import STATION_TYPE
-from oldstations.models import WeatherStationConfig
-from oldstations.weather_station import WeatherStation
+from ewxpwsdb.weather_apis.weather_api import WeatherAPIConfig, WeatherAPI
+from ewxpwsdb.db.models import WeatherStation
+
 
 ### Onset Notes
 
