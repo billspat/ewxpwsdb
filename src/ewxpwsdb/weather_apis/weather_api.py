@@ -242,38 +242,32 @@ class WeatherAPI(ABC):
         
         all_response_readings = []
         # run-time conversion and validation to allow for list of dictionaries for example
-        try:
-
-            for api_response_record in api_response_records:
-                # call station subclass private method to convert response content into a list of sensor readings
-                # TODO create class to hold sensor data, currently just a dictionary
-                sensor_data =  self._transform(api_response_record.response_text)
+        for api_response_record in api_response_records:
+            # call station subclass private method to convert response content into a list of sensor readings
+            # TODO create class to hold sensor data, currently just a dictionary
+            sensor_data =  self._transform(api_response_record.response_text)
+            
+            # build Reading model objects with sensor data and meta data from response model
+            if sensor_data is not None:
+                logging.debug(f"transformed_reading type {type(sensor_data)}: {sensor_data}")
+            
+                # api responses may contain a single reading or a list of readings
                 
-                # build Reading model objects with sensor data and meta data from response model
-                if sensor_data is not None:
-                    logging.debug(f"transformed_reading type {type(sensor_data)}: {sensor_data}")
-                
-                    # api responses may contain a single reading or a list of readings
-                    
-                    # convert and accumulate readings for all of the request responses in the list
-                    if isinstance(sensor_data, list):
-                        # convert those to Reading model objects with meta data
-                        readings = [Reading.model_validate_from_station(data, api_response_record) for data in sensor_data]
-                        all_response_readings.extend(readings)
+                # convert and accumulate readings for all of the request responses in the list
+                if isinstance(sensor_data, list):
+                    # convert those to Reading model objects with meta data
+                    readings = [Reading.model_validate_from_station(data, api_response_record) for data in sensor_data]
+                    all_response_readings.extend(readings)
 
-                    else:
-                        # convert to Reading model object with meta data
-                        reading = Reading.new_from_transform(sensor_data, api_response_record)
-                        all_response_readings.append(reading)
-    
                 else:
-                    logging.debug(f"could not transform {api_response_record.response_text}")
+                    # convert to Reading model object with meta data
+                    reading = Reading.model_validate_from_station(sensor_data, api_response_record)
+                    all_response_readings.append(reading)
 
-            self.current_readings = all_response_readings                       
+            else:
+                logging.debug(f"could not transform {api_response_record.response_text}")
 
-        except Exception as e:
-            print(f'could not transform: {e}')
-            self.current_readings = []
+        self.current_readings = all_response_readings                       
 
         
         return self.current_readings
