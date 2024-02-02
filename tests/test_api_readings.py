@@ -10,6 +10,16 @@ from ewxpwsdb.time_intervals import is_utc
 from ewxpwsdb.db.models import WeatherStation, Reading
 from ewxpwsdb.weather_apis import API_CLASS_TYPES
 
+@pytest.fixture()
+def station(station_type, db_with_data):
+    with Session(db_with_data) as session:
+        statement = select(WeatherStation).where(WeatherStation.station_type == station_type)
+        results = session.exec(statement)
+        weather_station = results.first()
+
+    return(weather_station)
+
+
 def test_creating_wapi(station):
     wapi = API_CLASS_TYPES[station.station_type](station)
     assert wapi.station_type == station.station_type
@@ -75,7 +85,6 @@ def test_get_responses_and_transform(station_type, db_with_data):
         assert isinstance(reading.atemp, float)
         assert isinstance(reading.pcpn , float)
         assert isinstance(reading.relh , float)
-        assert isinstance(reading.lws0 , float)
 
     # try to get the readings from the database and test them. 
     stmt = select(Reading, WeatherStation).join(WeatherStation).where(WeatherStation.id  == station.id)
@@ -91,4 +100,5 @@ def test_get_responses_and_transform(station_type, db_with_data):
         assert isinstance(reading.atemp, float)
         assert isinstance(reading.pcpn , float)
         assert isinstance(reading.relh , float)
-        assert isinstance(reading.lws0 , float)
+        # leaf wetness is only on some stations, but we don't have a way to tell which sensors are present yet
+        # assert isinstance(reading.lws0 , float)

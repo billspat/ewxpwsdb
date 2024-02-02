@@ -102,3 +102,7 @@ def db_with_data_session(db_with_data: Engine):
 
     with Session(db_with_data) as session:
         yield session
+
+@pytest.fixture(scope='module')
+def station_type():
+    return 'SPECTRUM'

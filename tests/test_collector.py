@@ -12,10 +12,6 @@ from ewxpwsdb.db.models import WeatherStation
 
 #TODO start with a literal list of types, but copy the technique from ewx_pws package to loop through all types
 @pytest.fixture()
-def station_type():
-    return 'SPECTRUM'
-
-@pytest.fixture()
 def station(station_type, db_with_data):
     with Session(db_with_data) as session:
         statement = select(WeatherStation).where(WeatherStation.station_type == station_type)
