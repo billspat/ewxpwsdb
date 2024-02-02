@@ -8,7 +8,7 @@ import pytest
 from sqlmodel import select, Session
 
 from ewxpwsdb.db.database import Session
-from ewxpwsdb.db.models import WeatherStation
+from ewxpwsdb.db.models import WeatherStation, APIResponse
 
 #TODO start with a literal list of types, but copy the technique from ewx_pws package to loop through all types
 @pytest.fixture()
@@ -58,6 +58,17 @@ def test_collect_request(station,db_with_data):
     saved_id = collector.current_api_response_records[0].id
 
     assert isinstance(saved_id, int)
+
+    with Session(db_with_data) as session:
+        response_from_db = session.get(APIResponse, saved_id)
+        assert response_from_db.id == saved_id
+        assert isinstance(response_from_db, APIResponse)
+
+
+    collector.transform_current_weather_data()
+    assert isinstance(collector.current_readings, list)
+    assert len(collector.current_readings) > 0 
+
 
     collector.close()
 

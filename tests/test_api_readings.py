@@ -1,6 +1,6 @@
 """ test of getting data via API, transform to readings and saving to the database"""
 
-import pytest
+import pytest, json
 from datetime import datetime
 
 
@@ -51,6 +51,7 @@ def test_get_responses_and_transform(station_type, db_with_data):
 
     # save response(s) to database
     session = Session(db_with_data)
+
     for response in api_response_records:
         session.add(response)
         session.commit()
@@ -60,11 +61,26 @@ def test_get_responses_and_transform(station_type, db_with_data):
         assert isinstance(response.id, int)
         assert response.weatherstation_id == station.id
 
-    # attempt transform for this station type
+
+    # check the first response record to see if it has what we need
+    response_data = api_response_records[0].response_text
+    response_data = json.loads(response_data)
+
+    if station_type == 'ZENTRA':
+        assert 'data' in response_data.keys()
+        sensor_count = 0
+        for sensor in response_data['data']:
+            if sensor in wapi.sensor_transforms:
+                sensor_count += 1
+        assert sensor_count > 0 
+
+    # attempt transform  for this station type
     # the Readings model also validates the data
+        
     readings = wapi.transform(api_response_records)
     assert isinstance(readings, list)
     assert len(readings) > 0
+    
     assert isinstance(readings[0], Reading)
     for reading in readings:
         assert isinstance(reading, Reading)

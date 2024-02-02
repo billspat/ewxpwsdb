@@ -20,7 +20,11 @@ def pytest_addoption(parser):
     parser.addoption('--no-import',
                      action='store_true',
                      help='use this to skip importing data (assumes test db already has data)')
-
+    
+    parser.addoption('--station_type',
+                action='store',
+                default = 'SPECTRUM',
+                help='station type in all caps')
 
 
 def rm_sqlite_file(db_url):
@@ -104,5 +108,6 @@ def db_with_data_session(db_with_data: Engine):
         yield session
 
 @pytest.fixture(scope='module')
-def station_type():
-    return 'SPECTRUM'
+def station_type(request: pytest.FixtureRequest)->str:
+    return ( request.config.getoption("--station_type").upper() )
+    
