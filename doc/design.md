@@ -34,21 +34,40 @@ this is a running list of things to get working for this sprint:
 - [x] re-work "weather station" classes from previoius versions to new API-focused design
     - [x] Base classes
     - [x] constants
+- [ ] edit station API and transform methods for new db models
     - [ ] Davis
+        - [x] API
+        - [ ] transform
     - [x] Spectrum
+        - [x] API
+        - [x] transform
     - [ ] Onset
-    - [ ] Zentra
+        - [ ] API
+        - [ ] transform    
+    - [x] Zentra
+        - [x] API
+        - [x] transform
+    - [ ] Rainwise
+        - [ ] API
+        - [ ] transform
+    - [ ] Locomoos
+        - [ ] API
+        - [ ] transform
 
-- [x] debug components get transform working (*returns empty list currently for spectrum*)
+
+
+- [x] debug components get transform working 
     - [x] Spectrum
-    - [ ] others
+    - [x] others
 
 - [ ] Davis API has changed and errors with stale time stamp. add tests for timezone conversion code 
 
-- [ ] create a collector class to combine weather stations, api, and save readings to db
+- [x] create a collector class to combine weather stations, api, and save readings to db
+    - [x] tests
 
 
  *future fixes*
+
  - [ ] rename WeatherStation to just Station throughout the code to make it easier to work with.  
  
  - [ ] for db/models.py: use pydantic validation for input/output data for a robust system.  here are some reminders...
