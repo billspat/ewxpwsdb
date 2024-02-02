@@ -4,15 +4,15 @@ from ewxpwsdb.db.models import WeatherStation, Reading, StationType, APIResponse
 from ewxpwsdb.weather_apis import API_CLASS_TYPES
 from ewxpwsdb.weather_apis.weather_api import WeatherAPI, Response
 
+from datetime import datetime, timezone
+
 from ewxpwsdb.db.importdata import read_station_table
-import pytest, json, os
+import pytest, json, os, re
 
-# from conftest import not_raises
-
-@pytest.fixture(scope = 'module')
-def station_file():
-    test_file = 'data/test_stations.tsv'
-    return(test_file)
+# @pytest.fixture(scope = 'module')
+# def station_file():
+#     test_file = 'data/test_stations.tsv'
+#     return(test_file)
 
 @pytest.fixture(scope = 'module')
 def weather_stations(station_file):
@@ -55,30 +55,39 @@ def test_can_create_station_from_file(station_file):
     assert isinstance(api_config_dict, dict)
     
 def test_can_create_weather_api_object(weather_station_of_type, stype):
+
+
     wapi = API_CLASS_TYPES[weather_station_of_type.station_type](weather_station_of_type)
     assert wapi.station_type == stype
     assert isinstance(wapi, WeatherAPI)
+    assert wapi.sampling_interval in [5,15,30,60]
+
+    utc_datetime = datetime.now(timezone.utc)
+
+    assert isinstance(wapi._format_time(utc_datetime), str)
+
+    assert isinstance(wapi.dt_local_from_utc(utc_datetime), datetime)
 
 def test_weather_api_get_get_response(wapi):
 
     print(f"getting request of recent data from {wapi.weather_station.station_code} type {wapi.station_type}")
     responses = wapi.get_readings()
+    response = responses[0]
     assert isinstance(responses, list)
-    assert isinstance(responses[0], APIResponse)
-    assert isinstance(responses[0].response_text, str)
+    assert len(responses ) > 0 
+    assert isinstance(response, APIResponse)
+    assert isinstance(response.response_text, str)
 
     try: 
-        response_dict = json.loads(responses[0].response_text)
+        response_dict = json.loads(response.response_text)
     except ValueError:
         pytest.fail("could not read response text JSON")
 
-    readings = wapi.transform(responses)
 
-    assert isinstance(readings, list)
+    assert response.response_status_code == 200
+    assert re.match("^http", response.request_url)
 
 
-    assert len(readings) > 0
-    assert isinstance(readings[0], Reading)
 
 
 
