@@ -1,4 +1,4 @@
-import pytest
+import pytest, os
 from sqlmodel import Session
 from sqlalchemy import Engine
 from ewxpwsdb.db.importdata import import_station_file, read_station_table
@@ -51,8 +51,12 @@ def test_db_url(request: pytest.FixtureRequest)->str:
 
 @pytest.fixture(scope = 'module')
 def db_engine(test_db_url: str):
+    
+    # remove existing file if it's here
+    rm_sqlite_file(test_db_url)
     # need to create new test-only db, 
     # would like to use a database.py module method rather than sqlmodel code here explicitly 
+    
     engine = create_engine(url = test_db_url, echo=True)
     
     # create the test database
@@ -92,3 +96,9 @@ def db_with_data(db_engine: Engine, request: pytest.FixtureRequest):
         import_station_file(station_file, db_engine)
     
     yield db_engine
+
+@pytest.fixture(scope = 'module')
+def db_with_data_session(db_with_data: Engine):
+
+    with Session(db_with_data) as session:
+        yield session
