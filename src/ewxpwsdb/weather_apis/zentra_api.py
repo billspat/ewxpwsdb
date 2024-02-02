@@ -35,6 +35,16 @@ class ZentraAPI(WeatherAPI):
     def name(self, value: int):
         self._max_retries = value
     
+    @property
+    def sensor_transforms(self):
+        """sensor names that appear in response data and equiv EWX fields.  
+        Update this to add more types of sensors.  assumes there is no transform of these values needed
+        """
+        return {'Air Temperature':'atemp', 
+                'Precipitation':'pcpn',
+                'Relative Humidity':'relh',
+                'Leaf Wetness':'lws0'}
+    
     def _get_readings(self, start_datetime:datetime, end_datetime:datetime)->list:
         """ Builds, sends, and stores raw response from Zentra API
         start_datetime, end_datetime : timezone aware datetimes in UTC, zentra converts to station-local time
@@ -83,45 +93,25 @@ class ZentraAPI(WeatherAPI):
             response_data = json.loads(response_data)
 
         # Return an empty list if there is no data contained in the response, this covers error 429
-        print(response_data)
+        # print(response_data)
 
-        if 'data' not in response_data.keys():
-            logging.debug("data element not found in response_data (returning empty):")
-            logging.debug(response_data)
-            return []
-        else:
-            logging.debug("Zentra readings found")
+        # if 'data' not in response_data.keys():
+        #     logging.error("data element not found in response_data (returning empty):")
+        #     logging.debug(response_data)
+        #     return []
+        # else:
+        #     logging.debug("Zentra readings found")
         
-        readings = []
+
         # Build a ZentraReading object for each and put it into the readings_list
         # the readings are sensor-wise, not timestamp-wise, so we need to collect all the timestamps from 
         # the first reading, then build our list sensor wise. 
-
-        # to get the timestamps, previously relied on hard-coded key to get one element
-        # reading in response_data['data']['Air Temperature'][0]['readings']
-
-        # use the first sensor in data to get the list of timestamps.  
-        # data is keys on sensors
-
-    
-        # hard coded sensor transform names.  Update this to add more types of sensors.  assumes there is no transform of these values needed
-        sensor_transforms = {'Air Temperature':'atemp', 
-                             'Precipitation':'pcpn',
-                             'Relative Humidity':'relh',
-                             'Leaf Wetness':'lws0'}
-        
-        station_sensors = response_data['data'].keys()
-
-        # list_of_readings_in_data = response_data['data'][station_sensors[0]][0]['readings']
-        # a reading is a sensor-per-timestamp
 
         # a dict of dict keyed on timestamp
         readings_by_timestamp = {}
 
         for sensor in response_data['data']: # response_data['data'].keys()
-            
-
-            if sensor in sensor_transforms: # only include those sensors that we have transforms for
+            if sensor in self.sensor_transforms: # only include those sensors that we have transforms for
                 # loop through the readings of this sensor, build up timestamp-keyed dict of dict
                 for zentra_reading in response_data['data'][sensor][0]['readings']:
 
@@ -133,11 +123,11 @@ class ZentraAPI(WeatherAPI):
                         readings_by_timestamp[timestamp] = {'data_datetime': reading_datetime}
                     
                     # add this sensor value to our ewx reading dict
-                    ewx_field_name = sensor_transforms[sensor]
+                    ewx_field_name = self.sensor_transforms[sensor]
                     readings_by_timestamp[timestamp][ewx_field_name] = zentra_reading['value']
 
         # no longer need the timestamp keys, and calling program is expecting a list ()
-        return readings_by_timestamp.values()
+        return list(readings_by_timestamp.values())
     
     def _handle_error(self):
         """ place holder to remind that we need to add err handling to each class"""

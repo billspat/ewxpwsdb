@@ -7,9 +7,10 @@ STATION_TYPE_LIST =   ['ZENTRA', 'ONSET', 'DAVIS', 'RAINWISE', 'SPECTRUM', 'LOCO
 
 from .davis_api import DavisAPI, DavisAPIConfig
 from .spectrum_api import SpectrumAPI, SpectrumAPIConfig
+from .zentra_api import ZentraAPI, ZentraAPIConfig
 
-API_CLASS_TYPES = {'DAVIS': DavisAPI,'SPECTRUM':SpectrumAPI }
-CONFIG_CLASS_TYPES = {'DAVIS': DavisAPIConfig, 'SPECTRUM':SpectrumAPIConfig}
+API_CLASS_TYPES = {'DAVIS': DavisAPI,'SPECTRUM':SpectrumAPI, 'ZENTRA': ZentraAPI }
+CONFIG_CLASS_TYPES = {'DAVIS': DavisAPIConfig, 'SPECTRUM':SpectrumAPIConfig, 'ZENTRA':ZentraAPIConfig}
 
 
 # # waiting to be re-factored
