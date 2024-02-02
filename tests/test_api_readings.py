@@ -10,21 +10,6 @@ from ewxpwsdb.time_intervals import is_utc
 from ewxpwsdb.db.models import WeatherStation, Reading
 from ewxpwsdb.weather_apis import API_CLASS_TYPES
 
-
-#TODO start with a literal list of types, but copy the technique from ewx_pws package to loop through all types
-@pytest.fixture()
-def station_type():
-    return 'SPECTRUM'
-
-@pytest.fixture()
-def station(station_type, db_with_data):
-    with Session(db_with_data) as session:
-        statement = select(WeatherStation).where(WeatherStation.station_type == station_type)
-        results = session.exec(statement)
-        weather_station = results.first()
-
-    return(weather_station)
-
 def test_creating_wapi(station):
     wapi = API_CLASS_TYPES[station.station_type](station)
     assert wapi.station_type == station.station_type
