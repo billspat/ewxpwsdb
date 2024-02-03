@@ -3,6 +3,7 @@ Subclass of WeatherAPI for the Davis type weather stations with methods for
 requesting data (_get_readings) and transforming data (_transform) called by 
 methods in the parent class.
 """
+# THIS api is currently not working an maybe due to Davis releasing V2 of their api.  
 
 import hashlib, hmac
 import json
@@ -73,7 +74,7 @@ class DavisAPI(WeatherAPI):
         for tsplit in tsplits:
             start_datetime = tsplit[0]
             end_datetime = tsplit[1]
-            now = datetime.utcnow().astimezone(tz=ZoneInfo(self.weather_station.timezone))
+            now = self.dt_local_from_utc(datetime.now(timezone.utc))
             now_timestamp_integer = int(now.timestamp())
 
             start_timestamp=int(start_datetime.timestamp())
