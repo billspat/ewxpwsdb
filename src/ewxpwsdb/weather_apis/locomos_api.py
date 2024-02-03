@@ -26,9 +26,7 @@ class LocomosAPIConfig(WeatherAPIConfig):
         id             : str # ID field on device webpage
 
 
-
-
-class LocomosStation(WeatherAPI):
+class LocomosAPI(WeatherAPI):
     """Sub class for  MSU BAE LOCOMOS weather stations used for TOMCAST model"""
 
     APIConfigClass = LocomosAPIConfig
