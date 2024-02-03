@@ -54,13 +54,6 @@ class WeatherAPIConfig(BaseModel):
 
  
 #################################################################################
-class GenericAPIConfig(WeatherAPIConfig):
-    """This dummy configuration is used for abstract base class of the API and for testing"""
-    _station_type : str = 'GENERIC'
-    secret : Optional[str] = "abracabra"
-
-
-#################################################################################
 class WeatherAPI(ABC):
     """abstract base class for a weather station to access it's API and retrieve and transform data. """
     
