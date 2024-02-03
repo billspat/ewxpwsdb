@@ -9,15 +9,22 @@ from .davis_api import DavisAPI, DavisAPIConfig
 from .spectrum_api import SpectrumAPI, SpectrumAPIConfig
 from .zentra_api import ZentraAPI, ZentraAPIConfig
 from .onset_api import OnsetAPI, OnsetAPIConfig
+from .rainwise_api import RainwiseAPI, RainwiseAPIConfig
 
-API_CLASS_TYPES = {'DAVIS': DavisAPI,'SPECTRUM':SpectrumAPI, 'ZENTRA': ZentraAPI, 'ONSET': OnsetAPI }
-CONFIG_CLASS_TYPES = {'DAVIS': DavisAPIConfig, 'SPECTRUM':SpectrumAPIConfig, 'ZENTRA':ZentraAPIConfig,'ONSET': OnsetAPIConfig,}
+API_CLASS_TYPES = {'DAVIS': DavisAPI, 
+                   'ONSET': OnsetAPI,
+                   'RAINWISE': RainwiseAPI, 
+                   'SPECTRUM':SpectrumAPI, 
+                   'ZENTRA': ZentraAPI }
+
+CONFIG_CLASS_TYPES = {'DAVIS': DavisAPIConfig, 
+                      'ONSET': OnsetAPIConfig,
+                      'RAINWISE': RainwiseAPIConfig,
+                      'SPECTRUM':SpectrumAPIConfig,
+                      'ZENTRA':ZentraAPIConfig}
 
 
 # # waiting to be re-factored
 # # from .locomos import LocomosAPI, LocomosAPIConfig
-# # from .rainwise import RainwiseAPI, RainwiseAPIConfig
-# # from .onset import OnsetAPI, OnsetAPIConfig
-# # from .zentra import ZentraAPI, ZentraAPIConfig
 # # STATION_CLASS_TYPES = {'ZENTRA': ZentraAPI, 'ONSET': OnsetAPI, 'DAVIS': DavisAPI,'RAINWISE': RainwiseAPI, 'SPECTRUM':SpectrumAPI, 'LOCOMOS':LocomosAPI }
 # # CONFIG_CLASS_TYPES = {'ZENTRA': ZentraAPIConfig, 'ONSET': OnsetAPIConfig, 'DAVIS': DavisAPIConfig,'RAINWISE': RainwiseAPIConfig, 'SPECTRUM':SpectrumAPIConfig, 'LOCOMOS':LocomosAPIConfig }
