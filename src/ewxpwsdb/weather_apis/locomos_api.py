@@ -3,8 +3,6 @@ Subclass of WeatherAPI for the Onset type weather stations with methods for
 requesting data (_get_readings) and transforming data (_transform) called by 
 methods in the parent class.
 """
-#####  REQUIRES UPDATE TO WORK WITH CURRENT SYSTEM
-
 
 import json
 from requests import post, Session, Request
@@ -20,22 +18,22 @@ from ewxpwsdb.db.models import WeatherStation
 # API readings only ouptut mVolts so we need to convert to wet yes/no coded as 1/0 here so it can be averaged per hour.  
 # two readings per hour
 # (0,0), (1,0) or (0,1) or (1,1).   sum(readings)/2.0 = percent wet (0, .5 or 1.0)
-
 LOCOMOS_LWS_THRESHOLD = 460
-class LocomosConfig(WeatherStationConfig):
-        station_type   : STATION_TYPE = 'LOCOMOS'
+
+class LocomosAPIConfig(WeatherAPIConfig):
+        _station_type   : STATION_TYPE = 'LOCOMOS'
         token          : str # Device token
         id             : str # ID field on device webpage
 
 
-class LocomosStation(WeatherStation):
-    """Sub class for  MSU BAE LOCOMOS weather stations used for TOMCAST model"""
-    StationConfigClass = LocomosConfig
-    station_type = 'LOCOMOS'
-    
-    # time between readings in minutes for this station type
-    interval_min = 30
 
+
+class LocomosStation(WeatherAPI):
+    """Sub class for  MSU BAE LOCOMOS weather stations used for TOMCAST model"""
+
+    APIConfigClass = LocomosAPIConfig
+    _station_type = 'LOCOMOS'
+    _sampling_interval = interval_min = 30
 
     # LOCOMOS variable names are not the same as EWX variable/column names.  
     # when adding variables, update this list
@@ -47,25 +45,13 @@ class LocomosStation(WeatherStation):
         'lws1':'lws0',   # this is not percent wet, but wet y/n -> 0/1
     }
 
-    @classmethod
-    def init_from_dict(cls, config:dict):
-        """ accept a dictionary to create this class, rather than the Type class"""
-        # this will raise error if config dictionary is not correct
-        station_config = LocomosConfig.model_validate(config)
-        return(cls(station_config))
 
-    def __init__(self,config: LocomosConfig):
-        """ create class from config Type"""
-        super().__init__(config)
+    def __init__(self, weather_station:WeatherStation, lws_threshold = LOCOMOS_LWS_THRESHOLD):    
         self.variables = {}
+        # this constant is set as an object variable so that it may be overridden per station if necessary
+        self.lws_threshold = lws_threshold
+        super().__init__(weather_station)
 
-        # this constant is set as a object variable so that it may be overridden per station if necessary
-        self.lws_threshold = LOCOMOS_LWS_THRESHOLD
-        # map LOCOMOS var names to EWX database names
-
-    def _check_config(self):
-        # TODO implement 
-        return(True)
 
     def _get_variables(self):
         """load ubidots variable list
@@ -83,8 +69,8 @@ class LocomosStation(WeatherStation):
         if self.variables is None or len(self.variables) == 0:
             # object member is empty, load and save list of variables from API
             var_request = Request(method='GET',
-                    url=f"https://industrial.api.ubidots.com/api/v2.0/devices/{self.config.id}/variables/", 
-                    headers={'X-Auth-Token': self.config.token}, 
+                    url=f"https://industrial.api.ubidots.com/api/v2.0/devices/{self.api_config.id}/variables/", 
+                    headers={'X-Auth-Token': self.api_config.token}, 
                     params={'page_size':'ALL'}).prepare()
             var_response = json.loads(Session().send(var_request).content)
 
@@ -117,7 +103,7 @@ class LocomosStation(WeatherStation):
   
         request_headers = {
             'Content-Type': 'application/json',
-            'X-Auth-Token': self.config.token,
+            'X-Auth-Token': self.api_config.token,
         }
 
         variables = self._get_variables()
@@ -126,7 +112,7 @@ class LocomosStation(WeatherStation):
             variable_ids = list(variables.keys())
 
         else:
-            raise RuntimeError(f"LOCOMOS station {self._id} could not get variable list")
+            raise RuntimeError(f"LOCOMOS station {self.id} could not get variable list")
 
         response_columns = [
             'timestamp', 
@@ -161,7 +147,7 @@ class LocomosStation(WeatherStation):
         return 1.0 if lws_value > self.lws_threshold else 0.0
 
 
-    def _transform(self, response_data=None)->list:
+    def _transform(self, response_data):
         """ station specific transform
         params response_data: the value of 'text' from the response object e.g. JSON
         
@@ -214,8 +200,6 @@ class LocomosStation(WeatherStation):
             # results are a list inside list element, one item for each reading/time interval
             # and just one sensor per result
             for result in results[j]:
-
-
                 # result is list of one reading (timestamp) for one variable, but does not have varnames 
                 # add the var/column names to make it easy
                 simple_var_names = [ rm_dev_id(c) for c in columns[j]]
