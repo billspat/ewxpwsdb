@@ -3,10 +3,9 @@ Subclass of WeatherAPI for the Onset type weather stations with methods for
 requesting data (_get_readings) and transforming data (_transform) called by 
 methods in the parent class.
 """
-#####  REQUIRES UPDATE TO WORK WITH CURRENT SYSTEM
 
-import json, logging
-from requests import get, post  # Session, Request
+import json
+from requests import get, post 
 from datetime import datetime, timezone
 
 from pydantic import Field
@@ -29,8 +28,8 @@ from ewxpwsdb.db.models import WeatherStation
 # message example: "message":"OK: Found: 0 results."
 # "message":"OK: Found: 21 results."
 
-class OnsetConfig(WeatherStationConfig):
-    station_type : STATION_TYPE  = 'ONSET'
+class OnsetAPIConfig(WeatherAPIConfig):
+    _station_type : STATION_TYPE  = 'ONSET'
     sn : str  = Field(description="The serial number of the device")
     client_id : str = Field(description="client specific value provided by Onset")
     client_secret : str = Field(description="client specific value provided by Onset")
@@ -38,27 +37,17 @@ class OnsetConfig(WeatherStationConfig):
     user_id : str = Field(description="alphanumeric ID of the user account This can be pulled from the HOBOlink URL: www.hobolink.com/users/<user_id>")
     sensor_sn : dict[str,str] = Field(description="a dict of sensor alphanumeric serial numbers keyed on sensor type, e.g. {'atemp':'21079936-1'}") 
 
-class OnsetStation(WeatherStation):
-    StationConfigClass = OnsetConfig
-    station_type = 'ONSET'
-
+class OnsetAPI(WeatherAPI):
     
-    # time between readings in minutes for this station type
-    interval_min = 5
+    
+    APIConfigClass = OnsetAPIConfig
+    _station_type = 'ONSET'
+    _sampling_interval = interval_min = 5
 
-    """ config is OnsetConfig type """
-    @classmethod
-    def init_from_dict(cls, config:dict):
-        """ accept a dictionary to create this class, rather than the Type class"""
-
-        # this will raise error if config dictionary is not correct
-        station_config = OnsetConfig.model_validate(config)
-        return(cls(station_config))
-        
-    def __init__(self,config: OnsetConfig):
+    def __init__(self, weather_station:WeatherStation):    
         """ create class from config Type"""
-        self.access_token = None
-        super().__init__(config)
+        self._access_token = None
+        super().__init__(weather_station)
 
     def _check_config(self):
         # TODO implement 
@@ -73,16 +62,17 @@ class OnsetStation(WeatherStation):
         otherwise cause a race condition with
         Raises Exception If the return code is not 200.
         """
-        # debug logging - enabling will spill secrets in the log! 
-        # logging.debug('client_id: \"{}\"'.format(self.config.client_id))
-        # logging.debug('client_secret: \"{}\"'.format(self.client_secret))
 
+        # pull from cache/store if present
+        if self._access_token:
+            return self._access_token
+        
         response = post(url='https://webservice.hobolink.com/ws/auth/token',
                         headers={
                             'Content-Type': 'application/x-www-form-urlencoded'},
                             data={'grant_type': 'client_credentials',
-                                'client_id': self.config.client_id,
-                                'client_secret': self.config.client_secret
+                                'client_id': self.api_config.client_id,
+                                'client_secret': self.api_config.client_secret
                                 }
                             )
         
@@ -92,8 +82,8 @@ class OnsetStation(WeatherStation):
                                                                                     response.text))
         response = response.json()
         # store this in the object
-        self.access_token = response['access_token']
-        return self.access_token    
+        self._access_token = response['access_token']
+        return self._access_token    
 
     def _get_readings(self,start_datetime:datetime,end_datetime:datetime):
         """ use Onset API to pull data from this station for times between start and end.  Called by the parent 
@@ -104,15 +94,16 @@ class OnsetStation(WeatherStation):
             end_datetime: datetime object in UTC timezone.  
         """
     
+
         access_token = self._get_auth() 
             
         start_datetime_str = self._format_time(start_datetime)
         end_datetime_str = self._format_time(end_datetime)
 
-        response = get( url=f"https://webservice.hobolink.com/ws/data/file/{self.config.ret_form}/user/{self.config.user_id}",
+        response = get( url=f"https://webservice.hobolink.com/ws/data/file/{self.api_config.ret_form}/user/{self.api_config.user_id}",
                         headers={'Authorization': "Bearer " + access_token},
                         params={
-                            'loggers': self.config.sn,
+                            'loggers': self.api_config.sn,
                             'start_date_time': start_datetime_str,
                             'end_date_time': end_datetime_str
                             }
@@ -124,7 +115,8 @@ class OnsetStation(WeatherStation):
         """transform of response.text to list of dict
         only handle response.text (sensor values) and nothing else
         """
-        # if we can't decide to load JSON or not
+        
+
         if isinstance(response_data,str):
             response_data = json.loads(response_data)
 
@@ -132,7 +124,7 @@ class OnsetStation(WeatherStation):
             return None
         
         readings = {}
-        sensor_sns = self.config.sensor_sn
+        sensor_sns = self.api_config.sensor_sn
         atemp_key = sensor_sns['atemp']
         pcpn_key = sensor_sns['pcpn']
         relh_key = sensor_sns['relh']

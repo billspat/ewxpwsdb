@@ -3,7 +3,6 @@ Subclass of WeatherAPI for the Davis type weather stations with methods for
 requesting data (_get_readings) and transforming data (_transform) called by 
 methods in the parent class.
 """
-# THIS api is currently not working an maybe due to Davis releasing V2 of their api.  
 
 import hashlib, hmac
 import json
