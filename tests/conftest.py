@@ -48,6 +48,13 @@ def station_file():
     test_file = 'data/test_stations.tsv'
     return(test_file)
 
+##### Database Fixtures
+# the goal of these is to allow test modules to create a temporary test 
+# database that is created, filled with data as needed, and deleted when done
+# currently only works with SQLite databases.  We will need to find another solution 
+# for ephemoral databases with Postgresql 
+# TODO consider changing session based on this post:
+# https://stackoverflow.com/questions/58660378/how-use-pytest-to-unit-test-sqlalchemy-orm-classes 
 
 @pytest.fixture(scope = 'module')
 def test_db_url(request: pytest.FixtureRequest)->str:
@@ -70,6 +77,7 @@ def db_engine(test_db_url: str):
     
     engine.dispose()
     rm_sqlite_file(test_db_url)
+
 
 @pytest.fixture(scope = 'module')
 def db_session(db_engine: Engine):
