@@ -16,8 +16,8 @@ def station(station_type, db_with_data):
         statement = select(WeatherStation).where(WeatherStation.station_type == station_type)
         results = session.exec(statement)
         weather_station = results.first()
-
-    return(weather_station)
+        yield weather_station
+    session.close()
 
 
 def test_creating_wapi(station):
@@ -40,7 +40,7 @@ def test_get_responses_and_transform(station_type, db_with_data):
     statement = select(WeatherStation).where(WeatherStation.station_type == station_type)
     results = session.exec(statement)
     station = results.first()
-
+    session.close()
     # create api object for this station
     wapi = API_CLASS_TYPES[station.station_type](station)
     # make api request
@@ -118,3 +118,4 @@ def test_get_responses_and_transform(station_type, db_with_data):
         assert isinstance(reading.relh , float)
         # leaf wetness is only on some stations, but we don't have a way to tell which sensors are present yet
         # assert isinstance(reading.lws0 , float)
+    session.close()

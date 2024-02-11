@@ -58,10 +58,12 @@ def import_station_records(weatherstation_data:list, engine):
         # will fail if any one of these records has a problem
         for s in weatherstation_data:
             station_record = WeatherStation.model_validate(s)
+            #can put try-except here for IntegrityError
             session.add(station_record)
 
         # actually insert data, will fail if there are duplicate records
         session.commit()
+        session.close()
         return True
 
 
@@ -78,8 +80,10 @@ def import_station_types(engine):
     station_type_objects = [StationType(station_type=station_type ) for station_type in STATION_TYPE_LIST]
     
     with Session(engine) as session:
+        #crash here
         session.bulk_save_objects(station_type_objects)
         session.commit()
+        session.close()
 
 
 def import_station_file(tsv_file:str, engine):

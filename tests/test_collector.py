@@ -17,7 +17,6 @@ def station(station_type, db_with_data):
         statement = select(WeatherStation).where(WeatherStation.station_type == station_type)
         results = session.exec(statement)
         weather_station = results.first()
-
     return(weather_station)
 
 
@@ -26,7 +25,6 @@ from ewxpwsdb.collector import Collector
 from ewxpwsdb.weather_apis.weather_api import WeatherAPI
 
 def test_collector_class(station, db_with_data):
-
     # we are using a station instead of just an id so we can test the Collector class can get a station
 
     station_id = station.id
