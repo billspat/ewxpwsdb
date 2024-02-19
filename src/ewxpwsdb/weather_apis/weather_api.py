@@ -59,7 +59,7 @@ class WeatherAPI(ABC):
     
     #override with config class per vendor, e.g. DavisAPIConfig
     APIConfigClass = WeatherAPIConfig  
-    _station_type = None
+    _station_type = ""
     _sampling_interval = 0 
     empty_response = ['{}']
 
