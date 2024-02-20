@@ -46,9 +46,15 @@ def get_engine(db_url = None, echo = False):
 
     #TODO: check if it's a valid SQLalchemy URL.  Regular Expression?
     
+    if "postgres" in db_url:
+        db_connect_args = {"options": "-c timezone=utc"}
+    
+    if "sqlite" in db_url:
+        db_connect_args = {'check_same_thread':False}
+
     engine = create_engine(url = db_url, 
                            echo=echo, 
-                           connect_args={"options": "-c timezone=utc"})        
+                           connect_args=db_connect_args)        
 
     return engine
     
