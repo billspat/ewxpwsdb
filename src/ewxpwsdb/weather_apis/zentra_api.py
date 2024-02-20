@@ -7,6 +7,7 @@ methods in the parent class.
 import json, logging, time
 from requests import get, Response
 from datetime import datetime,timezone
+from typing import Self
 
 # from pydantic import Field
 from . import STATION_TYPE
@@ -41,6 +42,8 @@ class ZentraAPI(WeatherAPI):
     def __init__(self, weather_station:WeatherStation, max_retries: int = 2):
         self._max_retries : int = max_retries
         super().__init__(weather_station)  
+        # cast api config to Zentra type for static type checking
+        self.api_config: ZentraAPIConfig = self.api_config
 
 
     @property
@@ -52,11 +55,11 @@ class ZentraAPI(WeatherAPI):
         self._max_retries = value
 
     @property
-    def sampling_interval(self):
+    def sampling_interval(self)->int:
         return self._sampling_interval
     
     @property
-    def sensor_transforms(self):
+    def sensor_transforms(self)->dict[str,str]:
         return self._sensor_transforms
     
 
@@ -68,15 +71,15 @@ class ZentraAPI(WeatherAPI):
         url = "https://zentracloud.com/api/v4/get_readings/"
         token =  f"Token {self.api_config.token}" # "Token {TOKEN}".format(TOKEN="your_ZENTRACLOUD_API_token")
         headers = {'content-type': 'application/json', 'Authorization': token}
-        page_num = 1
-        per_page = 1000
-        params = {'device_sn' : self.api_config.sn, 
+        page_num: int = 1
+        per_page: int = 1000
+        params: dict[str,int|str] = {'device_sn' : self.api_config.sn, 
                   'start_date': self._format_time(self.dt_local_from_utc(start_datetime)), 
                   'end_date'  : self._format_time(self.dt_local_from_utc(end_datetime)), 
                   'page_num'  : page_num, 
                   'per_page'  : per_page }
         
-        response = get(url, params=params, headers=headers)
+        response = get(url, params=params, headers=headers) 
 
         # Handles the 1 request/60 second throttling error
         retry_counter = 0
@@ -89,7 +92,8 @@ class ZentraAPI(WeatherAPI):
             lockout = int(response.text[response.text.find("Lock out expires in ")+20:response.text.find("Lock out expires in ")+22])
             logging.warning("Error received for too frequent attempts, retrying in {} seconds...".format(lockout+1))
             time.sleep(lockout + 1)
-            response = get(url, params=params, headers=headers)
+
+            response = get(url, params=params, headers=headers) 
 
         # TODO CHECK IF THERE IS ANOTHER PAGE (if there are more than per_page items of data e.g. for 30 days of data)
         
