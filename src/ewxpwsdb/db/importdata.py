@@ -4,11 +4,12 @@ The import datafile _must_ be tab delimited
 If using single quotes as a quote character, the reader _still_ splits the line on commas even if it's inside the quotes.  this is incorrect behavior. 
 """
 import os, warnings, logging, json, csv
+import typing
 from sqlmodel import Session
 from ewxpwsdb.db.models import WeatherStation
 
 # 
-def read_station_table(tsv_file_path:str)->dict:
+def read_station_table(tsv_file_path:str)->list[dict[str, typing.Any]] | None:
     """read CSV in standard station config format, and flatten into dict useable by station configs. 
     this method does not create stations, only formats a config file for use by package or testing
     Note this does not attempt to validate the data, it is a generic TSV file reader.  
