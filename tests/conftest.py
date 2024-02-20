@@ -4,7 +4,6 @@ from sqlalchemy import Engine
 from ewxpwsdb.db.importdata import import_station_file, read_station_table
 from ewxpwsdb.db.database import init_db, create_engine
 
-
 def pytest_addoption(parser):
 
     parser.addoption('--dburl',
@@ -65,6 +64,10 @@ def db_engine(test_db_url: str):
     
     # remove existing file if it's here
     rm_sqlite_file(test_db_url)
+
+    #This fixes all errors except one
+    #test_db_url = "sqlite:///:memory:"
+
     # need to create new test-only db, 
     # would like to use a database.py module method rather than sqlmodel code here explicitly 
     
@@ -118,4 +121,3 @@ def db_with_data_session(db_with_data: Engine):
 @pytest.fixture(scope='module')
 def station_type(request: pytest.FixtureRequest)->str:
     return ( request.config.getoption("--station_type").upper() )
-    
