@@ -32,9 +32,6 @@ class Collector():
         self.APIClass = API_CLASS_TYPES[self.station.station_type]
         self.weather_api = self.APIClass(self.station)
 
-        # store empty
-        self.current_api_response_records = []
-        self.current_readings = []
 
     @property
     def id(self):
