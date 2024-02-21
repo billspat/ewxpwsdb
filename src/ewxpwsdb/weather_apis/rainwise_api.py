@@ -7,16 +7,17 @@ methods in the parent class.
 
 
 import json
-from requests import get
+from requests import get, Response
 from datetime import datetime
   
 from . import STATION_TYPE
 from ewxpwsdb.weather_apis.weather_api import WeatherAPIConfig, WeatherAPI
+from ewxpwsdb.db.models import WeatherStation
 
 
 class RainwiseAPIConfig(WeatherAPIConfig):
         _station_type   : STATION_TYPE = 'RAINWISE'
-        username       : str = None
+        username       : str|None = None
         sid            : str # Site id, assigned by Rainwise.
         pid            : str # Password id, assigned by Rainwise.
         mac            : str # MAC of the weather station. Must be in the group assigned to username.
@@ -26,13 +27,20 @@ class RainwiseAPIConfig(WeatherAPIConfig):
 class RainwiseAPI(WeatherAPI):
     """ WeatherStation subclass for Rainwise API http://api.rainwise.net """
 
-    APIConfigClass = RainwiseAPIConfig
-    _station_type = 'RAINWISE'
+    APIConfigClass: type[RainwiseAPIConfig] = RainwiseAPIConfig
+    _station_type: STATION_TYPE = 'RAINWISE'
     _sampling_interval = interval_min = 15
 
-    
+
+    def __init__(self, weather_station:WeatherStation):
+
+        super().__init__(weather_station)  
+        # cast api config to correct type for static type checking
+        self.api_config: RainwiseAPIConfig = self.api_config
+
+
     def _get_readings(self, start_datetime:datetime, end_datetime:datetime, 
-                      interval:int = 5):
+                      interval:int = 5) -> list[Response]:
         """
         Args: 
             start time start of time interval in UTC (station requires local time and it's converted here)
@@ -40,7 +48,7 @@ class RainwiseAPI(WeatherAPI):
             interval = the number of minutes per reading per docs.  Readings are taken every 15 minutes. 
 
         Returns:
-            api response in a list with metadata
+            api response in a list with metadata (uses a list for compatibility with other station types)
         """
 
         # note start/end times in station timezone
@@ -56,7 +64,7 @@ class RainwiseAPI(WeatherAPI):
                                 }
                         )
 
-        return response
+        return [response]
 
 
     def _transform(self, response_data):
