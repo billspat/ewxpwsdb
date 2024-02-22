@@ -5,13 +5,15 @@ methods in the parent class.
 """
 
 import json
-from requests import get
+from requests import get, Response
 from datetime import datetime,timezone
 from zoneinfo import ZoneInfo
 
-# from pydantic import Field
+from typing import Any
+
 from . import STATION_TYPE
 from .weather_api import WeatherAPI, WeatherAPIConfig
+from ewxpwsdb.db.models import WeatherStation
 
 
 class SpectrumAPIConfig(WeatherAPIConfig):
@@ -22,9 +24,16 @@ class SpectrumAPIConfig(WeatherAPIConfig):
 class SpectrumAPI(WeatherAPI):
     """Subclass of WeatherAPI with methods specific to specconnect.net for Spectrum weather stations"""
 
-    APIConfigClass = SpectrumAPIConfig
-    _station_type = 'SPECTRUM'
+    APIConfigClass: type[SpectrumAPIConfig] = SpectrumAPIConfig
+    _station_type: STATION_TYPE = 'SPECTRUM'
     _sampling_interval = interval_min = 5
+
+
+    def __init__(self, weather_station:WeatherStation):
+
+        super().__init__(weather_station)  
+        # cast api config to correct type for static type checking
+        self.api_config: SpectrumAPIConfig = self.api_config
 
     def _format_time(self, dt:datetime)->str:
         """
@@ -39,7 +48,7 @@ class SpectrumAPI(WeatherAPI):
         dt = self.dt_local_from_utc(dt) # .replace(tzinfo=timezone.utc).astimezone(tz=ZoneInfo(self.weather_station.timezone))
         return(dt.strftime('%m-%d-%Y %H:%M'))
     
-    def _get_readings(self,start_datetime:datetime, end_datetime:datetime):
+    def _get_readings(self,start_datetime:datetime, end_datetime:datetime)->list[Response]:
         """ request weather data from the specconnect API for a range of dates
         
         parameters:
@@ -56,9 +65,9 @@ class SpectrumAPI(WeatherAPI):
                                 'endDate': end_datetime_str}
                         )
         
-        return(response)
+        return([response])
 
-    def _transform(self, response_data):
+    def _transform(self, response_data)->list[dict[str,Any]]:
         """
         Transforms data into a standardized format and returns it as a WeatherStationReadings object.
         data param if left to default tries for self.response_data processing

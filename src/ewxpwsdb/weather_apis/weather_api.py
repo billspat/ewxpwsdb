@@ -9,7 +9,7 @@ The class WeatherAPI is abstract and must be sub-classed and is not used directl
 # #   see models.py for example
 
 from pydantic import BaseModel, ConfigDict
-from typing import Optional
+from typing import get_args, Self
 import json, warnings, logging
 from datetime import datetime, timedelta, timezone
 from zoneinfo import ZoneInfo
@@ -23,7 +23,6 @@ from ewxpwsdb.time_intervals import is_tz_aware, UTCInterval, is_utc
 from ewxpwsdb.db.models import WeatherStation, Reading, APIResponse
 from . import STATION_TYPE 
 
-
 # TODO can we use ABC here?
 class WeatherAPIConfig(BaseModel):
     """Base API configuration model to validate configuration values for connecting to various vendor APIs.  
@@ -31,6 +30,7 @@ class WeatherAPIConfig(BaseModel):
     This is a generic class that must be Sub-classed for each type of API, adding fields specific to their configuration.  
     """
 
+    _station_type: STATION_TYPE = None
     # there are no common fields, this class is not meant to be instantiated
 
     model_config = ConfigDict(frozen=True) # don't allow adding extra attribs for security
@@ -38,11 +38,14 @@ class WeatherAPIConfig(BaseModel):
     @property
     def station_type(self) -> STATION_TYPE: 
         """ return station class, override for each type"""
-        return(self._station_type)
+
+        # note this syntax passes mypy but allows us to use str class attribute for easy reading
+        return  self._station_type
+        
 
     ### unserializer/serializers for db/record storage that accommodate fields in subclasses consistently
     @classmethod
-    def model_validate_json_str(cls, api_config_str: str):
+    def model_validate_json_str(cls, api_config_str: str) ->Self:
         """ create config obj from our standard serialization format (from disk/db/etc.  In the serialization format, additional station-specific
         fields are stored as a JSON dictionary in the 'station_config. """
         
@@ -59,7 +62,8 @@ class WeatherAPI(ABC):
     
     #override with config class per vendor, e.g. DavisAPIConfig
     APIConfigClass = WeatherAPIConfig  
-    _station_type = None
+    # station type must be one of STATION_TYPE type, reset this in 
+    _station_type: STATION_TYPE = None
     _sampling_interval = 0 
     empty_response = ['{}']
 
@@ -72,18 +76,20 @@ class WeatherAPI(ABC):
         params: 
             weather_station: instance of a WeatherStation model class that contains api config as str """    
 
-        #TODO add run-time validation of weather_station object
-        
+    
+        # ensure the subclass is using a valid station type    
+        assert self.station_type in get_args(STATION_TYPE)
+
+        # ensure the data record has the same station type as this class
         if weather_station.station_type != self.station_type:
             raise ValueError(f"weather station type does not match {self.station_type}")
         
         self.weather_station = weather_station
-        self.api_config = self.APIConfigClass.model_validate_json_str(weather_station.api_config)
+        self.api_config: WeatherAPIConfig = self.APIConfigClass.model_validate_json_str(weather_station.api_config)
 
-        # store latest resp object as returned from request
-        self.current_responses = [] # None # list[APIResponse]
-        self.current_api_response_records = []
-
+        # store latest resp object as returned from request but don't need to declare them here
+        # self.current_responses = [] # type: ignore
+        # self.current_api_response_records = []  # type: ignore
 
     #### convenience/hiding methods
     @property
@@ -92,7 +98,7 @@ class WeatherAPI(ABC):
         return(self._sampling_interval)
 
     @property
-    def station_type(self):
+    def station_type(self)->STATION_TYPE:
         """interval between weather readings in minutes.   Hourly frequency is sampling_interval/60 """
         return(self._station_type)
     
@@ -133,7 +139,7 @@ class WeatherAPI(ABC):
     
 
     #### primary class interfaces
-    def get_readings(self, start_datetime : datetime = None, end_datetime : datetime = None)->list[APIResponse]:
+    def get_readings(self, start_datetime : datetime|None = None, end_datetime : datetime|None = None)->list[APIResponse]:
         """prepare start/end times and other params generically and then call station-specific method with that.
 
         args:
@@ -219,7 +225,7 @@ class WeatherAPI(ABC):
 
 
 
-    def transform(self, api_response_records:list[APIResponse] = None)->list[Reading]:
+    def transform(self, api_response_records:list[APIResponse]|None = None)->list[Reading]:
         """
         Transforms data and return it in a standardized format. 
         data: optional input used to load in data if transform of existing data dictionary is required.

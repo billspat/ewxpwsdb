@@ -26,14 +26,18 @@ class DavisAPIConfig(WeatherAPIConfig):
 
 class DavisAPI(WeatherAPI):
     """Station class for Davis type stations"""
-    APIConfigClass = DavisAPIConfig
+    APIConfigClass: type[DavisAPIConfig] = DavisAPIConfig
     _station_type = 'DAVIS'
     _sampling_interval = interval_min = 15
 
     
     def __init__(self, weather_station:WeatherStation):
-        self.apisig = None
-        super().__init__(weather_station)  
+        self.apisig  = ""
+        super().__init__(weather_station)
+        # cast api config to correct type for static type checking
+        self.api_config: DavisAPIConfig = self.api_config
+ 
+        
 
     
     def get_intervals(self, start_datetime:datetime, end_datetime:datetime):
@@ -79,21 +83,22 @@ class DavisAPI(WeatherAPI):
             start_timestamp=int(start_datetime.timestamp())
             end_timestamp=int(end_datetime.timestamp())
 
-            self._compute_signature(timestamp_integer=now_timestamp_integer, start_timestamp=start_timestamp, end_timestamp=end_timestamp)
+
+            apisig = self._compute_signature(timestamp_integer=now_timestamp_integer, start_timestamp=start_timestamp, end_timestamp=end_timestamp)
             self.current_api_request = Request('GET',
                                 url='https://api.weatherlink.com/v2/historic/' + self.api_config.sn,
                                 params={'api-key': self.api_config.apikey,
                                         't': now_timestamp_integer,
                                         'start-timestamp': start_timestamp,
                                         'end-timestamp': end_timestamp,
-                                        'api-signature': self.apisig}).prepare()
+                                        'api-signature': apisig}).prepare()
             
             response = Session().send(self.current_api_request)
             response_list.append(response)
 
         return response_list
 
-    def _compute_signature(self, timestamp_integer:int, start_timestamp:int, end_timestamp:int):
+    def _compute_signature(self, timestamp_integer:int, start_timestamp:int, end_timestamp:int) -> str:
         """
         This method computes the API signature used to call the Davis API historic endpoint.
         NOTE: datetimes should be in unix timestamp format already
@@ -105,10 +110,12 @@ class DavisAPI(WeatherAPI):
                                                                                 start_timestamp,
                                                                                 self.api_config.sn,
                                                                                 timestamp_integer)
+        
         self.apisig = hmac.new(
             self.api_config.apisec.encode('utf-8'),
             msg.encode('utf-8'),
             hashlib.sha256).hexdigest()
+        
         return self.apisig
 
     def _transform(self, response_data):

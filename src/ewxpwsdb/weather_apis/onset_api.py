@@ -5,7 +5,7 @@ methods in the parent class.
 """
 
 import json
-from requests import get, post 
+from requests import get, post, Response 
 from datetime import datetime, timezone
 
 from pydantic import Field
@@ -40,14 +40,17 @@ class OnsetAPIConfig(WeatherAPIConfig):
 class OnsetAPI(WeatherAPI):
     
     
-    APIConfigClass = OnsetAPIConfig
-    _station_type = 'ONSET'
+    APIConfigClass: type[OnsetAPIConfig] = OnsetAPIConfig
+    _station_type: STATION_TYPE = 'ONSET'
     _sampling_interval = interval_min = 5
 
     def __init__(self, weather_station:WeatherStation):    
         """ create class from config Type"""
         self._access_token = None
         super().__init__(weather_station)
+        # cast api config to correct type for static type checking
+        self.api_config: OnsetAPIConfig = self.api_config
+
 
     def _check_config(self):
         # TODO implement 
@@ -85,7 +88,7 @@ class OnsetAPI(WeatherAPI):
         self._access_token = response['access_token']
         return self._access_token    
 
-    def _get_readings(self,start_datetime:datetime,end_datetime:datetime):
+    def _get_readings(self,start_datetime:datetime,end_datetime:datetime) ->list[Response] :
         """ use Onset API to pull data from this station for times between start and end.  Called by the parent 
         class method get_readings().   
         
@@ -109,7 +112,7 @@ class OnsetAPI(WeatherAPI):
                             }
                         )
 
-        return(response)
+        return([response])
    
     def _transform(self, response_data):
         """transform of response.text to list of dict

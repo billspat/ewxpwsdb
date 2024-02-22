@@ -5,7 +5,7 @@ methods in the parent class.
 """
 
 import json
-from requests import post, Session, Request
+from requests import post, Session, Request, Response
 from datetime import datetime, timezone
 
 from . import STATION_TYPE
@@ -29,9 +29,10 @@ class LocomosAPIConfig(WeatherAPIConfig):
 class LocomosAPI(WeatherAPI):
     """Sub class for  MSU BAE LOCOMOS weather stations used for TOMCAST model"""
 
-    APIConfigClass = LocomosAPIConfig
-    _station_type = 'LOCOMOS'
+    APIConfigClass: type[LocomosAPIConfig] = LocomosAPIConfig
+    _station_type: STATION_TYPE = 'LOCOMOS'
     _sampling_interval = interval_min = 30
+    # object variable may be overridden per station if necessary #TODO create a property
 
     # LOCOMOS variable names are not the same as EWX variable/column names.  
     # when adding variables, update this list
@@ -44,14 +45,17 @@ class LocomosAPI(WeatherAPI):
     }
 
 
-    def __init__(self, weather_station:WeatherStation, lws_threshold = LOCOMOS_LWS_THRESHOLD):    
-        self.variables = {}
-        # this constant is set as an object variable so that it may be overridden per station if necessary
+    def __init__(self, weather_station:WeatherStation, lws_threshold:int = LOCOMOS_LWS_THRESHOLD):    
+
         self.lws_threshold = lws_threshold
+        self.variables: dict[str,str]|None = None
         super().__init__(weather_station)
+        
+        # re-cast api config to correct type for static type checking
+        self.api_config: LocomosAPIConfig = self.api_config
 
 
-    def _get_variables(self):
+    def _get_variables(self) -> dict[str,str]:
         """load ubidots variable list
         
         gets the list of variables and their IDS for this Ubidots device via the Ubidots API. 
@@ -76,14 +80,13 @@ class LocomosAPI(WeatherAPI):
 
             for result in var_response['results']:
                 variables[result['id']] = result['label']
-                # variables[result['label']] = result['id']
             #TODO add logging
             self.variables = variables
         
         return(self.variables)
     
         
-    def _get_readings(self, start_datetime:datetime, end_datetime:datetime):
+    def _get_readings(self, start_datetime:datetime, end_datetime:datetime)->list[Response]:
         """
         Pull "data raw series" from UBIDOTS api.  Note they use POST rather than get.  
         See Ubidots doc : https://docs.ubidots.com/v1.6/reference/data-raw-series
@@ -133,10 +136,10 @@ class LocomosAPI(WeatherAPI):
                             headers=request_headers, 
                             json=request_params)
         
-        return(response)
+        return([response])
 
 
-    def _lws_convert(self, lws_value:float)->int:
+    def _lws_convert(self, lws_value:float)->float:
         """ convert leaf wetness value to EWX standard wet/not wet.
         params lws_value : mVolt value as storedd in the API
         output : integer 0 or 1
