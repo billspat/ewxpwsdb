@@ -3,10 +3,8 @@
 from datetime import datetime
 
 from sqlalchemy import Engine
-from sqlmodel import select
-from ewxpwsdb.db.importdata import import_station_file, read_station_table
-from ewxpwsdb.db.database import Session, init_db, engine, get_engine
-from ewxpwsdb.db.models import WeatherStation, APIResponse
+from ewxpwsdb.db.database import Session, init_db, engine
+from ewxpwsdb.db.models import WeatherStation, APIResponse, Reading
 from ewxpwsdb.weather_apis import API_CLASS_TYPES
 
 
@@ -27,10 +25,16 @@ class Collector():
         self._session = Session(engine)
         self.station_id = station_id
                       
-        self.station = self._session.get(WeatherStation, station_id)
+        self.station: WeatherStation|None = self._session.get(WeatherStation, station_id)
+    
+        self.current_readings: list[Reading|None] = []
+        self.current_api_response_records: list[APIResponse|None] = []
+        if not self.station:
+            raise ValueError(f"no station found for station_id {station_id}")
         
-        self.APIClass = API_CLASS_TYPES[self.station.station_type]
-        self.weather_api = self.APIClass(self.station)
+        # self.APIClass = API_CLASS_TYPES[self.station.station_type]
+        # self.weather_api = self.APIClass(self.station)
+        self.weather_api = API_CLASS_TYPES[self.station.station_type](self.station)
 
 
     @property
@@ -63,20 +67,20 @@ class Collector():
             this object for method chaining
         """
         
-        self.current_api_response_records = self.weather_api.get_readings(start_datetime = start_datetime,  end_datetime = end_datetime)
+        self.current_api_response_records  = self.weather_api.get_readings(start_datetime = start_datetime,  end_datetime = end_datetime)
 
-        # we have _new_ batch of response(s), so clear existing current readings in anticipation of new transform
-        if self.current_api_response_records and self.current_readings:
+        if self.current_api_response_records:
+            # we have _new_ batch of response(s), so clear existing current readings in anticipation of new transform
+            # this gets filled in a separate process (transform_current...)
             self.current_readings = []
 
-        # store reponses in database
-        for response in self.current_api_response_records:
-            self._session.add(response)
-            self._session.commit() # TODO determine if this commit affects any other pending transactions?  
+            # store reponses in database
+            for response in self.current_api_response_records:
+                self._session.add(response)
+                self._session.commit() # TODO determine if this commit affects any other pending transactions?  
         
-        # TODO error handling to allow for rollback of these records
-
-        # TODO check if returning self works; this is an experiment for method chaining
+            # TODO error handling to allow for rollback of these records
+            # TODO check if returning self works; this is an experiment for method chaining
         return(self)
 
 
