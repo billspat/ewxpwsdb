@@ -57,9 +57,7 @@ class datetimeUTC(BaseModel):
 class UTCInterval(BaseModel):
     """ datetime interval that requires user to supply UTC datetimes.  
     Useful for passing start and end times into functions"""
-    
-    model_config = {'allow_reuse': True}
-    
+        
     start: datetime
     end: datetime
     
