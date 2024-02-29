@@ -1,6 +1,7 @@
 """utils for editing time stamps"""
 
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timezone, timedelta, date, UTC, time
+
 from pydantic import BaseModel, model_validator, field_validator # validator
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 from typing import Literal, Annotated
@@ -160,6 +161,38 @@ def previous_fourteen_minute_period( dtm:datetime = datetime.now(timezone.utc) )
     end_datetime = fifteen_minute_mark(dtm)
     start_datetime =  end_datetime - timedelta(minutes=14)
     return( (start_datetime, end_datetime) )
+
+
+def one_day_interval(d:date = datetime.now(UTC).date() )->UTCInterval:
+    """Create a time interval for the date in question, in UTC
+
+    Args:
+        d (date): a date object, today or day in the past, default is current UTC date
+
+    Returns:
+        UTCInterval: interval for the date, starting 00:00 to  21:59 unless the date is today, when it ends at the more recent 15 minute mark 
+    """
+
+    if not isinstance(d,date):
+        raise ValueError("value sent was not a date object")
+    
+    todays_date:date = datetime.now(UTC).date()
+    
+    if d > todays_date:
+        raise ValueError("date sent was in the future and this is for historic dates")
+    
+    # start the day as minimum time for date d
+    beginning_of_day = datetime.combine(date=d, time=time(hour=0, minute=0, second=0)).replace(tzinfo=UTC)
+    
+    # end date different depending on today or some yesterday
+    if d == todays_date:
+        end_of_day =  fifteen_minute_mark()
+    else:
+        end_of_day =  datetime.combine(date=d, time=time(hour=23, minute=59, second=0)).replace(tzinfo=UTC) # datetime.combine(d, datetime.max.time())
+    
+    return UTCInterval(start = beginning_of_day , end = end_of_day )
+
+
 
 
 # def previous_interval(dtm:datetime=datetime.now(timezone.utc), delta_mins:int=15)->UTCInterval:

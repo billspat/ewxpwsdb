@@ -3,11 +3,11 @@
 import pytest
 from pydantic import ValidationError
 
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta, timezone, UTC
 from zoneinfo import ZoneInfo
 
 from ewxpwsdb.time_intervals import fifteen_minute_mark, previous_fifteen_minute_period, \
-    previous_fourteen_minute_period, is_utc, UTCInterval, datetimeUTC
+    previous_fourteen_minute_period, is_utc, UTCInterval, datetimeUTC, one_day_interval
 
 
 @pytest.fixture
@@ -121,6 +121,49 @@ def test_utc_datetimes():
     with pytest.raises(ValidationError):
         naive = datetimeUTC(value=datetime(2022,10,10,15,25,0))
 
+def test_todays_one_day_interval():
+    # i is for interval
+    # check if it work for today
+    today_utc = datetime.now(UTC).date()
+    i = one_day_interval()
+    print(i)
+    s = i.start
+    e = i.end
+    assert is_utc(s)
+    assert is_utc(e)
+    assert s < e
+    # check that dates are the same (does not cross day boundary)
+    assert s.date() == e.date()
+    # for this test with no param, should be today (UTC today)
+    assert today_utc == s.date()
+    assert today_utc == e.date()
+
+
+def test_yesterday_one_day_interval():
+    today_utc = datetime.now(UTC).date()
+    some_yesterday = (today_utc - timedelta(hours=36))
+    print(some_yesterday)
+    # check my math for things created for the test
+    assert some_yesterday < today_utc
+    
+    i_past = one_day_interval(some_yesterday)
+    print(i_past)
+    s = i_past.start
+    e = i_past.end
+    assert is_utc(s)
+    assert is_utc(e)
+    assert s < e
+    # check that dates are the same (does not cross day boundary)
+    assert s.date() == e.date()
+    
+    # check that the dates are close to 24 hrs apart
+    assert (e - s).total_seconds() == 86340 # seconds
+    # this is a totally redundant test but good to remember how to get that number
+    assert (e-s).total_seconds()  == timedelta(hours=23,minutes=59).seconds
+
+
+
+    
 # def test_datetimeutc():
 #     assert just_past_two.tzinfo is None
 #     with pytest.raises(ValidationError):
