@@ -130,7 +130,7 @@ class WeatherAPI(ABC):
         pass
 
     @abstractmethod
-    def _data_present_in_response(self, api_response:APIResponse)->bool:
+    def _data_present_in_response(self, response_data:dict)->bool:
         return True
 
 
@@ -241,7 +241,20 @@ class WeatherAPI(ABC):
             bool: True if there is sensor data into the response, False if not. 
 
         """
-        return self._data_present_in_response(api_response)
+        # if we don't get a 200, there is an error of some kind for all station types
+        if api_response.response_status_code != 200:
+            return False
+        
+        response_text:str = api_response.response_text
+
+        # check if JSON
+        if isinstance(response_text,str):
+            try:
+                response_data:dict = json.loads(response_text)
+            except Exception as e:
+                return False
+        
+        return self._data_present_in_response(response_data)
 
 
     def transform(self, api_response_records:list[APIResponse]|None = None)->list[Reading]:
