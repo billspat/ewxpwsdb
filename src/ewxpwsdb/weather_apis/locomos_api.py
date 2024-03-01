@@ -138,6 +138,28 @@ class LocomosAPI(WeatherAPI):
         
         return([response])
 
+    def _data_present_in_response(self, response_data:dict)->bool:
+        """check for presence of data in response
+
+        Args:
+            response_data (dict): data loaded from response JSON
+
+        Returns:
+            bool: True if data is present in any of the records in the response, else False
+        """        
+
+        if not('results' in response_data and 'columns' in response_data):
+            return False
+        
+        # conversion is complicated, so just convert it and then check if there is data
+        readings = self._transform(response_data)
+        
+        for reading in readings: 
+            if reading:
+                return True
+
+        return False
+    
 
     def _lws_convert(self, lws_value:float)->float:
         """ convert leaf wetness value to EWX standard wet/not wet.
@@ -148,7 +170,7 @@ class LocomosAPI(WeatherAPI):
         return 1.0 if lws_value > self.lws_threshold else 0.0
 
 
-    def _transform(self, response_data):
+    def _transform(self, response_data)->list:
         """ station specific transform
         params response_data: the value of 'text' from the response object e.g. JSON
         
@@ -175,7 +197,7 @@ class LocomosAPI(WeatherAPI):
         results = response_data['results']
         columns = response_data['columns']
 
-        # maybe switch how we create this
+        # TODO: maybe switch how we create this
         # make a mapping of the Variable ID code (in the data/column names) with the EWX variables we
         # var_by_id = dict([(var_id,var_name) for var_name,var_id in self._get_variables().items() ] )
 
@@ -225,8 +247,6 @@ class LocomosAPI(WeatherAPI):
                 
                 # end result _should_ be readings[per_timestamp] = {'temp':999, 'rh':999, 'lws1':999}
 
-
-        # readings expected to be a list, not a dict as we've used here to accumulate sensors
         return(list(readings.values()))    
 
 
