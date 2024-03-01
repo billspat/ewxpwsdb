@@ -99,6 +99,28 @@ class ZentraAPI(WeatherAPI):
         
         return([response])
 
+
+    def _data_present_in_response(self, response_data:dict)->bool:
+        """check for presence of data in response
+
+        Args:
+            response_data (dict): data loaded from response JSON
+
+        Returns:
+            bool: True if data is present in any of the records in the response, else False
+        """
+        if 'data' not in response_data.keys():
+            return False
+        
+        for sensor in response_data['data']: # response_data['data'].keys()
+            if sensor in self._sensor_transforms:
+                for zentra_reading in response_data['data'][sensor][0]['readings']:
+                    if zentra_reading.get('value'):
+                        return True
+
+        return False
+
+
     def _transform(self, response_data)->list:
         """
         Transforms response text from Zentra API into a standardized format 
