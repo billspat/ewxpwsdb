@@ -23,7 +23,7 @@ from ewxpwsdb.time_intervals import is_tz_aware, UTCInterval, is_utc
 from ewxpwsdb.db.models import WeatherStation, Reading, APIResponse
 from . import STATION_TYPE 
 
-# TODO can we use ABC here?
+#################################################################################
 class WeatherAPIConfig(BaseModel):
     """Base API configuration model to validate configuration values for connecting to various vendor APIs.  
     API configs are stored in the Stations table using a single string field that is intended for JSONified dictionary of config values 
@@ -129,6 +129,11 @@ class WeatherAPI(ABC):
         """
         pass
 
+    @abstractmethod
+    def _data_present_in_response(self, api_response:APIResponse)->bool:
+        return True
+
+
     def _format_time(self, dt:datetime)->str:
         """
         format date/time parameters for specific API request, convert to 
@@ -138,7 +143,7 @@ class WeatherAPI(ABC):
         return(dt.strftime('%Y-%m-%d %H:%M:%S'))
     
 
-    #### primary class interfaces
+    #### primary class interface
     def get_readings(self, start_datetime : datetime|None = None, end_datetime : datetime|None = None)->list[APIResponse]:
         """prepare start/end times and other params generically and then call station-specific method with that.
 
@@ -223,6 +228,20 @@ class WeatherAPI(ABC):
     
         return(api_response_record)
 
+
+    def data_present_in_response(self, api_response:APIResponse)-> bool:
+        """test if the response from the api contains sensor data.  Data is not validated, it just needs to be present. 
+        Given diversity of response forms, and some may even return status code 200 'OK' but there may not be data available.  
+        This calls a private method to be overridden by each station type similar to _transform methods
+
+        Args:
+            api_response (APIResponse): a single response record to check.  Note that since get_reading returns a list of APIResponse, use a map to examine those
+
+        Returns:
+            bool: True if there is sensor data into the response, False if not. 
+
+        """
+        return self._data_present_in_response(api_response)
 
 
     def transform(self, api_response_records:list[APIResponse]|None = None)->list[Reading]:

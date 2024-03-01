@@ -4,12 +4,15 @@ import pytest, json
 import logging
 from datetime import datetime
 
+import pytest, json
+from datetime import datetime, timedelta
+from ewxpwsdb.time_intervals import tomorrow_utc, previous_fourteen_minute_period
 
 from sqlmodel import Session, select
 
-from ewxpwsdb.time_intervals import is_utc
 from ewxpwsdb.db.models import WeatherStation, Reading
 from ewxpwsdb.weather_apis import API_CLASS_TYPES
+from ewxpwsdb.weather_apis.weather_api import WeatherAPI
 
 @pytest.fixture()
 def station(station_type, db_with_data):
@@ -18,6 +21,7 @@ def station(station_type, db_with_data):
         results = session.exec(statement)
         weather_station = results.first()
         yield weather_station
+
 
 
 def test_creating_wapi(station):
@@ -29,6 +33,7 @@ def test_creating_wapi(station):
     # check that configuration class is instantiated with same data in database
     api_config = wapi.APIConfigClass.model_validate_json_str(wapi.weather_station.api_config)
     assert api_config == wapi.api_config
+
 
 
 def test_get_responses_and_transform(station_type, db_with_data):
@@ -53,6 +58,7 @@ def test_get_responses_and_transform(station_type, db_with_data):
     session = Session(db_with_data)
 
     for response in api_response_records:
+        assert wapi.data_present_in_response(response)
         session.add(response)
         session.commit()
 
@@ -95,7 +101,7 @@ def test_get_responses_and_transform(station_type, db_with_data):
     
     # check all the readings
     for reading in readings:
-        # does it have an id now?
+        # does it have an id => proxy for that is was saved in the db
         assert reading.id  is not None
         # TODO not all stations will have all sensors, so may need to tailor this list depending on station type
         assert isinstance(reading.atemp, float)
@@ -119,3 +125,27 @@ def test_get_responses_and_transform(station_type, db_with_data):
         # leaf wetness is only on some stations, but we don't have a way to tell which sensors are present yet
         # assert isinstance(reading.lws0 , float)
     session.close()
+
+
+def test_response_errors(station):
+    """ tests when getting api response we know is erroneous (future or distant past), checks for good data fail"""
+    
+    WAPIClass = API_CLASS_TYPES[station.station_type]
+    wapi = WAPIClass(station)
+    
+
+    # attempt to get data in the future and test that we detect no data
+    (s,e) = previous_fourteen_minute_period()
+    future_end_datetime = e + timedelta(days=1)
+    future_start_datetime = s + timedelta(days=1)
+
+    responses_of_future = wapi.get_readings(start_datetime=future_start_datetime, end_datetime=future_end_datetime)
+    assert wapi.data_present_in_response(responses_of_future[0]) == False
+
+    (s,e) = previous_fourteen_minute_period()
+    distant_past_start_datetime = s - timedelta(days = 3650)
+    distant_past_end_datetime = e - timedelta(days = 3650)
+    
+    responses_of_distant_past = wapi.get_readings(start_datetime=distant_past_start_datetime, end_datetime=distant_past_end_datetime)
+    assert wapi.data_present_in_response(responses_of_distant_past[0]) == False
+    # repeat for data in the distant past

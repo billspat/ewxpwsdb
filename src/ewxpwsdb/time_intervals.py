@@ -193,6 +193,9 @@ def one_day_interval(d:date = datetime.now(UTC).date() )->UTCInterval:
     return UTCInterval(start = beginning_of_day , end = end_of_day )
 
 
+def tomorrow_utc()->datetime:
+    """convenience method used primarily for testing"""
+    return datetime.now(UTC)+ timedelta(days=1)
 
 
 # def previous_interval(dtm:datetime=datetime.now(timezone.utc), delta_mins:int=15)->UTCInterval:
