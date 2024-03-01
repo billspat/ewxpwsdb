@@ -50,7 +50,17 @@ def test_get_responses_and_transform(station_type, db_with_data):
     wapi = API_CLASS_TYPES[station.station_type](station)
     # make api request
     # TODO also test that the internally stored wapi.current_api_response_records also works for this
-    api_response_records = wapi.get_readings()
+
+    if station_type == 'RAINWISE':
+        # rainwise goes down, so get 
+        from ewxpwsdb.time_intervals import previous_fourteen_minute_period
+        from datetime import UTC
+        datetime_rainwise_was_working = datetime(year=2024, month=2, day=19, hour=12, minute=0, second=0, tzinfo=UTC)
+        s,e = previous_fourteen_minute_period(datetime_rainwise_was_working)
+        api_response_records = wapi.get_readings(s,e)
+    else:    
+        api_response_records = wapi.get_readings()
+
     # check that there is some weather data, and 200 status
     assert isinstance(api_response_records[0].response_text, str)
 
