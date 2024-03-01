@@ -109,6 +109,7 @@ class ZentraAPI(WeatherAPI):
         Returns:
             bool: True if data is present in any of the records in the response, else False
         """
+        
         if 'data' not in response_data.keys():
             return False
         

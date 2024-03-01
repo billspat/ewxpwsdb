@@ -68,7 +68,15 @@ class RainwiseAPI(WeatherAPI):
 
 
     def _data_present_in_response(self, response_data:dict)->bool:
-        """ check that there are sensor readings in the data. """   
+        """check for presence of data in response
+
+        Args:
+            response_data (dict): data loaded from response JSON
+
+        Returns:
+            bool: True if data is present in any of the records in the response, else False
+        """  
+
         if 'station_id' not in response_data.keys():
             return False
      

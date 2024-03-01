@@ -69,8 +69,15 @@ class SpectrumAPI(WeatherAPI):
 
 
     def _data_present_in_response(self, response_data:dict)->bool:
-        """validate presence of data in the response"""        
+        """check for presence of data in response
 
+        Args:
+            response_data (dict): data loaded from response JSON
+
+        Returns:
+            bool: True if data is present in any of the records in the response, else False
+        """
+        
         if 'EquipmentRecords' not in response_data.keys():
             return False
                 
