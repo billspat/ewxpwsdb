@@ -8,7 +8,12 @@ import pytest
 from sqlmodel import select, Session
 
 from ewxpwsdb.db.database import Session
-from ewxpwsdb.db.models import WeatherStation, APIResponse
+from ewxpwsdb.db.models import WeatherStation, APIResponse, Reading
+from ewxpwsdb.collector import Collector
+# from ewxpwsdb.db.models import WeatherStationStation
+from ewxpwsdb.weather_apis.weather_api import WeatherAPI
+from ewxpwsdb.time_intervals import previous_fourteen_minute_interval
+
 
 #TODO start with a literal list of types, but copy the technique from ewx_pws package to loop through all types
 @pytest.fixture()
@@ -20,15 +25,11 @@ def station(station_type, db_with_data):
     return(weather_station)
 
 
-from ewxpwsdb.collector import Collector
-# from ewxpwsdb.db.models import WeatherStationStation
-from ewxpwsdb.weather_apis.weather_api import WeatherAPI
-
 def test_collector_class(station, db_with_data):
     # we are using a station instead of just an id so we can test the Collector class can get a station
 
     station_id = station.id
-    collector = Collector(station_id=station_id, engine=db_with_data)
+    collector = Collector.from_station_id(station_id=station_id, engine=db_with_data)
     
     # can we instantiate the class?
     assert isinstance(collector, Collector)
@@ -36,41 +37,53 @@ def test_collector_class(station, db_with_data):
     assert collector.station.station_code == station.station_code
 
     assert isinstance(collector.weather_api, WeatherAPI)    
-    assert collector.current_api_response_records == []
-    assert collector.current_readings == []
+    assert collector.current_api_response_record_ids == []
+    assert collector.current_reading_ids == []
     assert isinstance(collector.id, int)
     collector.close()
 
 
 def test_collect_request(station,db_with_data):
     
-    collector = Collector(station_id=station.id, engine=db_with_data)
+    collector = Collector.from_station_id(station_id=station.id, engine=db_with_data)
 
+    # temporary adjustment for this down station, use 
+    if station.station_type == 'RAINWISE':
+        # rainwise goes down, so set the period for when the station was up and there is data
+        from datetime import datetime, UTC
+        datetime_rainwise_was_working = datetime(year=2024, month=2, day=19, hour=12, minute=0, second=0, tzinfo=UTC)
+        interval = previous_fourteen_minute_interval(datetime_rainwise_was_working)
+    else:
+        interval = previous_fourteen_minute_interval()
+    
+    s,e = (interval.start, interval.end)
+        
     try:
-        collector.request_current_weather_data()
+        collector.request_and_store_weather_data(start_datetime = s, end_datetime = e)
     except Exception as e:
         pytest.fail(f"raised exception on request: {e}")
 
-    assert collector.current_api_response_records[0].id is not None
+    assert isinstance(collector.current_api_response_record_ids, list)
+    assert collector.current_api_response_record_ids[0] is not None
 
-    saved_id = collector.current_api_response_records[0].id
+    example_response_id = collector.current_api_response_record_ids[0]
 
-    assert isinstance(saved_id, int)
-
-    with Session(db_with_data) as session:
-        response_from_db = session.get(APIResponse, saved_id)
-        assert response_from_db.id == saved_id
+    assert isinstance(example_response_id, int)
+    engine = db_with_data
+    with Session(engine) as session:
+        response_from_db = session.get(APIResponse, example_response_id)
+        assert response_from_db.id == example_response_id
         assert isinstance(response_from_db, APIResponse)
 
-
-    collector.transform_current_weather_data()
-    assert isinstance(collector.current_readings, list)
-    assert len(collector.current_readings) > 0 
-
+    assert isinstance(collector.current_reading_ids, list)
+    assert len(collector.current_reading_ids) > 0 
+    assert isinstance(collector.current_reading_ids[0], int)
+    example_reading_id = collector.current_reading_ids[0]
+    
+    with Session(engine) as session:    
+        reading_from_db = session.get(Reading, example_reading_id)
+        assert reading_from_db.id == example_reading_id
+        assert isinstance(reading_from_db, Reading)
 
     collector.close()
-
-
-
-
 
