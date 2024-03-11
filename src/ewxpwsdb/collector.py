@@ -61,10 +61,23 @@ class Collector():
         return self.station.station_code
     
     @property
-    def current_readings(self):
+    def current_responses(self)->list|list[APIResponse]:
+        """get database records of responses from this session for the ids store from previous API request, if any"""
+        responses = []
+        for response_id in self.current_api_response_record_ids:
+
+            responses.append(self._session.get(APIResponse, response_id)) 
+        
+        return(responses)
+
+    @property
+    def current_readings(self)->list|list[Reading]:
+        """get database records of readings from this session for the ids store from previous API request, if any"""
         readings = []
         for reading_id in self.current_reading_ids:
-            readings.append(self._session(Reading).get(reading_id)) 
+            readings.append(self._session.get(Reading, reading_id)) 
+
+        return(readings)
 
     #########################
     # primary methods
