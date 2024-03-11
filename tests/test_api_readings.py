@@ -6,7 +6,7 @@ from datetime import datetime
 
 import pytest, json
 from datetime import datetime, timedelta
-from ewxpwsdb.time_intervals import tomorrow_utc, previous_fourteen_minute_period
+from ewxpwsdb.time_intervals import tomorrow_utc, previous_fourteen_minute_period, previous_fourteen_minute_interval
 
 from sqlmodel import Session, select
 
@@ -58,8 +58,9 @@ def test_get_responses_and_transform(station_type, db_with_data):
         datetime_rainwise_was_working = datetime(year=2024, month=2, day=19, hour=12, minute=0, second=0, tzinfo=UTC)
         s,e = previous_fourteen_minute_period(datetime_rainwise_was_working)
         api_response_records = wapi.get_readings(s,e)
-    else:    
-        api_response_records = wapi.get_readings()
+    else:
+        interval = previous_fourteen_minute_interval()
+        api_response_records = wapi.get_readings(interval.start, interval.end)
 
     # check that there is some weather data, and 200 status
     assert isinstance(api_response_records[0].response_text, str)
@@ -76,6 +77,16 @@ def test_get_responses_and_transform(station_type, db_with_data):
         assert response.id is not None
         assert isinstance(response.id, int)
         assert response.weatherstation_id == station.id
+    
+        # low level tests that are present in the function data_present_in_response
+        assert response.response_status_code == '200'
+        assert isinstance(response.response_text,str)
+        response_data = json.loads(response.response_text)
+        assert isinstance(response_data, dict)
+        assert wapi._data_present_in_response(response_data)
+
+        # this is a re-test of the above statements but ensures this function works
+        assert wapi.data_present_in_response(response)
 
 
     # check the first response record to see if it has what we need
@@ -134,6 +145,8 @@ def test_get_responses_and_transform(station_type, db_with_data):
         assert isinstance(reading.relh , float)
         # leaf wetness is only on some stations, but we don't have a way to tell which sensors are present yet
         # assert isinstance(reading.lws0 , float)
+
+
     session.close()
 
 
@@ -158,4 +171,4 @@ def test_response_errors(station):
     
     responses_of_distant_past = wapi.get_readings(start_datetime=distant_past_start_datetime, end_datetime=distant_past_end_datetime)
     assert wapi.data_present_in_response(responses_of_distant_past[0]) == False
-    # repeat for data in the distant past
+    
