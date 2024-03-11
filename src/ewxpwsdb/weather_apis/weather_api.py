@@ -170,8 +170,8 @@ class WeatherAPI(ABC):
         ###### call the sub-class to pull data from the station vendor API
         # save the response object in this object
         try:
-            # get the request timestamp right away, save in object only if request was successful
-            request_datetime = datetime.utcnow().astimezone(timezone.utc)
+            # get the request timestamp right away, save in object only if request was successful, in UTC
+            request_datetime = datetime.now(timezone.utc)
             responses = self._get_readings(
                     start_datetime = interval.start,
                     end_datetime = interval.end
