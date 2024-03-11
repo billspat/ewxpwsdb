@@ -80,10 +80,37 @@ def test_collect_request(station,db_with_data):
     assert isinstance(collector.current_reading_ids[0], int)
     example_reading_id = collector.current_reading_ids[0]
     
+    
     with Session(engine) as session:    
         reading_from_db = session.get(Reading, example_reading_id)
         assert reading_from_db.id == example_reading_id
         assert isinstance(reading_from_db, Reading)
+
+
+    responses = collector.current_responses
+    assert isinstance(responses, list)
+    response = responses[0]
+    assert isinstance(response, APIResponse)
+    assert isinstance(response.id, int)
+    print(response.request_datetime)
+    
+    import datetime
+    assert isinstance(response.request_datetime, datetime.datetime)
+    assert response.request_datetime.date() == datetime.datetime.now(datetime.timezone.utc).date()
+
+
+    readings = collector.current_readings
+    assert isinstance(readings, list)
+    # this assumes there is actually data here
+    assert isinstance(readings[0], Reading)
+    reading = readings[0]
+    assert isinstance(reading.atemp, float)
+
+    #this depends on the ordering of the requests/responses and may or may not be true
+    # change to look for this manually created id in the request_id's for all responses
+    assert reading.request_id == response.request_id
+    # check database foreign key in reading is in one of the current response ids
+    assert reading.apiresponse_id in collector.current_api_response_record_ids
 
     collector.close()
 
