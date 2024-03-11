@@ -192,7 +192,9 @@ class WeatherAPI(ABC):
 
         self.current_api_response_records = [self._add_response_metadata(r, interval.start, interval.end, request_datetime) for r in responses]
 
-
+        print("DEBUG CURRENT RESPONSES IN API CLASS")
+        print(self.current_api_response_records)
+        print("---------")
         return(self.current_api_response_records)
 
 
@@ -242,7 +244,8 @@ class WeatherAPI(ABC):
 
         """
         # if we don't get a 200, there is an error of some kind for all station types
-        if api_response.response_status_code != 200:
+        # assume this is a string but in case it's an int, convert to str to be safe
+        if str(api_response.response_status_code) != '200':
             return False
         
         response_text:str = api_response.response_text
