@@ -87,7 +87,7 @@ class UTCInterval(BaseModel):
         return( cls(start = s, end = e))
     
     @classmethod
-    def previous_interval(cls, dtm = datetime.now(timezone.utc), delta_mins:int=15):
+    def previous_interval(cls, dtm = datetime.now(timezone.utc), delta_mins:int=14):
         """ returns  that is on the quarter hour and inclusive. 
         input datetime object with timezone , e.g. 03:10:15+00
         output: tuple of two datetime objects, e.g (02:45:00, 03:00:00)
@@ -163,7 +163,8 @@ def previous_fourteen_minute_period( dtm:datetime = datetime.now(timezone.utc) )
     return( (start_datetime, end_datetime) )
 
 
-def one_day_interval(d:date = datetime.now(UTC).date() )->UTCInterval:
+
+def one_day_interval(d:date = datetime.now(timezone.utc).date() )->UTCInterval:
     """Create a time interval for the date in question, in UTC
 
     Args:
@@ -197,32 +198,6 @@ def tomorrow_utc()->datetime:
     """convenience method used primarily for testing"""
     return datetime.now(UTC)+ timedelta(days=1)
 
-
-# def previous_interval(dtm:datetime=datetime.now(timezone.utc), delta_mins:int=15)->UTCInterval:
-#     """ returns  that is on the quarter hour and inclusive. 
-#     input datetime object with timezone , e.g. 03:10:15+00
-#     output: tuple of two datetime objects, e.g (02:45:00, 03:00:00)
-    
-#     if called successively every 15 minutes, times will overlap , e.g. 
-#     (02:45:00, 03:00:00), (03:00:00, 3:15:00),(3:15:00, 03:30:00), etc
-
-#     set arbitrary delta (15 minutes, 14 minutes, 30 minutes, etc)
-    
-#     """
-#     # starter time - 
-#     dtm_utc = dtm
-
-#     # quarter hour prior to starter (11:55 ->  11:45, etc)
-#     end_datetime_utc = fifteen_minute_mark(dtm_utc.datetime)
-#     # time previous to that for delta
-#     start_datetime_utc = end_datetime_utc - timedelta(minutes=delta_mins)
-    
-#     try:
-#         dti = UTCInterval(start = start_datetime_utc, end = end_datetime_utc )
-#     except ValueError as e:
-#         raise(ValueError)
-        
-#     return(dti)
 
 def previous_fourteen_minute_interval(dtm:datetime=datetime.now(timezone.utc))->UTCInterval:
     """ convenience method for using previous interval above for 14 intervals, 

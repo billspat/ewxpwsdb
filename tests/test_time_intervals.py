@@ -7,7 +7,7 @@ from datetime import datetime, timedelta, timezone, UTC
 from zoneinfo import ZoneInfo
 
 from ewxpwsdb.time_intervals import fifteen_minute_mark, previous_fifteen_minute_period, \
-    previous_fourteen_minute_period, is_utc, UTCInterval, datetimeUTC, one_day_interval
+    previous_fourteen_minute_period, is_utc, UTCInterval, datetimeUTC, one_day_interval, previous_fourteen_minute_interval
 
 
 @pytest.fixture
@@ -160,6 +160,20 @@ def test_yesterday_one_day_interval():
     assert (e - s).total_seconds() == 86340 # seconds
     # this is a totally redundant test but good to remember how to get that number
     assert (e-s).total_seconds()  == timedelta(hours=23,minutes=59).seconds
+
+
+
+def test_previous_fourteen_minute_interval():
+    nowish_interval = previous_fourteen_minute_interval()
+    assert is_utc(nowish_interval.start)
+    assert is_utc(nowish_interval.end)
+
+    today_utc = datetime.now(timezone.utc).date()
+    assert today_utc == nowish_interval.start.date()
+    assert (datetime.now(timezone.utc) - nowish_interval.end) < timedelta(minutes = 15)
+
+
+
 
 
 
