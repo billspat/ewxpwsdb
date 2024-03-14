@@ -1,6 +1,6 @@
 """weather data collection class"""
 
-from sqlmodel import SQLModel
+from sqlmodel import SQLModel, select
 from datetime import datetime, timedelta
 
 from sqlalchemy import Engine
@@ -200,17 +200,14 @@ class Collector():
         Returns:
             Reading """
 
-        stmt = self._session(Reading).select(station_id=self.station_id).limit(n)
+        stmt = select(Reading).where(Reading.weatherstation_id == self.station.id).limit(n)
         result = self._session.exec(stmt)
 
         return(result.fetchall())
         
     
-    # WIP 
 
-    
-
-    def get_historic_data(self, overwrite=False):
+    def get_historic_data(self, overwrite=False, days_limit=365):
         """pull all previous data for this old station starting from right now
         If there is any data already in the db, this will this will not overwrite 
         """
@@ -218,23 +215,25 @@ class Collector():
         if self.retrieve_recent_readings(n = 1):
             # already some stuff in the db, probably should use catch up instead
             if not overwrite:
-                print(f"data for station {self.station.id} already present, cancelling get historic data procedure")
-                return None            
+                raise RuntimeError(f"data for station {self.station.id} already present, cancelling get historic data procedure")
+
                 
 
         from datetime import timezone    
 
         # get and save readings for today
         
-        date_to_fetch = datetime.now(timezone.utc).date()
-        api_data = self.request_and_store_weather_data_utc(one_day_interval(date_to_fetch))
+        today = datetime.now(timezone.utc).date()
+        # get today's data
+        api_data = self.request_and_store_weather_data_utc(one_day_interval(today))
         
-        day_offset = 0
-        while api_data:
-            date_to_fetch = date_to_fetch - timedelta(days = 1)
-
-            # get and save readings
+        # get all the remaining tomorrows data, up to the imposed limit (1 yr default)
+        day_offset = 1
+        while api_data and day_offset <= days_limit:            
+            date_to_fetch = today - timedelta(days = day_offset)
+            print(f"fetching data for {self.station.station_code} for {day_offset} days ago")
             api_data = self.request_and_store_weather_data_utc(one_day_interval(date_to_fetch))
+            day_offset += 1
 
 
     def catch_up(self):
