@@ -192,9 +192,9 @@ class WeatherAPI(ABC):
 
         self.current_api_response_records = [self._add_response_metadata(r, interval.start, interval.end, request_datetime) for r in responses]
 
-        print("DEBUG CURRENT RESPONSES IN API CLASS")
-        print(self.current_api_response_records)
-        print("---------")
+        # print("DEBUG CURRENT RESPONSES IN API CLASS")
+        # print(self.current_api_response_records)
+        # print("---------")
         return(self.current_api_response_records)
 
 
