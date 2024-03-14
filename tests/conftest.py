@@ -21,11 +21,16 @@ def pytest_addoption(parser):
     parser.addoption('--no-import',
                      action='store_true',
                      help='use this to skip importing data (assumes test db already has data)')
-    
+
+    parser.addoption('--echo',
+                     action='store_true',
+                     help='enable SQL echo-ing')
+
     parser.addoption('--station_type',
                 action='store',
                 default = 'SPECTRUM',
                 help='station type in all caps')
+    
 
 
 def rm_sqlite_file(db_url):
@@ -61,8 +66,9 @@ def station_file():
 def test_db_url(request: pytest.FixtureRequest)->str:
     return request.config.getoption("--dburl")
 
+# this is a generator function so does not have a return type
 @pytest.fixture(scope = 'module')
-def db_engine(test_db_url: str):
+def db_engine(request: pytest.FixtureRequest, test_db_url: str):
     
     # remove existing file if it's here
     rm_sqlite_file(test_db_url)
@@ -73,7 +79,12 @@ def db_engine(test_db_url: str):
     # need to create new test-only db, 
     # would like to use a database.py module method rather than sqlmodel code here explicitly 
     
-    engine = create_engine(url = test_db_url, echo=True)
+    if request.config.getoption("--echo"):
+        echo_option = True
+    else:
+        echo_option = False
+
+    engine = create_engine(url = test_db_url, echo=echo_option)
     
     # create the test database
     init_db(engine)
