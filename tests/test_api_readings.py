@@ -1,6 +1,7 @@
 """ test of getting data via API, transform to readings and saving to the database"""
 
 import pytest, json
+import logging
 from datetime import datetime
 
 
@@ -17,7 +18,6 @@ def station(station_type, db_with_data):
         results = session.exec(statement)
         weather_station = results.first()
         yield weather_station
-    session.close()
 
 
 def test_creating_wapi(station):

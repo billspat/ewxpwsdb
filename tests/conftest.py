@@ -1,8 +1,10 @@
 import pytest, os
+import logging
 from sqlmodel import Session
 from sqlalchemy import Engine
 from ewxpwsdb.db.importdata import import_station_file, read_station_table
 from ewxpwsdb.db.database import init_db, create_engine
+
 
 def pytest_addoption(parser):
 

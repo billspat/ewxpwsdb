@@ -7,6 +7,7 @@ import os, warnings, logging, json, csv
 import typing
 from sqlmodel import Session
 from ewxpwsdb.db.models import WeatherStation
+from sqlalchemy.exc import IntegrityError
 
 # 
 def read_station_table(tsv_file_path:str)->list[dict[str, typing.Any]] | None:
@@ -60,13 +61,17 @@ def import_station_records(weatherstation_data:list, engine):
         for s in weatherstation_data:
             station_record = WeatherStation.model_validate(s)
             #can put try-except here for IntegrityError
-            session.add(station_record)
+            try:
+                session.add(station_record)
+                session.commit()
+            except IntegrityError:
+                session.rollback()  
+                print(f"Station with type '{s['station_type']}' already exists in the database")
 
         # actually insert data, will fail if there are duplicate records
-        session.commit()
         session.close()
         return True
-
+    
 
 def import_station_types(engine):
     """Insert the station types from API modules, for populating a new DB. 
@@ -79,12 +84,18 @@ def import_station_types(engine):
     from ewxpwsdb.weather_apis import STATION_TYPE_LIST
 
     station_type_objects = [StationType(station_type=station_type ) for station_type in STATION_TYPE_LIST]
-    
     with Session(engine) as session:
         #crash here
-        session.bulk_save_objects(station_type_objects)
-        session.commit()
-        session.close()
+        for station in station_type_objects:
+            try:
+                session.add(station)
+                session.commit()  
+                print(f"Station with type '{station.station_type}' merged into the database")
+            except IntegrityError:
+                session.rollback()  
+                print(f"Station with type '{station.station_type}' already exists in the database")
+    
+    session.close()
 
 
 def import_station_file(tsv_file:str, engine):
@@ -101,10 +112,3 @@ def import_station_file(tsv_file:str, engine):
     else:
         # no stations to import
         return False
-    
-
-    
-        
-
-
-        
