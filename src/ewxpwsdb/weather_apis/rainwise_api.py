@@ -9,10 +9,10 @@ methods in the parent class.
 import json
 from requests import get, Response
 from datetime import datetime
-  
+
 from . import STATION_TYPE
 from ewxpwsdb.weather_apis.weather_api import WeatherAPIConfig, WeatherAPI
-from ewxpwsdb.db.models import WeatherStation
+from ewxpwsdb.db.models import WeatherStation, APIResponse
 
 
 class RainwiseAPIConfig(WeatherAPIConfig):
@@ -67,6 +67,26 @@ class RainwiseAPI(WeatherAPI):
         return [response]
 
 
+    def _data_present_in_response(self, response_data:dict)->bool:
+        """check for presence of data in response
+
+        Args:
+            response_data (dict): data loaded from response JSON
+
+        Returns:
+            bool: True if data is present in any of the records in the response, else False
+        """  
+
+        if 'station_id' not in response_data.keys():
+            return False
+     
+        for key in response_data['times']:
+            # if we see any non-empty data at all here, return true
+            if response_data['temp'][key] or response_data['precip'][key] or response_data['hum'][key]:
+                return True
+            
+        return False
+    
     def _transform(self, response_data):
         """
         Transforms data into a standardized format and returns it as a WeatherStationReadings object.

@@ -23,7 +23,7 @@ from ewxpwsdb.time_intervals import is_tz_aware, UTCInterval, is_utc
 from ewxpwsdb.db.models import WeatherStation, Reading, APIResponse
 from . import STATION_TYPE 
 
-# TODO can we use ABC here?
+#################################################################################
 class WeatherAPIConfig(BaseModel):
     """Base API configuration model to validate configuration values for connecting to various vendor APIs.  
     API configs are stored in the Stations table using a single string field that is intended for JSONified dictionary of config values 
@@ -129,6 +129,11 @@ class WeatherAPI(ABC):
         """
         pass
 
+    @abstractmethod
+    def _data_present_in_response(self, response_data:dict)->bool:
+        return True
+
+
     def _format_time(self, dt:datetime)->str:
         """
         format date/time parameters for specific API request, convert to 
@@ -138,7 +143,7 @@ class WeatherAPI(ABC):
         return(dt.strftime('%Y-%m-%d %H:%M:%S'))
     
 
-    #### primary class interfaces
+    #### primary class interface
     def get_readings(self, start_datetime : datetime|None = None, end_datetime : datetime|None = None)->list[APIResponse]:
         """prepare start/end times and other params generically and then call station-specific method with that.
 
@@ -165,8 +170,8 @@ class WeatherAPI(ABC):
         ###### call the sub-class to pull data from the station vendor API
         # save the response object in this object
         try:
-            # get the request timestamp right away, save in object only if request was successful
-            request_datetime = datetime.utcnow().astimezone(timezone.utc)
+            # get the request timestamp right away, save in object only if request was successful, in UTC
+            request_datetime = datetime.now(timezone.utc)
             responses = self._get_readings(
                     start_datetime = interval.start,
                     end_datetime = interval.end
@@ -187,7 +192,9 @@ class WeatherAPI(ABC):
 
         self.current_api_response_records = [self._add_response_metadata(r, interval.start, interval.end, request_datetime) for r in responses]
 
-
+        # print("DEBUG CURRENT RESPONSES IN API CLASS")
+        # print(self.current_api_response_records)
+        # print("---------")
         return(self.current_api_response_records)
 
 
@@ -223,6 +230,34 @@ class WeatherAPI(ABC):
     
         return(api_response_record)
 
+
+    def data_present_in_response(self, api_response:APIResponse)-> bool:
+        """test if the response from the api contains sensor data.  Data is not validated, it just needs to be present. 
+        Given diversity of response forms, and some may even return status code 200 'OK' but there may not be data available.  
+        This calls a private method to be overridden by each station type similar to _transform methods
+
+        Args:
+            api_response (APIResponse): a single response record to check.  Note that since get_reading returns a list of APIResponse, use a map to examine those
+
+        Returns:
+            bool: True if there is sensor data into the response, False if not. 
+
+        """
+        # if we don't get a 200, there is an error of some kind for all station types
+        # assume this is a string but in case it's an int, convert to str to be safe
+        if str(api_response.response_status_code) != '200':
+            return False
+        
+        response_text:str = api_response.response_text
+
+        # check if JSON
+        if isinstance(response_text,str):
+            try:
+                response_data:dict = json.loads(response_text)
+            except Exception as e:
+                return False
+        
+        return self._data_present_in_response(response_data)
 
 
     def transform(self, api_response_records:list[APIResponse]|None = None)->list[Reading]:

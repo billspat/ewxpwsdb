@@ -13,7 +13,7 @@ from typing import Any
 
 from . import STATION_TYPE
 from .weather_api import WeatherAPI, WeatherAPIConfig
-from ewxpwsdb.db.models import WeatherStation
+from ewxpwsdb.db.models import WeatherStation, APIResponse
 
 
 class SpectrumAPIConfig(WeatherAPIConfig):
@@ -66,6 +66,36 @@ class SpectrumAPI(WeatherAPI):
                         )
         
         return([response])
+
+
+    def _data_present_in_response(self, response_data:dict)->bool:
+        """check for presence of data in response
+
+        Args:
+            response_data (dict): data loaded from response JSON
+
+        Returns:
+            bool: True if data is present in any of the records in the response, else False
+        """
+        
+        if 'EquipmentRecords' not in response_data.keys():
+            return False
+                
+        for record in response_data['EquipmentRecords']:
+            if not 'SensorData' in record.keys():
+                return False
+            
+            # if any one of these sensors have non-empty data, return true
+            if record['SensorData'][0]["DecimalValue"] or \
+                record['SensorData'][1]["DecimalValue"] or \
+                record['SensorData'][2]["DecimalValue"]:
+                return True
+
+            # just check the first one    
+            break
+
+        return False
+        
 
     def _transform(self, response_data)->list[dict[str,Any]]:
         """

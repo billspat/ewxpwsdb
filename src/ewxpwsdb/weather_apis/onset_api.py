@@ -113,7 +113,27 @@ class OnsetAPI(WeatherAPI):
                         )
 
         return([response])
-   
+    
+    def _data_present_in_response(self, response_data:dict)->bool:
+        """check for presence of data in response
+
+        Args:
+            response_data (dict): data loaded from response JSON
+
+        Returns:
+            bool: True if data is present in any of the records in the response, else False
+        """
+
+        if 'observation_list' not in response_data.keys():
+            return False
+        
+        for reading in response_data["observation_list"]:
+            # any data found anywhere, return True
+            if 'si_value' in reading.keys() and reading['si_value']:
+                return True
+            
+        return False
+
     def _transform(self, response_data):
         """transform of response.text to list of dict
         only handle response.text (sensor values) and nothing else
