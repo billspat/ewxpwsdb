@@ -163,6 +163,16 @@ def previous_fourteen_minute_period( dtm:datetime = datetime.now(timezone.utc) )
     return( (start_datetime, end_datetime) )
 
 
+def today_utc()->date:
+    """return a date object representing todays date in the UTC timezone.   
+    For example in Eastern time if it were 10pm, it would be the next day since UTC is 5 hrs ahead
+    
+    Returns:
+        date object in UTC time zone
+
+    """
+    return(datetime.now(UTC).date())
+
 
 def one_day_interval(d:date = datetime.now(timezone.utc).date() )->UTCInterval:
     """Create a time interval for the date in question, in UTC
