@@ -55,6 +55,7 @@ def import_station_records(weatherstation_data:list, engine):
         engine (Engine, optional):  SQLAlchemy/SQLModel Engine from create_engine().  Defaults to global engine created in database.py
     """
 
+
     # uses the global var 'engine' imported above
     with Session(engine) as session:
         # will fail if any one of these records has a problem
@@ -81,12 +82,17 @@ def import_station_types(engine):
     """
 
     from ewxpwsdb.db.models import StationType
-    from ewxpwsdb.weather_apis import STATION_TYPE_LIST
+    from ewxpwsdb.weather_apis import API_CLASS_TYPES
 
-    station_type_objects = [StationType(station_type=station_type ) for station_type in STATION_TYPE_LIST]
+    # create list of station models to insert into DB
+    station_models =  [
+            StationType(station_type =station_type, sampling_interval = APIClass._sampling_interval ) for 
+            (station_type, APIClass) in 
+            API_CLASS_TYPES.items()
+            ]
+        
     with Session(engine) as session:
-        #crash here
-        for station in station_type_objects:
+        for station in station_models:
             try:
                 session.add(station)
                 session.commit()  
@@ -94,8 +100,7 @@ def import_station_types(engine):
             except IntegrityError:
                 session.rollback()  
                 print(f"Station with type '{station.station_type}' already exists in the database")
-    
-    session.close()
+
 
 
 def import_station_file(tsv_file:str, engine):

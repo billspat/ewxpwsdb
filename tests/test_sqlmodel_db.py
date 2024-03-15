@@ -41,6 +41,7 @@ def test_that_station_types_has_entries_after_init(db_engine: Engine):
     from ewxpwsdb.weather_apis import STATION_TYPE_LIST
     for st in station_types:
         assert st.station_type in STATION_TYPE_LIST
+        assert st.sampling_interval in [5, 15, 30]
 
 
 def test_import_of_data(db_with_data: Any):
