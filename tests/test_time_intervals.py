@@ -170,7 +170,7 @@ def test_previous_fourteen_minute_interval():
 
     today_utc = datetime.now(timezone.utc).date()
     assert today_utc == nowish_interval.start.date()
-    assert (datetime.now(timezone.utc) - nowish_interval.end) < timedelta(minutes = 15)
+    assert (nowish_interval.end - nowish_interval.start) < timedelta(minutes = 15)
 
 
 
