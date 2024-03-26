@@ -1,7 +1,7 @@
 """weather data collection class"""
 
 from sqlmodel import SQLModel, select
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 from sqlalchemy import Engine
 from sqlalchemy.exc import SQLAlchemyError
@@ -10,7 +10,6 @@ from ewxpwsdb.db.database import Session, engine
 from ewxpwsdb.db.models import WeatherStation, APIResponse, Reading
 from ewxpwsdb.weather_apis import API_CLASS_TYPES
 from ewxpwsdb.time_intervals import one_day_interval, UTCInterval, is_utc, previous_fourteen_minute_interval
-
 
 class Collector():
     """class to enable collecting data from station apis and store in a database.  
@@ -207,24 +206,33 @@ class Collector():
         
     
 
-    def get_historic_data(self, overwrite=False, days_limit=365):
-        """pull all previous data for this old station starting from right now
+    def get_historic_data(self, overwrite: bool=False, days_limit:int=365)->list[int]:
+        """        pull all previous data for this old station starting from right now
         If there is any data already in the db, this will this will not overwrite 
+        
+        check if there are any readings at all in db for this station, if so, only overwrite if we have permission
+
+
+        Args:
+            overwrite (bool, optional): only overwrite if we have permission.  If False and any readings are present for this station, cancel. Defaults to False.
+            days_limit (int, optional): Days to go back. Defaults to 365.
+
+        Raises:
+            RuntimeError: if overwrite is not True and there are records, raise an exception
+
+        Returns:
+            list[int]: list of all record ids inserted into the reading table
         """
-        # check if there are any readings at all in db for this station, if so, only overwrite if we have permission
+
         if self.retrieve_recent_readings(n = 1):
             # already some stuff in the db, probably should use catch up instead
             if not overwrite:
                 raise RuntimeError(f"data for station {self.station.id} already present, cancelling get historic data procedure")
+            
+        collected_reading_ids = []
 
-                
-
-        from datetime import timezone    
-
-        # get and save readings for today
-        
+        # start -- get and save readings for today
         today = datetime.now(timezone.utc).date()
-        # get today's data
         api_data = self.request_and_store_weather_data_utc(one_day_interval(today))
         
         # get all the remaining tomorrows data, up to the imposed limit (1 yr default)
@@ -233,7 +241,10 @@ class Collector():
             date_to_fetch = today - timedelta(days = day_offset)
             print(f"fetching data for {self.station.station_code} for {day_offset} days ago")
             api_data = self.request_and_store_weather_data_utc(one_day_interval(date_to_fetch))
-            day_offset += 1
+            collected_reading_ids.extend(self.current_reading_ids)
+            day_offset += 1 
+
+        return collected_reading_ids
 
 
     def catch_up(self):
