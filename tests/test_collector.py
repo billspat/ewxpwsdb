@@ -12,7 +12,13 @@ from ewxpwsdb.db.models import WeatherStation, APIResponse, Reading
 from ewxpwsdb.collector import Collector
 # from ewxpwsdb.db.models import WeatherStationStation
 from ewxpwsdb.weather_apis.weather_api import WeatherAPI
-from ewxpwsdb.time_intervals import previous_fourteen_minute_interval
+from ewxpwsdb.time_intervals import UTCInterval, previous_fourteen_minute_interval
+
+
+@pytest.fixture()
+def sample_interval():
+    interval = UTCInterval.previous_interval(delta_mins=70)
+    return interval
 
 
 #TODO start with a literal list of types, but copy the technique from ewx_pws package to loop through all types
@@ -54,7 +60,7 @@ def test_collect_request(station,db_with_data):
         datetime_rainwise_was_working = datetime(year=2024, month=2, day=19, hour=12, minute=0, second=0, tzinfo=UTC)
         interval = previous_fourteen_minute_interval(datetime_rainwise_was_working)
     else:
-        interval = previous_fourteen_minute_interval()
+        interval = UTCInterval.previous_interval(delta_mins=70)
     
     s,e = (interval.start, interval.end)
         

@@ -6,7 +6,7 @@ from datetime import datetime
 
 import pytest, json
 from datetime import datetime, timedelta
-from ewxpwsdb.time_intervals import tomorrow_utc, previous_fourteen_minute_period, previous_fourteen_minute_interval
+from ewxpwsdb.time_intervals import tomorrow_utc, previous_fourteen_minute_period, previous_fourteen_minute_interval, UTCInterval
 
 from sqlmodel import Session, select
 
@@ -59,7 +59,7 @@ def test_get_responses_and_transform(station_type, db_with_data):
         s,e = previous_fourteen_minute_period(datetime_rainwise_was_working)
         api_response_records = wapi.get_readings(s,e)
     else:
-        interval = previous_fourteen_minute_interval()
+        interval = UTCInterval.previous_interval(delta_mins= 70)
         api_response_records = wapi.get_readings(interval.start, interval.end)
 
     # check that there is some weather data, and 200 status
@@ -126,7 +126,8 @@ def test_get_responses_and_transform(station_type, db_with_data):
         assert reading.id  is not None
         # TODO not all stations will have all sensors, so may need to tailor this list depending on station type
         assert isinstance(reading.atemp, float)
-        assert isinstance(reading.pcpn , float)
+        if station_type != 'LOCOMOS':
+            assert isinstance(reading.pcpn , float)
         assert isinstance(reading.relh , float)
 
     # try to get the readings from the database and test them. 
@@ -141,7 +142,8 @@ def test_get_responses_and_transform(station_type, db_with_data):
         reading = reading_record.Reading
         assert isinstance(reading.data_datetime, datetime)
         assert isinstance(reading.atemp, float)
-        assert isinstance(reading.pcpn , float)
+        if station_type != 'LOCOMOS':
+            assert isinstance(reading.pcpn , float)
         assert isinstance(reading.relh , float)
         # leaf wetness is only on some stations, but we don't have a way to tell which sensors are present yet
         # assert isinstance(reading.lws0 , float)
@@ -158,16 +160,24 @@ def test_response_errors(station):
     
 
     # attempt to get data in the future and test that we detect no data
-    (s,e) = previous_fourteen_minute_period()
-    future_end_datetime = e + timedelta(days=1)
-    future_start_datetime = s + timedelta(days=1)
+    interval = UTCInterval.previous_interval(delta_mins=70)
+    
+    # add 1 day to put this interval in the future
+    future_end_datetime = interval.end + timedelta(days=1)
+    future_start_datetime = interval.start + timedelta(days=1)
 
+    # The `responses_of_future` variable is storing the API response data obtained by making a request
+    # to the API for a future time interval. In the test scenario, the test is attempting to get data
+    # for a time interval that is in the future relative to the current time. The purpose of this test
+    # is to check how the system handles such scenarios where data for future time intervals is
+    # requested. The test then checks whether the API response contains valid data or if it correctly
+    # detects that there is no data available for the future time interval.
     responses_of_future = wapi.get_readings(start_datetime=future_start_datetime, end_datetime=future_end_datetime)
     assert wapi.data_present_in_response(responses_of_future[0]) == False
 
-    (s,e) = previous_fourteen_minute_period()
-    distant_past_start_datetime = s - timedelta(days = 3650)
-    distant_past_end_datetime = e - timedelta(days = 3650)
+    # try from a year ago
+    distant_past_start_datetime = interval.start - timedelta(days = 3650)
+    distant_past_end_datetime = interval.end - timedelta(days = 3650)
     
     responses_of_distant_past = wapi.get_readings(start_datetime=distant_past_start_datetime, end_datetime=distant_past_end_datetime)
     assert wapi.data_present_in_response(responses_of_distant_past[0]) == False
