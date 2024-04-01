@@ -36,11 +36,21 @@ class LocomosAPI(WeatherAPI):
 
     # LOCOMOS variable names are not the same as EWX variable/column names.  
     # when adding variables, update this list
+    # 2023
+    # ewx_var_mapping = {
+    #     # LOCOMOS: EWX
+    #     'rh':'relh',
+    #     'temp':'atemp',
+    #     'prep':'pcpn',
+    #     'lws1':'lws0',   # this is not percent wet, but wet y/n -> 0/1
+    # }
+
+    # 2024 variables
     ewx_var_mapping = {
         # LOCOMOS: EWX
-        'rh':'relh',
+        'humid':'relh',
         'temp':'atemp',
-        'prep':'pcpn',
+        'precip':'pcpn',
         'lws1':'lws0',   # this is not percent wet, but wet y/n -> 0/1
     }
 
@@ -70,15 +80,22 @@ class LocomosAPI(WeatherAPI):
         """
         if self.variables is None or len(self.variables) == 0:
             # object member is empty, load and save list of variables from API
-            var_request = Request(method='GET',
+            variables_request = Request(method='GET',
                     url=f"https://industrial.api.ubidots.com/api/v2.0/devices/{self.api_config.id}/variables/", 
                     headers={'X-Auth-Token': self.api_config.token}, 
                     params={'page_size':'ALL'}).prepare()
-            var_response = json.loads(Session().send(var_request).content)
+            
+            response = Session().send(variables_request)
 
+            if response.status_code != 200:
+                raise RuntimeError('could not get variable list from LOCOMOS API')
+            
+            variable_response = json.loads(response.content)
+            if 'results' not in variable_response.keys():
+                raise RuntimeError('LOCOMOS api did not return variable content as expect (no result key)')
+            
             variables = {}   
-
-            for result in var_response['results']:
+            for result in variable_response['results']:
                 variables[result['id']] = result['label']
             #TODO add logging
             self.variables = variables
@@ -148,16 +165,18 @@ class LocomosAPI(WeatherAPI):
             bool: True if data is present in any of the records in the response, else False
         """        
 
-        if not('results' in response_data and 'columns' in response_data):
+        # must have a results key
+        if not('results' in response_data):
+             return False
+        
+        # results array must have more than one element
+        if len(response_data['results']) == 0:
             return False
         
-        # conversion is complicated, so just convert it and then check if there is data
-        readings = self._transform(response_data)
+        # the first results element should be non-zero len (it's an array of arrays)
+        if len(response_data['results'][0]) > 0:
+            return True
         
-        for reading in readings: 
-            if reading:
-                return True
-
         return False
     
 
@@ -170,84 +189,141 @@ class LocomosAPI(WeatherAPI):
         return 1.0 if lws_value > self.lws_threshold else 0.0
 
 
-    def _transform(self, response_data)->list:
-        """ station specific transform
-        params response_data: the value of 'text' from the response object e.g. JSON
-        
-        returns: list of readings keyed on date/teim"""
-        def rm_dev_id(colname, delim = "."):
-            if(delim in colname):
-                colname = delim.join(colname.split('.')[1:])
-            return(colname) 
+    def _transform(self, response_data)->list[dict]:
+        """transform LOCOMOS api response to ewx variables, which uses the UBIDOTs api. 
 
-        import re
-        def variable_id_from_columns(columns):
-            """ some, but not all, column names are prepended with a variable id, 
-            like this: 649ded97c607eb000ea8777d.value.value
-            this finds the first matching colname and extracts the variable id"""
-            pattern_col_with_id =  r"^[0-9a-z]+\.[a-z\.]+$"
-            for colname in columns:
-                if re.match(pattern_col_with_id, colname):
-                    variable_id_for_this_result =  colname.split('.')[0]
-                    return(variable_id_for_this_result)
+        Ubidots returns a variable ID which maps to a variable name in the Ubidots portal.    The response data has a differenet 
+        
+        The Ubidots output has results key and columns key, and columns indicates what the column contains for each row. 
+        This version has hard-coded column numbers embedded in it as the columns haven't changed yet.   Ubidots has a more flexible API than 
+        is needed for this application
+
+        Args:
+            response_data (_type_): dictionary from API response 
+
+        Returns:
+            list[dict]: list of readings records for inserting to database
+        """
+
+        # this is the order of the columns from the 'results' array from the API
+        colnumber = {
+            "timestamp":0,
+            "device.name":1,
+            "device.label":2,
+            "variable.id":3,
+            "variable.name":4,
+            "value.value":5
+        }        
+
+        # the variables and IDs we are interested in
+        variables:dict[str,str] = self._get_variables()
+        readings:dict[int, dict[str,any]] = {}
 
         if isinstance(response_data,str):
             response_data = json.loads(response_data)
 
-        results = response_data['results']
-        columns = response_data['columns']
+        # records are grouped by time, with one record per sensor
+        for timestamped_records in response_data['results']: 
+            for sensor_record in timestamped_records:
+                timestamp = sensor_record[colnumber['timestamp']]
+                if timestamp not in readings.keys():
+                    data_datetime = datetime.fromtimestamp(timestamp/ 1000).astimezone(timezone.utc)
+                    readings[timestamp] =  {'data_datetime': data_datetime}
 
-        # TODO: maybe switch how we create this
-        # make a mapping of the Variable ID code (in the data/column names) with the EWX variables we
-        # var_by_id = dict([(var_id,var_name) for var_name,var_id in self._get_variables().items() ] )
+                # convert this record's variable from an id to it's name 
+                this_variable_id = sensor_record[colnumber["variable.id"]]
+                this_variable_name = variables[this_variable_id]
 
-        var_by_id = dict( [(var_id,self.ewx_var_mapping[var_name]) for var_id,var_name in self._get_variables().items() if var_name in self.ewx_var_mapping.keys() ] ) 
+                # we are not interested in all the values in the data, only those in our list of self.variables
+                if this_variable_name in self.ewx_var_mapping.keys():
+                    ewx_variable_name = self.ewx_var_mapping[this_variable_name]
+                    if ewx_variable_name == 'lws0':
+                        readings[timestamp][ewx_variable_name] = self._lws_convert(sensor_record[colnumber["value.value"]])
+                    else:
+                        readings[timestamp][ewx_variable_name] = sensor_record[colnumber["value.value"]]
+
+        reading_list:list[dict] = list(readings.values())
+
+        return(reading_list)
+
+
+    # this will be removed after extensive testing of simplified transform above
+    # def _transform_old_version(self, response_data)->list:
+    #     """ station specific transform
+    #     params response_data: the value of 'text' from the response object e.g. JSON
+
+    #     PREVIOUS VERSION THAT ACCOMMODATED FOR UNKNOW COLUMN ORDER IN OUTPUT
         
-        # readings dict, keyed on timestamp
-        readings = {}
+    #     returns: list of readings keyed on date/teim"""
+    #     def rm_dev_id(colname, delim = "."):
+    #         if(delim in colname):
+    #             colname = delim.join(colname.split('.')[1:])
+    #         return(colname) 
 
-        # print(var_dict)
-        for j in range(1, len(columns)):
-            # is there data? 
-            if len(results[j]) == 0:
-                continue
+    #     import re
+    #     def variable_id_from_columns(columns):
+    #         """ some, but not all, column names are prepended with a variable id, 
+    #         like this: 649ded97c607eb000ea8777d.value.value
+    #         this finds the first matching colname and extracts the variable id"""
+    #         pattern_col_with_id =  r"^[0-9a-z]+\.[a-z\.]+$"
+    #         for colname in columns:
+    #             if re.match(pattern_col_with_id, colname):
+    #                 variable_id_for_this_result =  colname.split('.')[0]
+    #                 return(variable_id_for_this_result)
 
-            var_id = variable_id_from_columns(columns[j])
-            # is this var one we want? 
-            if var_id not in var_by_id.keys():
-                continue
-            else:
-                var_name = var_by_id[var_id]
-                print(var_name)
-                
-            # results are a list inside list element, one item for each reading/time interval
-            # and just one sensor per result
-            for result in results[j]:
-                # result is list of one reading (timestamp) for one variable, but does not have varnames 
-                # add the var/column names to make it easy
-                simple_var_names = [ rm_dev_id(c) for c in columns[j]]
-                result_dict = dict(zip(simple_var_names,result ))
-                
-                if result_dict['variable.id'] != var_id:
-                    raise ValueError(f"named variable.id not the same as var_id: {var_id} != {result_dict['variable.id']}")
-                
-                # add this sensor result / value to the readings list
-                # to accumlate the sensors from different readings into single diction, 
-                # key it on timestamp, and build up the dict as sensor values come in. 
-                # first insert a new readings dict if that timestamp is not yet present, start with data_datetime
-                if result_dict['timestamp'] not in readings.keys():
-                    data_datetime = datetime.fromtimestamp(result_dict['timestamp']/ 1000).astimezone(timezone.utc)
-                    readings[result_dict['timestamp']] =  {'data_datetime': data_datetime}
-                
-                # add sensor reading to reading dict for this timestamp
-                if var_name == "lws0":
-                    readings[result_dict['timestamp']][var_name] = self._lws_convert(result_dict['value.value'])
-                else:
-                    readings[result_dict['timestamp']][var_name] = result_dict['value.value']
-                
-                # end result _should_ be readings[per_timestamp] = {'temp':999, 'rh':999, 'lws1':999}
+    #     if isinstance(response_data,str):
+    #         response_data = json.loads(response_data)
 
-        return(list(readings.values()))    
+    #     results = response_data['results']
+    #     columns = response_data['columns']
+
+    #     var_by_id = dict( [(var_id,self.ewx_var_mapping[var_name]) for var_id,var_name in self._get_variables().items() if var_name in self.ewx_var_mapping.keys() ] ) 
+        
+    #     # readings dict, keyed on timestamp
+    #     readings:dict[dict] = {}
+
+    #     # print(var_dict)
+    #     for j in range(1, len(columns)):
+    #         # is there data? 
+    #         if len(results[j]) == 0:
+    #             continue
+
+    #         var_id = variable_id_from_columns(columns[j])
+    #         # is this var one we want? 
+    #         if var_id not in var_by_id.keys():
+    #             continue
+    #         else:
+    #             var_name = var_by_id[var_id]
+    #             print(var_name)
+                
+    #         # results are a list inside list element, one item for each reading/time interval
+    #         # and just one sensor per result
+    #         for result in results[j]:
+    #             # result is list of one reading (timestamp) for one variable, but does not have varnames 
+    #             # add the var/column names to make it easy
+    #             simple_var_names = [ rm_dev_id(c) for c in columns[j]]
+    #             result_dict = dict(zip(simple_var_names,result ))
+                
+    #             if result_dict['variable.id'] != var_id:
+    #                 raise ValueError(f"named variable.id not the same as var_id: {var_id} != {result_dict['variable.id']}")
+                
+    #             # add this sensor result / value to the readings list
+    #             # to accumlate the sensors from different readings into single diction, 
+    #             # key it on timestamp, and build up the dict as sensor values come in. 
+    #             # first insert a new readings dict if that timestamp is not yet present, start with data_datetime
+    #             if result_dict['timestamp'] not in readings.keys():
+    #                 data_datetime = datetime.fromtimestamp(result_dict['timestamp']/ 1000).astimezone(timezone.utc)
+    #                 readings[result_dict['timestamp']] =  {'data_datetime': data_datetime}
+                
+    #             # add sensor reading to reading dict for this timestamp
+    #             if var_name == "lws0":
+    #                 readings[result_dict['timestamp']][var_name] = self._lws_convert(result_dict['value.value'])
+    #             else:
+    #                 readings[result_dict['timestamp']][var_name] = result_dict['value.value']
+                
+    #             # end result _should_ be readings[per_timestamp] = {'temp':999, 'rh':999, 'lws1':999}
+
+    #     return(list(readings.values()))    
 
 
     def _handle_error(self):
