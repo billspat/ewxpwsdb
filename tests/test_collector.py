@@ -63,12 +63,14 @@ def test_collect_request(station,db_with_data):
         interval = UTCInterval.previous_interval(delta_mins=70)
     
     s,e = (interval.start, interval.end)
-        
+
+    # get weather data    
     try:
         collector.request_and_store_weather_data(start_datetime = s, end_datetime = e)
     except Exception as e:
         pytest.fail(f"raised exception on request: {e}")
 
+    # test results
     assert isinstance(collector.current_api_response_record_ids, list)
     assert collector.current_api_response_record_ids[0] is not None
 
@@ -118,5 +120,13 @@ def test_collect_request(station,db_with_data):
     # check database foreign key in reading is in one of the current response ids
     assert reading.apiresponse_id in collector.current_api_response_record_ids
 
+    # re-get one of the response from the database
+    with Session(engine) as session:
+        response_from_db = session.get(APIResponse, example_response_id)
+
+    # attempt to save the same readings again and see if it fails
+    with pytest.raises(Exception) as e_info:
+        collector.save_readings_from_responses(api_responses = response_from_db)
+    
     collector.close()
 

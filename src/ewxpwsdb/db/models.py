@@ -1,6 +1,6 @@
 from typing import Optional
 from datetime import datetime, date
-from sqlmodel import SQLModel, Field, text
+from sqlmodel import SQLModel, Field, UniqueConstraint, text
 from uuid import uuid4
 
 
@@ -53,19 +53,32 @@ class APIResponse(SQLModel, table=True):
 
 class Reading(SQLModel, table=True):
     """a reading of a weather stations sensors, as reported by the API and harmonized to EWX standard"""
+
+    __table_args__ = (
+        UniqueConstraint("data_datetime", "weatherstation_id", name="constraint_one_reading_per_timestamp_per_station"),
+    )
+
+    # meta data fields
     id: Optional[int] = Field(default=None, primary_key=True, description="database assigned id number")
+
     apiresponse_id: int = Field(foreign_key="apiresponse.id",description = "unique ID of the request event to link with raw api output")
+    
     data_datetime: datetime = Field(description = "timestamp of start time for this reading")    
+    
     request_id: str = Field(description = "code generated ID for ensuring linkage")
+    
     weatherstation_id: int = Field(foreign_key="weatherstation.id", description="link to the weather station that generated this reading ")
+    
     station_sampling_interval: int = Field(description = "number of minutes for sampling interval for this station, 5, 15 or 30.")
-    # sensors
+
+    # sensor fields
     # TODO use decimal for accuracy    
     atemp : Optional[float] = Field(default=None, description="air temperature, celsius") 
     pcpn  : Optional[float] = Field(default=None, description="precipitation, mm, > 0")   
     relh  : Optional[float] = Field(default=None, description="relative humdity, percent")
     lws0  : Optional[float] = Field(default=None, description="this is an nominal reading or 0 or 1 (wet / not wet)")  
-    #
+
+    # TODO rename this ..._from_response instead of .._from_station as the metadata is all coming from the response
     @classmethod
     def model_validate_from_station(cls, sensor_data, api_response: APIResponse):
         """ add required metadata to dict of transformed weather data"""
