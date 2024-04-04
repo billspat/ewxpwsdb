@@ -1,10 +1,14 @@
 """weather data collection class"""
 
-from sqlmodel import SQLModel, select
 from datetime import datetime, timedelta, timezone
 
-from sqlalchemy import Engine
+
+from sqlmodel import SQLModel, select
+from sqlalchemy import Engine, asc, desc
+from sqlalchemy.sql import func
 from sqlalchemy.exc import SQLAlchemyError
+
+from typing import Sequence
 
 from ewxpwsdb.db.database import Session, engine
 from ewxpwsdb.db.models import WeatherStation, APIResponse, Reading
@@ -187,24 +191,56 @@ class Collector():
         Returns:
             bool: True if any readings in table with this stations id.  
         """
-        if self.retrieve_recent_readings(n = 1):
+        if self.get_readings(n = 1):
             return True
         
         return False
     
 
-    def retrieve_recent_readings(self, n=1):
+    # Typing Notes: 
+    ## MyPy type checker 
+    ##  - fails on the sqlalchemy.desc() and .asc() which expect strings, or esoteric SQLAlchemy types.  However the sql runs just fine
+    ##  - fails with this syntax order_by(Reading.data_datetime.desc()) since the output type (datetime ) doesn't have desc attribute, but sqlmodel/sqlalchemy use tricks to make this work
+    ##  one fix it converting the datetime value to string, but do that efficiently using the SQL function to_char allows the type checker to pass, and the SQL to runs correctly, but doesnt work in sqlite
+    ##    eg.  order_by( desc(func.to_char( Reading.data_datetime, '%Y%m%d-%H%M%S' ) ) ) 
+    ## so instead I'm just ignoring the type warnings on these statements 
+    
+    def get_readings(self, n:int=1, order_by:str='desc')->Sequence[Reading]:
         """get some readings from the DB for this station
         
+        Args:
+            n: int number of records to pull, defaults to 1
+            order:Optional[str] default desc for descending but must desc or asc to match python sqlalchemy order by clauses
+
         Returns:
-            Reading """
+            list of Reading objects 
+        """
 
-        stmt = select(Reading).where(Reading.weatherstation_id == self.station.id).limit(n)
-        result = self._session.exec(stmt)
-
-        return(result.fetchall())
+        if order_by == 'asc':
+            stmt = select(Reading).where(Reading.weatherstation_id == self.station.id).order_by(Reading.data_datetime).limit(n) #type: ignore
+        elif order_by == 'desc':
+            stmt = select(Reading).where(Reading.weatherstation_id == self.station.id).order_by(Reading.data_datetime.desc()).limit(n) #type: ignore
+        else:
+            raise ValueError(f"order_by argument must be either  'asc' or 'desc', got {order_by}")
         
+        result = self._session.exec(stmt)        
+        return(result.fetchall())   
     
+    def get_readings_by_date(self, interval:UTCInterval, order_by:str='desc')->Sequence[Reading]:
+        """get some readings from the DB for this station
+        
+        Args:
+            interval: UTCInterval
+            order:Optional[str] default desc for descending but must desc or asc to match python sqlalchemy order by clauses
+
+        Returns:
+            list of Reading objects 
+        """
+        stmt = select(Reading).where(Reading.weatherstation_id == self.station.id).where(Reading.data_datetime >= interval.start).where(Reading.data_datetime <= interval.end).order_by(Reading.data_datetime) #type:ignore       
+        result = self._session.exec(stmt)
+        return(result.fetchall())   
+
+
 
     def get_historic_data(self, overwrite: bool=False, days_limit:int=365)->list[int]:
         """        pull all previous data for this old station starting from right now
@@ -224,7 +260,7 @@ class Collector():
             list[int]: list of all record ids inserted into the reading table
         """
 
-        if self.retrieve_recent_readings(n = 1):
+        if self.get_readings(n = 1):
             # already some stuff in the db, probably should use catch up instead
             if not overwrite:
                 raise RuntimeError(f"data for station {self.station.id} already present, cancelling get historic data procedure")
@@ -256,7 +292,7 @@ class Collector():
         # get readings, transform, and store in the database
 
         pass
-
+        
     def close(self):
         """closes the session opened for this collector"""
         self._session.close()

@@ -30,6 +30,20 @@ def station(station_type, db_with_data):
         weather_station = results.first()
     return(weather_station)
 
+@pytest.fixture(scope='module')
+def viable_interval(station_type):
+    duration_min = 70
+
+    # temporary adjustment for this down station, use 
+    if station_type == 'RAINWISE':
+        # rainwise goes down, so set the period for when the station was up and there is data
+        from datetime import datetime, UTC
+        datetime_rainwise_was_working = datetime(year=2024, month=2, day=19, hour=12, minute=0, second=0, tzinfo=UTC)
+        interval = UTCInterval.previous_interval(dtm = datetime_rainwise_was_working, delta_mins=duration_min) # previous_fourteen_minute_interval(datetime_rainwise_was_working)
+    else:
+        interval = UTCInterval.previous_interval(delta_mins=duration_min)
+    
+    return(interval)
 
 def test_collector_class(station, db_with_data):
     # we are using a station instead of just an id so we can test the Collector class can get a station
@@ -129,4 +143,46 @@ def test_collect_request(station,db_with_data):
         collector.save_readings_from_responses(api_responses = response_from_db)
     
     collector.close()
+
+
+def test_collector_readings_api(station,db_with_data):
+    # must run after putting readings into the db
+    collector = Collector.from_station_id(station_id=station.id, engine=db_with_data)
+    readings = collector.get_readings(n = 4)
+    assert len(readings) == 4
+    assert isinstance(readings[0], Reading)
+
+    # test api parameter for sorting
+    readings = collector.get_readings(n =4, order_by ='desc')
+    assert len(readings) == 4
+    assert isinstance(readings[0], Reading)
+    assert readings[0].weatherstation_id == collector.station.id
+    
+    readings = collector.get_readings(n =4, order_by ='asc')
+    assert len(readings) == 4
+    assert isinstance(readings[0], Reading)
+    assert readings[0].weatherstation_id == collector.station.id
+
+
+def test_collector_readings_by_date(station, db_with_data, viable_interval):
+
+    # make a request of the API, put data in the database for a specific time period, then try to get it back out
+    from datetime import timedelta
+    yesterday = UTCInterval(start=viable_interval.start - timedelta(days = 1), 
+                           end = viable_interval.end - timedelta(days = 1)
+                           )
+    collector = Collector.from_station_id(station_id=station.id, engine=db_with_data)
+    try:
+        response_ids = collector.request_and_store_weather_data_utc(yesterday)
+    except Exception as e:
+        # if there is already data in there, just ignore the exception and keep going
+        pass
+
+    readings = collector.get_readings_by_date(yesterday)
+    assert isinstance(readings[0], Reading)
+    assert len(readings) > 1
+    assert readings[0].weatherstation_id == collector.station.id
+    print(db_with_data)
+    
+
 
