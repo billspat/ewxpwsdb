@@ -1,7 +1,10 @@
 from typing import Optional
 from datetime import datetime, date
-from sqlmodel import SQLModel, Field, UniqueConstraint, text
+from sqlmodel import SQLModel, Field, UniqueConstraint, Column, DateTime
 from uuid import uuid4
+from sqlalchemy import DateTime
+from pydantic import AwareDatetime
+
 
 
 from ewxpwsdb import __version__
@@ -34,8 +37,11 @@ class APIResponse(SQLModel, table=True):
     # metadata
     weatherstation_id: int = Field(foreign_key="weatherstation.id", description="link to the weather station that this readng from ")
     request_datetime : datetime = Field(description="Timestamp in UTC of when the request was made of the API")
+
+    #TODO make these timezone-aware datetimes
     data_start_datetime: datetime  = Field(description="Timestamp in UTC of the beginning of the period in ")
     data_end_datetime: datetime  = Field(description="Timestamp in UTC of ")
+
     package_version: str  = __version__ # version('ewxpwsdb')
     station_sampling_interval: int = Field(description='5,10,15 minutes frequency of sampling for this station, propagated to reading')
     
@@ -54,16 +60,17 @@ class APIResponse(SQLModel, table=True):
 class Reading(SQLModel, table=True):
     """a reading of a weather stations sensors, as reported by the API and harmonized to EWX standard"""
 
-    __table_args__ = (
-        UniqueConstraint("data_datetime", "weatherstation_id", name="constraint_one_reading_per_timestamp_per_station"),
-    )
+    # __table_args__ = (
+    #     UniqueConstraint("data_datetime", "weatherstation_id", name="constraint_one_reading_per_timestamp_per_station"),
+    # )
 
     # meta data fields
     id: Optional[int] = Field(default=None, primary_key=True, description="database assigned id number")
 
     apiresponse_id: int = Field(foreign_key="apiresponse.id",description = "unique ID of the request event to link with raw api output")
     
-    data_datetime: datetime = Field(description = "timestamp of start time for this reading")    
+    # data_datetime: datetime
+    data_datetime: datetime = Field(description = "timezone-aware timestamp of start time for this reading, in UTC", sa_column = Column(DateTime(timezone=True)))    #type: ignore
     
     request_id: str = Field(description = "code generated ID for ensuring linkage")
     
