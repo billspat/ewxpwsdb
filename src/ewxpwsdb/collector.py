@@ -240,7 +240,29 @@ class Collector():
         result = self._session.exec(stmt)
         return(result.fetchall())   
 
+    def get_latest_reading(self):
+        """convenience function to pull one reading ordered by date"""
+        readings = self.get_readings(n=1, order_by='desc')
+        if len(readings)>0:
+            return(readings[0])
+        else:
+            return(None)
+        
+    
+    def get_first_reading_date(self)->datetime:
+        """convenience function to return the date of the first reading in the db for this station, mostly to get the date pull one reading ordered by date
+        
+        Returns:
+            datetime of the first reading in the db, which was inserted as UTC but does not have a timezone component
+        """
 
+        readings = self.get_readings(n=1, order_by='asc')
+        if len(readings)>0:
+            first_reading_datetime = readings[0].data_datetime
+            return(first_reading_datetime)
+        else:
+            return(None)
+        
 
     def get_historic_data(self, overwrite: bool=False, days_limit:int=365)->list[int]:
         """        pull all previous data for this old station starting from right now

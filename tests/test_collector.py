@@ -6,6 +6,7 @@
 
 import pytest
 from sqlmodel import select, Session
+from datetime import datetime, timedelta, timezone
 
 from ewxpwsdb.db.database import Session
 from ewxpwsdb.db.models import WeatherStation, APIResponse, Reading
@@ -61,7 +62,6 @@ def test_collector_class(station, db_with_data):
     assert collector.current_reading_ids == []
     assert isinstance(collector.id, int)
     collector.close()
-
 
 def test_collect_request(station,db_with_data):
     
@@ -167,7 +167,7 @@ def test_collector_readings_api(station,db_with_data):
 def test_collector_readings_by_date(station, db_with_data, viable_interval):
 
     # make a request of the API, put data in the database for a specific time period, then try to get it back out
-    from datetime import timedelta
+    
     yesterday = UTCInterval(start=viable_interval.start - timedelta(days = 1), 
                            end = viable_interval.end - timedelta(days = 1)
                            )
@@ -183,6 +183,23 @@ def test_collector_readings_by_date(station, db_with_data, viable_interval):
     assert len(readings) > 1
     assert readings[0].weatherstation_id == collector.station.id
     print(db_with_data)
+
+    dt = collector.get_first_reading_date()
+    assert isinstance(dt, datetime)
+    assert dt.year == datetime.today().year
+
+    reading = collector.get_latest_reading()
+
+    # db datetimes currently don't have timezone,
+    # TODO fix this with issue #29 when db has timezone-aware dates 
+    
+    reading.data_datetime = reading.data_datetime.replace(tzinfo = timezone.utc)
+
+    assert isinstance(reading, Reading)
+    assert (datetime.now(timezone.utc) - reading.data_datetime) < timedelta(minutes=20)
+    
+
+
     
 
 
