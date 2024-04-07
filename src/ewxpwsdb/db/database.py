@@ -4,9 +4,11 @@ the variable $EWXPWSDB_URL
 """
 
 from dotenv import load_dotenv
+from warnings import warn
+
 import os, logging
 from sqlmodel import SQLModel, create_engine, Session
-from sqlalchemy import Engine
+from sqlalchemy import Engine,create_engine, text
 
 from ewxpwsdb.db.importdata import import_station_types, import_station_file
 
@@ -117,3 +119,97 @@ def rm_sqlite_file(db_url):
         return False
 
     return True
+
+def list_pg_databases(host:str = 'localhost')->list[str]|None:
+    """get list of tables from pg tables, includes tables from all schema.  assumes the database is accessible without a password 
+    list the MacOS postgres.app
+    
+    Args:
+        host (str, optional): the host where the postgresql server is running . Defaults to 'localhost'.
+        
+    Returns
+        list[str]|None: list of database names from all schema if the db can be connected to, or None if there was any problem connecting 
+    """
+    admin_db_url = f"postgresql+psycopg2://postgres@{host}:5432/postgres"
+
+    try:
+        with create_engine(admin_db_url,
+        isolation_level='AUTOCOMMIT').connect() as connection:
+            result = connection.execute(text('SELECT datname FROM pg_database')).fetchall()
+            tablelist = [row[0] for row in result]
+    except Exception as e:
+        warn(f"could not get list of databases from host {host}: {e}")
+        return None
+
+    return(tablelist)
+
+
+def temp_pg_engine(name_prefix:str='ewxpws_testdb', host:str='localhost')->Engine:
+    """generate a random database name, and create an empty database with that name
+
+    Args:
+        name_prefix (str, optional): a human name prefix identifying the purpose of this db when the db is inspected. Defaults to 'ewxpws_testdb'.  
+        host (str, optional): the host where the postgresql server is running . Defaults to 'localhost'.
+
+    Returns:
+        Engine: sqlmodel engine that can be used in a session.  given the engine one can find the db name if necessary
+    """
+    ## generate a db name
+    import string, secrets
+    letters = string.ascii_lowercase+string.ascii_uppercase+string.digits            
+    random_suffix:str =  ''.join(secrets.choice(letters) for i in range(10))
+
+    temp_db_name:str = (f"{name_prefix}_{random_suffix}").lower()
+    
+    # create an empty postgresql database
+    # this URL works with postgres.app on MacOS which does not require passwords   Need to test on Postgresql linux, windows or some other install on mac
+    admin_db_url = f"postgresql+psycopg2://postgres@{host}:5432/postgres"
+
+    with create_engine(admin_db_url,
+        isolation_level='AUTOCOMMIT').connect() as connection:
+            connection.execute(text(f"CREATE DATABASE {temp_db_name}"))
+
+    temp_db_url:str = f"postgresql+psycopg2://{host}:5432/{temp_db_name}"
+    
+    # use our local function for connecting to the db, which may set options
+    engine = get_engine(db_url= temp_db_url, echo = False)
+    return(engine)
+
+
+def drop_temp_pg_engine(engine, host='localhost'):
+    """ given an engine, drop the postgresql temp database """
+    # all sessions must be closed
+
+    # get the db name from the engine
+    temp_db_url = engine.url
+    if 'postgresql' not in temp_db_url.drivername:
+        warn('engine is not for Postgresql, cancelling')
+        return False
+
+    # format "postgresql+psycopg2://{host}:5432/{test_db_name}"
+    temp_db_name = engine.url.database
+    engine.dispose()
+    result = drop_temp_pg_db(temp_db_name, host=host)
+
+    return(result)
+
+    # TODO check that it's gone 
+
+def drop_temp_pg_db(temp_db_name, host='localhost'):
+    
+    if temp_db_name not in list_pg_databases(host):
+        warn(f"database {temp_db_name} not found in postgresql on {host}, can't delete")
+        return False
+    
+    admin_db_url = f"postgresql+psycopg2://postgres@{host}:5432/postgres"
+
+    try:
+        with create_engine(admin_db_url,
+            isolation_level='AUTOCOMMIT').connect() as connection:
+                connection.execute(text(f"DROP DATABASE {temp_db_name}"))
+    except Exception as e:
+        warn(f"could not drop database {temp_db_name}: {e}")
+        return False
+    
+    return True
+
