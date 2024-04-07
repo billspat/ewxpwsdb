@@ -70,7 +70,7 @@ class Reading(SQLModel, table=True):
     apiresponse_id: int = Field(foreign_key="apiresponse.id",description = "unique ID of the request event to link with raw api output")
     
     # data_datetime: datetime
-    data_datetime: datetime = Field(description = "timezone-aware timestamp of start time for this reading, in UTC", sa_column = Column(DateTime(timezone=True)))    #type: ignore
+    data_datetime: AwareDatetime = Field(description = "timezone-aware timestamp of start time for this reading, in UTC", sa_column = Column(DateTime(timezone=True)))    #type: ignore
     
     request_id: str = Field(description = "code generated ID for ensuring linkage")
     
