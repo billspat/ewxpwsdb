@@ -36,11 +36,11 @@ class APIResponse(SQLModel, table=True):
 
     # metadata
     weatherstation_id: int = Field(foreign_key="weatherstation.id", description="link to the weather station that this readng from ")
-    request_datetime : datetime = Field(description="Timestamp in UTC of when the request was made of the API")
+    request_datetime : AwareDatetime = Field(description="Timestamp in UTC of when the request was made of the API", sa_column = Column(DateTime(timezone=True)))  #type: ignore
 
-    #TODO make these timezone-aware datetimes
-    data_start_datetime: datetime  = Field(description="Timestamp in UTC of the beginning of the period in ")
-    data_end_datetime: datetime  = Field(description="Timestamp in UTC of ")
+    # timezone-aware datetimes
+    data_start_datetime: AwareDatetime  = Field(description="Timestamp in UTC of the beginning of the period in ", sa_column = Column(DateTime(timezone=True))) #type: ignore
+    data_end_datetime: AwareDatetime  = Field(description="Timestamp in UTC of ", sa_column = Column(DateTime(timezone=True)))  #type: ignore
 
     package_version: str  = __version__ # version('ewxpwsdb')
     station_sampling_interval: int = Field(description='5,10,15 minutes frequency of sampling for this station, propagated to reading')
