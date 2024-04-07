@@ -60,9 +60,9 @@ class APIResponse(SQLModel, table=True):
 class Reading(SQLModel, table=True):
     """a reading of a weather stations sensors, as reported by the API and harmonized to EWX standard"""
 
-    # __table_args__ = (
-    #     UniqueConstraint("data_datetime", "weatherstation_id", name="constraint_one_reading_per_timestamp_per_station"),
-    # )
+    __table_args__ = (
+        UniqueConstraint("data_datetime", "weatherstation_id", name="constraint_one_reading_per_timestamp_per_station"),
+    )
 
     # meta data fields
     id: Optional[int] = Field(default=None, primary_key=True, description="database assigned id number")
