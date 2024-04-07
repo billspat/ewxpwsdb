@@ -3,11 +3,11 @@
 from typing import Any
 
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy import Engine
+from sqlalchemy import Engine, inspect
 import pytest
 from pydantic import ValidationError
 from ewxpwsdb.db.database import Session
-from ewxpwsdb.db.models import WeatherStation, StationType
+from ewxpwsdb.db.models import WeatherStation, StationType, Reading
 
 from sqlmodel import select
 
@@ -20,11 +20,12 @@ def test_db_connection(db_engine: Engine):
 def test_that_the_db_has_tables(db_engine: Engine):
     """Tables in the database are created when db_engine fixture is made.   """
 
-    from sqlalchemy import inspect
+    
     inspector = inspect(db_engine)
     created_db_tables = list(inspector.get_table_names())
     for expected_table in ['WeatherStation', 'Reading', 'stationtype','APIResponse']:
         assert expected_table.lower() in created_db_tables
+
 
 def test_that_station_types_has_entries_after_init(db_engine: Engine):
     # db_engine fixture runs db_init that should create station types

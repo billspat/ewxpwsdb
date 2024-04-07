@@ -8,7 +8,7 @@ import pytest
 from sqlmodel import select, Session
 from datetime import datetime, timedelta, timezone
 
-from ewxpwsdb.db.database import Session
+# from ewxpwsdb.db.database import Session
 from ewxpwsdb.db.models import WeatherStation, APIResponse, Reading
 from ewxpwsdb.collector import Collector
 # from ewxpwsdb.db.models import WeatherStationStation
@@ -29,6 +29,8 @@ def station(station_type, db_with_data):
         statement = select(WeatherStation).where(WeatherStation.station_type == station_type)
         results = session.exec(statement)
         weather_station = results.first()
+        session.close()
+
     return(weather_station)
 
 @pytest.fixture(scope='module')
@@ -96,17 +98,18 @@ def test_collect_request(station,db_with_data):
         response_from_db = session.get(APIResponse, example_response_id)
         assert response_from_db.id == example_response_id
         assert isinstance(response_from_db, APIResponse)
+        session.close()
 
     assert isinstance(collector.current_reading_ids, list)
     assert len(collector.current_reading_ids) > 0 
     assert isinstance(collector.current_reading_ids[0], int)
-    example_reading_id = collector.current_reading_ids[0]
-    
+    example_reading_id = collector.current_reading_ids[0]    
     
     with Session(engine) as session:    
         reading_from_db = session.get(Reading, example_reading_id)
         assert reading_from_db.id == example_reading_id
         assert isinstance(reading_from_db, Reading)
+        session.close()
 
 
     responses = collector.current_responses
@@ -137,6 +140,7 @@ def test_collect_request(station,db_with_data):
     # re-get one of the response from the database
     with Session(engine) as session:
         response_from_db = session.get(APIResponse, example_response_id)
+        session.close()
 
     # attempt to save the same readings again and see if it fails
     with pytest.raises(Exception) as e_info:
@@ -162,6 +166,7 @@ def test_collector_readings_api(station,db_with_data):
     assert len(readings) == 4
     assert isinstance(readings[0], Reading)
     assert readings[0].weatherstation_id == collector.station.id
+    collector.close()
 
 
 def test_collector_readings_by_date(station, db_with_data, viable_interval):
@@ -197,6 +202,9 @@ def test_collector_readings_by_date(station, db_with_data, viable_interval):
 
     assert isinstance(reading, Reading)
     assert (datetime.now(timezone.utc) - reading.data_datetime) < timedelta(minutes=20)
+
+    collector.close()
+
     
 
 

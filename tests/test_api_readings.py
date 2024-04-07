@@ -6,21 +6,20 @@ from datetime import datetime
 
 import pytest, json
 from datetime import datetime, timedelta
-from ewxpwsdb.time_intervals import tomorrow_utc, previous_fourteen_minute_period, previous_fourteen_minute_interval, UTCInterval
+from ewxpwsdb.time_intervals import tomorrow_utc, previous_fourteen_minute_period, previous_fourteen_minute_interval, UTCInterval, is_utc
 
-from sqlmodel import Session, select
+from sqlmodel import select
 
 from ewxpwsdb.db.models import WeatherStation, Reading
 from ewxpwsdb.weather_apis import API_CLASS_TYPES
 from ewxpwsdb.weather_apis.weather_api import WeatherAPI
 
 @pytest.fixture()
-def station(station_type, db_with_data):
-    with Session(db_with_data) as session:
-        statement = select(WeatherStation).where(WeatherStation.station_type == station_type)
-        results = session.exec(statement)
-        weather_station = results.first()
-        yield weather_station
+def station(station_type, db_with_data_session):
+    statement = select(WeatherStation).where(WeatherStation.station_type == station_type)
+    results = db_with_data_session.exec(statement)
+    weather_station = results.first()
+    yield weather_station
 
 
 
@@ -36,16 +35,15 @@ def test_creating_wapi(station):
 
 
 
-def test_get_responses_and_transform(station_type, db_with_data):
+def test_get_responses_and_transform(station_type, db_with_data_session):
     """comprehensive test given a database and a station model from that database, 
     go through all steps to get data from api, transform it, and save to db
     """
     
-    session = Session(db_with_data)
     statement = select(WeatherStation).where(WeatherStation.station_type == station_type)
-    results = session.exec(statement)
+    results = db_with_data_session.exec(statement)
     station = results.first()
-    session.close()
+
     # create api object for this station
     wapi = API_CLASS_TYPES[station.station_type](station)
     # make api request
@@ -65,14 +63,15 @@ def test_get_responses_and_transform(station_type, db_with_data):
     # check that there is some weather data, and 200 status
     assert isinstance(api_response_records[0].response_text, str)
 
-    # save response(s) to database
-    session = Session(db_with_data)
+    
 
+    # save response(s) to database
     for response in api_response_records:
         assert wapi.data_present_in_response(response)
-        session.add(response)
-        session.commit()
+        db_with_data_session.add(response)
+        db_with_data_session.commit()
 
+    # check that they were saved
     for response in api_response_records:
         assert response.id is not None
         assert isinstance(response.id, int)
@@ -89,7 +88,7 @@ def test_get_responses_and_transform(station_type, db_with_data):
         assert wapi.data_present_in_response(response)
 
 
-    # check the first response record to see if it has what we need
+    # check the first response record to see if it has what we need to make some readings
     response_data = api_response_records[0].response_text
     response_data = json.loads(response_data)
 
@@ -102,8 +101,7 @@ def test_get_responses_and_transform(station_type, db_with_data):
         assert sensor_count > 0 
 
     # attempt transform  for this station type
-    # the Readings model also validates the data
-        
+    # the Readings model also validates the data        
     readings = wapi.transform(api_response_records)
     assert isinstance(readings, list)
     assert len(readings) > 0
@@ -115,10 +113,10 @@ def test_get_responses_and_transform(station_type, db_with_data):
         #TODO test that the datetime is close (within an hour?) to current UTC time datetime.utcnow()  
         #TODO test that the datetime is closer (within an 30 minutes) to time of the api request
 
-    # save to database
+    # save readings to database
     for reading in readings:
-        session.add(reading)    
-        session.commit()
+        db_with_data_session.add(reading)    
+        db_with_data_session.commit()
     
     # check all the readings
     for reading in readings:
@@ -132,24 +130,27 @@ def test_get_responses_and_transform(station_type, db_with_data):
 
     # try to get the readings from the database and test them. 
     stmt = select(Reading, WeatherStation).join(WeatherStation).where(WeatherStation.id  == station.id)
-    reading_records = session.exec(stmt).all()
+    reading_records = db_with_data_session.exec(stmt).all()
 
     # there must be at least as many records in db as we just put in
     # TODO use the IDs in the api_response_records to limit the readings pulled to match we just made
     assert len(reading_records) >= len(readings)
     
+    
     for reading_record in reading_records:
         reading = reading_record.Reading
+        
         assert isinstance(reading.data_datetime, datetime)
+        assert is_utc(reading.data_datetime)
+
         assert isinstance(reading.atemp, float)
         if station_type != 'LOCOMOS':
             assert isinstance(reading.pcpn , float)
         assert isinstance(reading.relh , float)
+
         # leaf wetness is only on some stations, but we don't have a way to tell which sensors are present yet
         # assert isinstance(reading.lws0 , float)
 
-
-    session.close()
 
 
 def test_response_errors(station):

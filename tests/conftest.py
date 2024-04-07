@@ -49,7 +49,7 @@ def rm_sqlite_file(db_url):
 
     return True
 
-@pytest.fixture(scope = 'module')
+@pytest.fixture(scope = 'session')
 def station_file():
     test_file = 'data/test_stations.tsv'
     return(test_file)
@@ -62,7 +62,12 @@ def station_file():
 # TODO consider changing session based on this post:
 # https://stackoverflow.com/questions/58660378/how-use-pytest-to-unit-test-sqlalchemy-orm-classes 
 
-@pytest.fixture(scope = 'module')
+@pytest.fixture
+def test_host(scope = 'session'):
+    # override to test remote hosts
+    return 'localhost'
+    
+@pytest.fixture(scope = 'session')
 def test_db_url(request: pytest.FixtureRequest)->str:
     return request.config.getoption("--dburl")
 
@@ -70,36 +75,50 @@ def test_db_url(request: pytest.FixtureRequest)->str:
 @pytest.fixture(scope = 'module')
 def db_engine(request: pytest.FixtureRequest, test_db_url: str):
     
-    # remove existing file if it's here
-    rm_sqlite_file(test_db_url)
+    ## PREVIOUS SQLITE-ORIENTED CODE COMMENTED OUT
+    # # remove existing file if it's here
+    # rm_sqlite_file(test_db_url)
 
-    #This fixes all errors except one
-    #test_db_url = "sqlite:///:memory:"
+    # #This fixes all errors except one
+    # #test_db_url = "sqlite:///:memory:"
 
-    # need to create new test-only db, 
-    # would like to use a database.py module method rather than sqlmodel code here explicitly 
+    # # need to create new test-only db, 
+    # # would like to use a database.py module method rather than sqlmodel code here explicitly 
     
-    if request.config.getoption("--echo"):
-        echo_option = True
-    else:
-        echo_option = False
+    # if request.config.getoption("--echo"):
+    #     echo_option = True
+    # else:
+    #     echo_option = False
 
-    engine = create_engine(url = test_db_url, echo=echo_option)
+    # engine = create_engine(url = test_db_url, echo=echo_option)
+
+    from ewxpwsdb.db.database import temp_pg_engine, drop_temp_pg_engine
     
+    test_host = 'localhost'
+    engine = temp_pg_engine(host = test_host)
     # create the test database
     init_db(engine)
 
     yield engine
     
     engine.dispose()
-    rm_sqlite_file(test_db_url)
+    result = drop_temp_pg_engine(engine)
+    if not result:
+        print(f"unable to delete db {engine.url.database} on {test_host}")
+    
+    # rm_sqlite_file(test_db_url)
 
 
-@pytest.fixture(scope = 'module')
+@pytest.fixture(scope = 'session')
 def db_session(db_engine: Engine):
+
 
     with Session(db_engine) as session:
         yield session
+        session.close()
+
+    from sqlalchemy.orm import close_all_sessions
+    close_all_sessions()
         
     # session = Session(db_engine)
     # yield session
@@ -125,12 +144,14 @@ def db_with_data(db_engine: Engine, request: pytest.FixtureRequest):
     
     yield db_engine
 
-@pytest.fixture(scope = 'module')
+@pytest.fixture(scope = 'function')
 def db_with_data_session(db_with_data: Engine):
 
     with Session(db_with_data) as session:
         yield session
+        session.close()
+    
 
-@pytest.fixture(scope='module')
+@pytest.fixture(scope='session')
 def station_type(request: pytest.FixtureRequest)->str:
     return ( request.config.getoption("--station_type").upper() )

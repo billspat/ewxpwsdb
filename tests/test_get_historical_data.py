@@ -15,6 +15,8 @@ def station(station_type, db_with_data):
         statement = select(WeatherStation).where(WeatherStation.station_type == station_type)
         results = session.exec(statement)
         weather_station = results.first()
+
+
     return(weather_station)
 
 
@@ -43,6 +45,8 @@ def test_get_historical_data(station, db_with_data):
     # this should fail
     with pytest.raises(RuntimeError):
         collector.get_historic_data(overwrite=False, days_limit=1)
+
+    collector.close()
 
     
 
