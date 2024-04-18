@@ -260,19 +260,24 @@ class WeatherAPI(ABC):
         return self._data_present_in_response(response_data)
 
 
-    def transform(self, api_response_records:list[APIResponse]|None = None)->list[Reading]:
+    def transform(self, api_response_records:list[APIResponse]|None = None, database:bool = True)->list[Reading]:
         """
         Transforms data and return it in a standardized format. 
         data: optional input used to load in data if transform of existing data dictionary is required.
         Usage from stored data
         dict_api_record = db.get_by_data(something) or get_by_req_id(request_id)
         Args:
-            api_response_records (list[APIResponse], optional): APIresponse model objects, not simple Response. see models.py
-                    Note that until these are inserted into the database, they don't have ID 
-                    values and this method will fail since Reading.apiresponse_id is a required field
+            api_response_records (list[APIResponse], optional):
 
+        Args:
+            api_response_records (list[APIResponse] | None, optional):  APIresponse model objects, not simple Response. see models.py
+            database (bool, optional): Flag to allow non-database APIResponse objects to be used to make readings.  Set to false to allow Reading object to be created from  APIResponse that is not in the database.   Ignored if APIResponse has an ID.  Defaults to True.
+
+        Returns:
+            list[Reading]: List of Reading records with metadata.   If database=False and APIResponse do not have an id, readings will have id==0
         """
-
+        
+        
         # if no data was sent, use data stored from latest request
         api_response_records = api_response_records or self.current_api_response_records
         
@@ -292,7 +297,7 @@ class WeatherAPI(ABC):
                 # convert and accumulate readings for all of the request responses in the list
                 if isinstance(sensor_data, list):
                     # convert those to Reading model objects with meta data
-                    readings = [Reading.model_validate_from_station(data, api_response_record) for data in sensor_data]
+                    readings = [Reading.model_validate_from_station(data, api_response_record, database) for data in sensor_data]
                     all_response_readings.extend(readings)
 
                 else:

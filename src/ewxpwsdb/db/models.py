@@ -85,12 +85,35 @@ class Reading(SQLModel, table=True):
     relh  : Optional[float] = Field(default=None, description="relative humdity, percent")
     lws0  : Optional[float] = Field(default=None, description="this is an nominal reading or 0 or 1 (wet / not wet)")  
 
-    # TODO rename this ..._from_response instead of .._from_station as the metadata is all coming from the response
     @classmethod
-    def model_validate_from_station(cls, sensor_data, api_response: APIResponse):
-        """ add required metadata to dict of transformed weather data"""
-        r = sensor_data # start with this dict and add meta data
-        r['apiresponse_id']      = api_response.id    
+    def model_validate_from_station(cls, sensor_data:dict, api_response: APIResponse, database = True):
+        """ create reading from a list of sensor data from the `transform()` method of WeatherAPI, and add required metadata to dict of transformed weather data.   If the APIResponse record has not been stored 
+        in the database already, then it won't have an ID and validation will fail.  set the flag 'database' = False to allow validation.   
+
+        Args:
+            sensor_data (list): list of sensor values extracted from APIResponse using the 'transform' method of Weather API
+            api_response (APIResponse): object from _get_readings method of APIResponse that contains meta data for where the sensor values come from 
+            database (bool, optional): Flag to allow non-database APIResponse objects to be used to make readings.  Set to false to allow using an APIResponse that is not in the database.   Ignored if APIResponse has an id.   Defaults to True.
+
+        Raises:
+            ValidationError: If the APIResponse object does not have an ID (e.g. not in the database), and the 'database' flag is not set to False
+
+         Returns:
+            Reading: Reading object. sensor values with metadata.   If database=False and APIResponse do not have an id, apireaponse_id==0    
+        """
+        r:dict = sensor_data # start with this dict and add meta data, r == reading
+
+        from pydantic import ValidationError
+
+        if not api_response.id:
+            if database:
+                raise ValidationError("Reading can't be created from APIResponse without database id, unless add flag 'database=False'")
+            else:
+                # this allows the transform to proceed but these reading records can't be inserted into the database
+                r['apiresponse_id']  = 0
+        else:
+            r['apiresponse_id'] = api_response.id
+            
         # redundant columns to reduce the need for joins
         r['request_id']          = api_response.request_id
         r['weatherstation_id']   = api_response.weatherstation_id
