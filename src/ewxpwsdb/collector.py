@@ -24,7 +24,47 @@ class Collector():
     current_api_response: APIResponse|None = None
 
     @classmethod
+    def from_station_code(cls, station_code:str, engine:Engine = engine):
+        """Create collector object from a valid station_code
+
+        Args:
+            station_code (str): valid station table station_code
+            engine (Engine, optional):   Defaults to engine created from imported database module
+
+        Raises:
+            ValueError: if not station is found matching station code, or multiple stations match
+
+        Returns:
+            Collector: collector object for the station with that station code 
+        """
+
+        with Session(engine) as session:
+            stmt = select(WeatherStation).where(WeatherStation.station_code == station_code)
+            records = session.exec(stmt).fetchall()
+
+            if len(records) > 1:
+                raise ValueError(f"collector.from_station_code value error: station_code {station_code} returned multiple records")
+
+            if len(records) == 1:
+                station:WeatherStation = records[0]
+                return cls(station = station, engine=engine)
+            else:
+                raise ValueError(f"collector class value error: no station record with station_code {station_code} found")
+            
+    @classmethod
     def from_station_id(cls, station_id:int, engine:Engine = engine):
+        """Create collector object from a valid database id for the station table
+
+        Args:
+            station_id (int): valid station table id value
+            engine (Engine, optional):   Defaults to engine created from imported database module
+
+        Raises:
+            ValueError: if not station is found with id
+
+        Returns:
+            Collector: collector object for the station with id = stationid
+        """
         with Session(engine) as session:
             station = session.get(WeatherStation, station_id)
             if station:

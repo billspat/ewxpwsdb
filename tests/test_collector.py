@@ -49,6 +49,10 @@ def viable_interval(station_type):
     return(interval)
 
 def test_collector_class(station, db_with_data):
+    """can we instantiate a collector object given a station table id?
+
+    assumes station param is object is from the db  
+    """
     # we are using a station instead of just an id so we can test the Collector class can get a station
 
     station_id = station.id
@@ -64,6 +68,27 @@ def test_collector_class(station, db_with_data):
     assert collector.current_reading_ids == []
     assert isinstance(collector.id, int)
     collector.close()
+
+def test_collector_class_from_station_code(station, db_with_data):
+    """can we instantiate a collector object given a station code?
+    
+    assumes station param is object is from the db
+    """
+    station_code = station.station_code
+    collector = Collector.from_station_code(station_code=station_code, engine=db_with_data)
+    
+    # did we instantiate the class?
+    assert isinstance(collector, Collector)
+    # is the station we sent the same one the collector pulled from the db
+    assert collector.station.station_code == station.station_code
+
+    assert isinstance(collector.weather_api, WeatherAPI)    
+    assert collector.current_api_response_record_ids == []
+    assert collector.current_reading_ids == []
+    assert isinstance(collector.id, int)
+    collector.close()
+    
+
 
 def test_collect_request(station,db_with_data):
     
