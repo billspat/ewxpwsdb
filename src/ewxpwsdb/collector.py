@@ -13,7 +13,7 @@ from typing import Sequence
 from ewxpwsdb.db.database import Session, engine
 from ewxpwsdb.db.models import WeatherStation, APIResponse, Reading
 from ewxpwsdb.weather_apis import API_CLASS_TYPES
-from ewxpwsdb.time_intervals import one_day_interval, UTCInterval, is_utc, previous_fourteen_minute_interval
+from ewxpwsdb.time_intervals import one_day_interval, UTCInterval, is_utc, previous_fourteen_minute_interval, fifteen_minute_mark
 
 class Collector():
     """class to enable collecting data from station apis and store in a database.  
@@ -280,7 +280,7 @@ class Collector():
         result = self._session.exec(stmt)
         return(result.fetchall())   
 
-    def get_latest_reading(self):
+    def get_latest_reading(self)->Reading|None:
         """convenience function to pull one reading ordered by date"""
         readings = self.get_readings(n=1, order_by='desc')
         if len(readings)>0:
@@ -346,14 +346,26 @@ class Collector():
 
 
     def catch_up(self):
-        """when the regular connection schedule is missed, there may be missing data for this station.  This determines the last time the data is present and pulls from there """
+        """determines the most recent timestamp of weather data, and attempts to request all data missing and stores in the database= """
 
         # look in database to get most recent reading (e.g. sort by data descending limit 1)
         # get the datetime for this reading
+        # if no reading, raise an exception
         # use that as the starttime and previous 15 mark as end time
         # get readings, transform, and store in the database
-
-        pass
+        # if there is a problem, don't try to catch the exception let the caller catch, but -some- data may be written 
+        
+        reading = self.get_latest_reading()
+        if not reading:
+            # if there are no readings at all (e.g. new station, have to run the get historic data first)
+           raise RuntimeError(f"attempting to 'catchup' weather data for station {self.station.station_code} but there is no data at all, cancelling catchup process")
+       
+        interval_since_last_reading = UTCInterval(start = reading.data_datetime + timedelta(minutes = 1), end  = fifteen_minute_mark() )
+        # this has the side effect of storing in the database, we don't keep the api data at all
+        # this can raise an exception sometime in the middle, for example if the station is turned off and there is no data
+        saved_api_data = self.request_and_store_weather_data_utc(interval= interval_since_last_reading)
+        return self.current_reading_ids
+        
         
     def close(self):
         """closes the session opened for this collector"""
