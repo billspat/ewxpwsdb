@@ -17,6 +17,7 @@ def weather_stations(station_file):
 
 @pytest.fixture()
 def weather_station_of_type(weather_stations, station_type):
+    """ gets the first station matching station_type in the station data file"""
     one_station_data = list(filter(lambda x: (x['station_type']==station_type), weather_stations))[0]
     station = WeatherStation.model_validate(one_station_data) 
     yield(station)
@@ -25,12 +26,14 @@ def weather_station_of_type(weather_stations, station_type):
 def wapi(weather_station_of_type):
     return (API_CLASS_TYPES[weather_station_of_type.station_type](weather_station_of_type))
 
-def test_can_create_station_from_file(station_file):
+def test_can_read_station_file(station_file):
     assert(os.path.exists(station_file))
-
     stations = read_station_table(station_file)
     assert stations is not None
-    assert isinstance(stations, list)
+
+def test_can_create_station_from_file(station_file):
+    
+    stations = read_station_table(station_file)
     station_data = stations[0]
     station = WeatherStation.model_validate(station_data) 
     assert isinstance(station, WeatherStation)
@@ -45,7 +48,6 @@ def test_can_create_station_from_file(station_file):
     assert isinstance(api_config_dict, dict)
     
 def test_can_create_weather_api_object(weather_station_of_type, station_type):
-
 
     wapi = API_CLASS_TYPES[weather_station_of_type.station_type](weather_station_of_type)
     assert wapi.station_type == station_type

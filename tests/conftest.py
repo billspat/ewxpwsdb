@@ -50,9 +50,16 @@ def rm_sqlite_file(db_url):
     return True
 
 @pytest.fixture(scope = 'session')
-def station_file():
-    test_file = 'data/test_stations.tsv'
-    return(test_file)
+def station_file(request: pytest.FixtureRequest):
+    file_path = request.config.getoption("--file")
+    if not file_path:
+        file_path = 'data/test_stations.tsv'
+    
+    if not os.path.exists(file_path):
+        raise FileExistsError(f"can't find station test data file {file_path}")
+    
+    return(file_path)
+
 
 ##### Database Fixtures
 # the goal of these is to allow test modules to create a temporary test 
@@ -135,12 +142,14 @@ def test_station_data(request: pytest.FixtureRequest):
 
 
 @pytest.fixture(scope = 'module')
-def db_with_data(db_engine: Engine, request: pytest.FixtureRequest):
+def db_with_data(db_engine: Engine, request: pytest.FixtureRequest, test_station_data):
 
     if not request.config.getoption("--no-import"):   
-        station_file = request.config.getoption("--file")
-        # will raise exception if there is a problem
-        import_station_file(station_file, db_engine)
+        # station_file = request.config.getoption("--file")
+        # # will raise exception if there is a problem
+        # import_station_file(station_file, db_engine)
+        from ewxpwsdb.db.importdata import import_station_records
+        import_station_records(weatherstation_data=test_station_data, engine=db_engine)
     
     yield db_engine
 
