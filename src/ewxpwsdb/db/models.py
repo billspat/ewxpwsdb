@@ -23,6 +23,7 @@ class WeatherStation(SQLModel, table=True):
     lat: float  #TODO: use decimal and specify the exact precision Decimal = Field(default=0, max_digits=5, decimal_places=3)
     lon: float
     location_description: Optional[str] = None
+    background_place: str
     api_config: str = Field(default = "{}", description="JSON holding configuration to access the vendor cloud api")
 
 class APIResponse(SQLModel, table=True):
