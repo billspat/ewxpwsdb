@@ -24,11 +24,12 @@ def read_station_table(tsv_file_path:str)->list[dict[str, typing.Any]] | None:
     weatherstation_data = []
     try:
         if not os.path.exists(tsv_file_path): 
-            warnings.warn(Warning("File not found {}".format(tsv_file_path)))
+            err_msg = f"File not found {tsv_file_path}"
+            warnings.warn(Warning(err_msg))
             return None
         
         header = False
-        # fieldnames = ['station_code','station_type','install_date','timezone','ewx_user_id','lat','lon','location_descriptoin','api_config']
+        # fieldnames = ['station_code','station_type','install_date','timezone','ewx_user_id','lat','lon','location_description','background_place','api_config']
         with open(tsv_file_path, "r") as csvfile:
             # read as dicts, assumes first row is header row
             csvdictreader = csv.DictReader(csvfile, quotechar="'", delimiter='\t')
@@ -67,7 +68,7 @@ def import_station_records(weatherstation_data:list, engine):
                 session.commit()
             except IntegrityError:
                 session.rollback()  
-                print(f"Station with type '{s['station_type']}' already exists in the database")
+                print(f"Station with code '{s['station_code']}' already exists in the database, not overwriting existing record")
 
         # actually insert data, will fail if there are duplicate records
         session.close()
