@@ -50,7 +50,6 @@ def main()->int:
     # get  most recent data and print it (for now) 
 
     api_response = collector.weather_api.get_readings()
-    ########### this is not working 
     weather_data = collector.weather_api.transform(api_response,database = False)
     for reading in weather_data:
         print(reading)
