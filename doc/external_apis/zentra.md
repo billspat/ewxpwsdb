@@ -95,19 +95,10 @@ print(zreadings.transformed_resp) # print transformed response in list of dict f
 
 Sample RAW JSON API response and the transformed response outputs may be viewed from the project [SharePoint Folder](https://michiganstate.sharepoint.com/:f:/r/sites/Geography-EnviroweatherTeam/Shared%20Documents/Data%20on%20Demand/ADS%20ENVWX%20API%20Project/Vendor%20API%20and%20station%20info/Sample%20Weather%20Data%20Output?csf=1&web=1&e=55ky0M).
 
-### Special Consideration
+### Special Considerations
 
-Zentra API has built in API call rate limiter that rejects any subsequent API call request within 1-min. In order to avoid getting this in our operation, we implemented bypassing routine in our Python binding.
+Zentra API has built in API call rate limiter that rejects any subsequent API call request within 1-min, returns a `429` error code (*too many requests**) and shows the number of seconds until the next call can be made.   This package catches that error code and simply waits for the number of seconds and requests data again. 
 
-```python
-# Send the request and get the JSON response
-while True:
-  resp = Session().send(self.request)
-  if resp.status_code != 429:
-    break
-  print("message: {}".format(resp.text))
-  sleep(60)
-```
+The Zentra cloud API will return maximum of 2000 weather records per request.  For a station that samples weather every 5 minutes, this translates to just under 7 days of data maximum per request.   If a long time interval is requested (for example, for requesting historical data or data gaps during down time when a station comes on-line), this package splits up that interval and makes multiple API requests.  However due to the rate limiter described above, you will have wait between each request.   
 
-By encapsulating with infinite `while` loop, Python binding will make initial call and then if the returned HTTP status code is ***anything other than*** `429` 'Too Many Requests', it quits the `while` loop and execute subsequent methods to completion; however, if the response do indeed get `429` code, it will print the message and ***wait 60 seconds*** before submitting same request again. 
-
+The Zentra Cloud api takes at least 5 minutes from the current time to have weather data ready to request.   If you request a time interval for which there is no data in any portion, it seems to consider this an invalid interval and will return no data.  Hence you can't include the current time in your request.   For the most current data, request a time interval the spans up to at most 5 -10 minutes ago.  

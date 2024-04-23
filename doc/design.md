@@ -22,7 +22,7 @@ this is a running list of things to get working for this sprint:
 
 - [X] return True/False from initdb , test for success
 - [X] convert all to tests
-- [ ] better session management? get the 'get_session' working instead of instantiating a Session directly to capture tha function in one place 
+- [x] better session management? get the 'get_session' working instead of instantiating a Session directly to capture tha function in one place 
     - [X] better way to specify the db file to work depending on context, one for dev, prod, testing like Rails?   for testing currently uses cli param
     - [X] don't use globals! middle ground - use params with globals as defaults but overridable
     - [ ] figure out how to use yield properly for 'get_session'
@@ -34,25 +34,25 @@ this is a running list of things to get working for this sprint:
 - [x] re-work "weather station" classes from previoius versions to new API-focused design
     - [x] Base classes
     - [x] constants
-- [ ] edit station API and transform methods for new db models
-    - [ ] Davis
+- [x] edit station API and transform methods for new db models
+    - [x] Davis
         - [x] API
-        - [ ] transform
+        - [x] transform
     - [x] Spectrum
         - [x] API
         - [x] transform
-    - [ ] Onset
-        - [ ] API
-        - [ ] transform    
+    - [x] Onset
+        - [x] API
+        - [x] transform    
     - [x] Zentra
         - [x] API
         - [x] transform
-    - [ ] Rainwise
-        - [ ] API
-        - [ ] transform
-    - [ ] Locomoos
-        - [ ] API
-        - [ ] transform
+    - [x] Rainwise
+        - [x] API
+        - [x] transform
+    - [x] Locomoos
+        - [x] API
+        - [x] transform
 
 
 
@@ -60,7 +60,7 @@ this is a running list of things to get working for this sprint:
     - [x] Spectrum
     - [x] others
 
-- [ ] Davis API has changed and errors with stale time stamp. add tests for timezone conversion code 
+- [x] Davis API has changed and errors with stale time stamp. add tests for timezone conversion code 
 
 - [x] create a collector class to combine weather stations, api, and save readings to db
     - [x] tests
@@ -93,7 +93,7 @@ def must_be_valid_timezone_key(cls,v: str) -> str:
 
 ```
 
-- [ ] apply `mypy` typing validator
+- [x] apply `mypy` typing validator
 
 *documentation*
 
@@ -125,12 +125,15 @@ can of course pull data from stations at any time, and can read/write from datab
 
 ## models  # database models
 
-    WeatherStation - physical station info, station type,  + api connect deets.  same for all station types
+    WeatherStation - physical station info, station type,  
+    
+    + api connect deets.  same for all station types
         consider adding 'auth_token' a per-station token needed to write any aspect of the station
 
     WeatherStationConfig  : 1-1 table just be a single string fields to store JSON to keep it flex. the methods for handling this config could be contained in this class
-    Readings
-        sensor readings by timestamp and station id, linked to 
+    
+- [ ]WeatherAPI: 
+- [ ] Readings: sensor readings by timestamp and station id, linked to 
     
     Requests # reading_events, accesses to APIs, timestamps, unprocessed response data
 
@@ -169,45 +172,38 @@ can of course pull data from stations at any time, and can read/write from datab
 
     
 
+## Database
+
+- [ ] move db into aws for shared access
 
 
+## Orchestration
 
+use Prefect, looks great  https://www.prefect.io/opensource 
 
+### local
 
-WeatherStation Table?
-    = db table, fields common to all stations, physical attributes
-    id (db, 
-    station_type
-    location lat, lon
-    location_description
-    station_name
+- [ ] install on laptop to fill up db (local and or cloud)
+- [ ] run jobs for few days, use 'catch-up' method to get latest data 
+- [ ] run orchestrator local, database remote for shared access
 
-    station_id (uniqu assigned code)
-    owner_id
-    install_date
-    updated
-    previous_station_id
-    record_created
-    record_updated
-    notes:text
-    last_known_status: string
-    api_config_json: string, valid json
+### cloud
+- [ ] try prefect cloud and see if free version is ok
+- [ ] move to a cheap aws EC2 instance for whole pipeline ($)
+- [ ] 
+- [ ] upgrade EC2 as needed
+- [ ] if need to scale, move to kubernetes EKS
 
-    table_name: weather_stations
+### MSU option using ICER data machine?
 
+this would be proof of concept only, as during maintenance 
+there is no data updated for PWS, which means models can't be run effectively.  
+if there is a weather event where a grower needs a model for a day, can't tolerate 8-12 hour downtime during business hours
 
-    parse_config(self):
-        station_config_type = ConfigTypes[self.station_type]
-        api_config_dict = 
-        config_dict = station_config_type.load(self.api_config_json)
+1. n  day recurring job (n = 5, 7?)
 
-
-WeatherStationAPI
-    all the current methods in weather station class to get API data
-    assigned to a weather station, but it's NOT A DB FIELD, it's a collection of methods
-
-DavisStation -inherits from weather station
-
-
-
+ - [ ] run ‘server’ inside a job on a node on the data machine, runs web server
+ - [ ] run a dask cluster for worker pool
+ - [ ] run tasks on cluster workers.  
+ - [ ] run postgresql in separate job
 
