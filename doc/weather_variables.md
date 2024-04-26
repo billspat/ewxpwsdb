@@ -4,7 +4,7 @@ The following are variables stored for weather stations.  These are named and de
 
 | **weather variable** | **sensor description**   | **units**    | **hourly summary**      | **daily summary**     | **notes** |
 |---                   |---                       |---           |---                      |---                    |---        |
-| **atemp**   | air temperature                   | C            | mean  | mean, min, max  |     |
+| **atmp**   | air temperature                   | C            | mean  | mean, min, max  |     |
 | **dwpt**    | dew point                         | C            | min   | min?            |     |
 | **lws0**    | leaf weatness, wet (1) or not (0) | unitless     | % time wet (sum/count)  | percent time wet  | * |
 | **pcpn**    | precipitation                     | mm           | sum   | sum             |     |
