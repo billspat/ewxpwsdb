@@ -132,7 +132,8 @@ def test_get_responses_and_transform(station_type, db_with_data_session):
         assert isinstance(reading.pcpn, float|None)  
         assert isinstance(reading.relh, float|None)  
         assert isinstance(reading.rpet, float|None)  
-        assert isinstance(reading.smst, float|None)  
+        assert isinstance(reading.smst, float|None) 
+        assert isinstance(reading.stmp, float|None) 
         assert isinstance(reading.srad, float|None)  
         assert isinstance(reading.wdir, float|None)  
         assert isinstance(reading.wspd, float|None)  
@@ -144,6 +145,14 @@ def test_get_responses_and_transform(station_type, db_with_data_session):
             assert isinstance(reading.pcpn , float)
         assert isinstance(reading.relh , float)
 
+        # STATION BY STATION TYPE test of transformed variables
+        # TODO create station specific test files
+        if station_type == 'ZENTRA':
+            assert isinstance(reading.lws , float)  
+            assert isinstance(reading.srad, float)  
+            assert isinstance(reading.stmp, float)
+            assert isinstance(reading.wdir, float)  
+            assert isinstance(reading.wspd, float)  
 
 
     # try to get the readings from the database and test them. 

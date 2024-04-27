@@ -37,9 +37,14 @@ class ZentraAPI(WeatherAPI):
     # Update this to add more types of sensors.  assumes there is no transform of these values needed
     _sensor_transforms = {
         'Air Temperature':'atmp', 
+        'Leaf Wetness':'lws',
         'Precipitation':'pcpn',
         'Relative Humidity':'relh',
-        'Leaf Wetness':'lws'
+        'Soil Temperature': 'stmp',
+        'Solar Radiation':'srad',
+        'Wind Speed':'wspd',
+        'Wind Direction':'wdir',
+        
         }
     
     def __init__(self, weather_station:WeatherStation, max_retries: int = 2):
