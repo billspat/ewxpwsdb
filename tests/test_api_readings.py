@@ -194,7 +194,7 @@ def test_response_errors(station):
     responses_of_future = wapi.get_readings(start_datetime=future_start_datetime, end_datetime=future_end_datetime)
     assert wapi.data_present_in_response(responses_of_future[0]) == False
 
-    # try from a year ago
+    # try from ten years ago
     distant_past_start_datetime = interval.start - timedelta(days = 3650)
     distant_past_end_datetime = interval.end - timedelta(days = 3650)
     
