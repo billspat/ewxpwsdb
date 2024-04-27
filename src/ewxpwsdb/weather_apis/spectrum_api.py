@@ -112,7 +112,7 @@ class SpectrumAPI(WeatherAPI):
         readings = []
         for record in response_data['EquipmentRecords']:
             reading = { 'data_datetime': self.dt_utc_from_str(record['TimeStamp']),
-                        'atemp': round((record['SensorData'][1]["DecimalValue"] - 32) * 5 / 9, 2),
+                        'atmp': round((record['SensorData'][1]["DecimalValue"] - 32) * 5 / 9, 2),
                         'pcpn' : round(record['SensorData'][0]["DecimalValue"] * 25.4, 2),
                         'relh' : round(record['SensorData'][2]["DecimalValue"], 2)
             }

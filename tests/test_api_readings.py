@@ -123,7 +123,7 @@ def test_get_responses_and_transform(station_type, db_with_data_session):
         # does it have an id => proxy for that is was saved in the db
         assert reading.id  is not None
         # TODO not all stations will have all sensors, so may need to tailor this list depending on station type
-        assert isinstance(reading.atemp, float)
+        assert isinstance(reading.atmp, float)
         if station_type != 'LOCOMOS':
             assert isinstance(reading.pcpn , float)
         assert isinstance(reading.relh , float)
@@ -143,7 +143,7 @@ def test_get_responses_and_transform(station_type, db_with_data_session):
         assert isinstance(reading.data_datetime, datetime)
         assert is_utc(reading.data_datetime)
 
-        assert isinstance(reading.atemp, float)
+        assert isinstance(reading.atmp, float)
         if station_type != 'LOCOMOS':
             assert isinstance(reading.pcpn , float)
         assert isinstance(reading.relh , float)

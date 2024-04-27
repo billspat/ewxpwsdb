@@ -104,7 +104,7 @@ class RainwiseAPI(WeatherAPI):
         for key in response_data['times']:
             reading = {
                     'data_datetime' : self.dt_utc_from_str(response_data['times'][key]),
-                    'atemp': round((float(response_data['temp'][key]) - 32) * 5/9, 2),
+                    'atmp': round((float(response_data['temp'][key]) - 32) * 5/9, 2),
                     'pcpn' : round(float(response_data['precip'][key]) * 25.4, 2),
                     'relh' : round(float(response_data['hum'][key]), 2)
                     }

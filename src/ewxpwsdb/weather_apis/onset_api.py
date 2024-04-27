@@ -35,7 +35,7 @@ class OnsetAPIConfig(WeatherAPIConfig):
     client_secret : str = Field(description="client specific value provided by Onset")
     ret_form : str = Field(description="The format data should be returned in. Currently only JSON is supported.")
     user_id : str = Field(description="alphanumeric ID of the user account This can be pulled from the HOBOlink URL: www.hobolink.com/users/<user_id>")
-    sensor_sn : dict[str,str] = Field(description="a dict of sensor alphanumeric serial numbers keyed on sensor type, e.g. {'atemp':'21079936-1'}") 
+    sensor_sn : dict[str,str] = Field(description="a dict of sensor alphanumeric serial numbers keyed on sensor type, e.g. {'atmp':'21079936-1'}") 
 
 class OnsetAPI(WeatherAPI):
     
@@ -148,7 +148,7 @@ class OnsetAPI(WeatherAPI):
         
         readings = {}
         sensor_sns = self.api_config.sensor_sn
-        atemp_key = sensor_sns['atemp']
+        atmp_key = sensor_sns['atmp']
         pcpn_key = sensor_sns['pcpn']
         relh_key = sensor_sns['relh']
         # station_sn = response_data["observation_list"][0]["logger_sn"]
@@ -166,8 +166,8 @@ class OnsetAPI(WeatherAPI):
             readings[ts]["data_datetime"] =  datetime.strptime(ts, '%Y-%m-%d %H:%M:%S').astimezone(timezone.utc)
             
             # Set entries to contain proper data
-            if reading["sensor_sn"] == atemp_key:
-                readings[ts]["atemp"] = round(float(reading['si_value']), 2)
+            if reading["sensor_sn"] == atmp_key:
+                readings[ts]["atmp"] = round(float(reading['si_value']), 2)
             elif reading["sensor_sn"] == pcpn_key:
                 readings[ts]["pcpn"] = round(float(reading['si_value']), 2)
             elif reading["sensor_sn"] == relh_key:

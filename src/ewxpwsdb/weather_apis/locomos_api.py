@@ -40,7 +40,7 @@ class LocomosAPI(WeatherAPI):
     # ewx_var_mapping = {
     #     # LOCOMOS: EWX
     #     'rh':'relh',
-    #     'temp':'atemp',
+    #     'temp':'atmp',
     #     'prep':'pcpn',
     #     'lws1':'lws0',   # this is not percent wet, but wet y/n -> 0/1
     # }
@@ -49,7 +49,7 @@ class LocomosAPI(WeatherAPI):
     ewx_var_mapping = {
         # LOCOMOS: EWX
         'humid':'relh',
-        'temp':'atemp',
+        'temp':'atmp',
         'precip':'pcpn',
         'lws1':'lws0',   # this is not percent wet, but wet y/n -> 0/1
     }

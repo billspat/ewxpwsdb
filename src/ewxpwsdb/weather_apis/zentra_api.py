@@ -36,7 +36,7 @@ class ZentraAPI(WeatherAPI):
     # sensor names that appear in response data and equiv EWX fields.  
     # Update this to add more types of sensors.  assumes there is no transform of these values needed
     _sensor_transforms = {
-        'Air Temperature':'atemp', 
+        'Air Temperature':'atmp', 
         'Precipitation':'pcpn',
         'Relative Humidity':'relh',
         'Leaf Wetness':'lws0'

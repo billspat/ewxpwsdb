@@ -162,7 +162,7 @@ class DavisAPI(WeatherAPI):
                 if 'temp_out' in record.keys():
                         reading = {            
                             'data_datetime': datetime.utcfromtimestamp(record['ts']).astimezone(timezone.utc),
-                            'atemp': round((record['ts'] - 32) * 5 / 9, 2),
+                            'atmp': round((record['ts'] - 32) * 5 / 9, 2),
                             'pcpn': round(record['rainfall_mm'] * 25.4, 2),
                             'relh': round(record['hum_out'], 2)
                             }

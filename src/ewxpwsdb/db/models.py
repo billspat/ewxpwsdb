@@ -6,8 +6,8 @@ from sqlalchemy import DateTime
 from pydantic import AwareDatetime
 
 
-
 from ewxpwsdb import __version__
+
 class StationType(SQLModel, table = True):
     """code representing the type of station, which dictates which class to use for API connecting and decoding """
     station_type: str = Field(primary_key=True)
@@ -81,7 +81,7 @@ class Reading(SQLModel, table=True):
 
     # sensor fields
     # TODO use decimal for accuracy    
-    atemp : Optional[float] = Field(default=None, description="air temperature, celsius") 
+    atmp : Optional[float] = Field(default=None, description="air temperature, celsius") 
     pcpn  : Optional[float] = Field(default=None, description="precipitation, mm, > 0")   
     relh  : Optional[float] = Field(default=None, description="relative humdity, percent")
     lws0  : Optional[float] = Field(default=None, description="this is an nominal reading or 0 or 1 (wet / not wet)")  

@@ -85,7 +85,7 @@ print(zreadings.transformed_resp) # print transformed response in list of dict f
 
 | Zentra Measurement Variable | Backend DB Variable |
 | :-------------------------: | :-----------------: |
-|       Air Temperature       |        atemp        |
+|       Air Temperature       |        atmp        |
 |        Precipitation        |        pcpn         |
 |      Relative Humidity      |        relh         |
 

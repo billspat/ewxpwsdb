@@ -154,7 +154,7 @@ def test_collect_request(station,db_with_data):
     # this assumes there is actually data here
     assert isinstance(readings[0], Reading)
     reading = readings[0]
-    assert isinstance(reading.atemp, float)
+    assert isinstance(reading.atmp, float)
 
     #this depends on the ordering of the requests/responses and may or may not be true
     # change to look for this manually created id in the request_id's for all responses
