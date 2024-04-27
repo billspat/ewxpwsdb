@@ -20,33 +20,38 @@ def station(station_type, db_with_data):
     return(weather_station)
 
 
-def test_get_historical_data(station, db_with_data):
+@pytest.fixture(scope='module')
+def station_collector(station, db_with_data):
+    collector = Collector(station, engine=db_with_data)
+    yield(collector)
+    collector.close()
+
+
+
+def test_get_historical_data(station_collector):
     """Test collecting historical data as if the station was just added to the db
     this test should start with a db with only stations in it and no readings (scope is module for fixture)
     """
-    if station.station_type == 'RAINWISE':
-        pytest.fail("sorry testing historical data for RAINWISE is not working yet since it does not have current data")
-
-    collector = Collector(station, engine=db_with_data)
+    # if station.station_type == 'RAINWISE':
+    #     pytest.fail("sorry testing historical data for RAINWISE is not working yet since it does not have current data")
 
     # there should be no readings in the db for this station
-    some_readings = collector.get_readings(n=1)
+    some_readings = station_collector.get_readings(n=1)
     assert some_readings == []
 
     # fillr up! Don't allow overwrite to ensure that check is working
     # limit the number of days so the test doesn't take for-ever
-    collector.get_historic_data(overwrite=False, days_limit=5)
+    station_collector.get_historic_data(overwrite=False, days_limit=5)
     
-    some_readings = collector.get_readings(n=10)
+    some_readings = station_collector.get_readings(n=10)
     print(f"example reading: {some_readings[0]}")
     assert some_readings != []
     assert len(some_readings) == 10
 
     # this should fail
     with pytest.raises(RuntimeError):
-        collector.get_historic_data(overwrite=False, days_limit=1)
+        station_collector.get_historic_data(overwrite=False, days_limit=1)
 
-    collector.close()
 
     
 
