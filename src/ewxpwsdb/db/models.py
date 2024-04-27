@@ -87,6 +87,7 @@ class Reading(SQLModel, table=True):
     relh  : Optional[float] = Field(default=None, description="relative humdity, percent")
     rpet  : Optional[float] = Field(default=None, description="Reference Potential Evapotranspiration")
     smst  : Optional[float] = Field(default=None, description="soil moisture")
+    stmp  : Optional[float] = Field(default=None, description="soil temperature, at depth 4 in, celsius")
     srad  : Optional[float] = Field(default=None, description="solar radiation")
     wdir  : Optional[float] = Field(default=None, description="wind direction, deg from North")
     wspd  : Optional[float] = Field(default=None, description="wind speed, kph")
