@@ -82,7 +82,7 @@ class Reading(SQLModel, table=True):
     # sensor fields
     # TODO use decimal for accuracy    
     atmp  : Optional[float] = Field(default=None, description="air temperature, celsius") 
-    lws0  : Optional[float] = Field(default=None, description="this is an nominal reading or 0 or 1 (wet / not wet)")  
+    lws  : Optional[float] = Field(default=None, description="this is an nominal reading or 0 or 1 (wet / not wet)")  
     pcpn  : Optional[float] = Field(default=None, description="precipitation, mm, > 0")   
     relh  : Optional[float] = Field(default=None, description="relative humdity, percent")
     

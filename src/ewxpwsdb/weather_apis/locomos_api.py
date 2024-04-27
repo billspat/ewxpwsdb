@@ -42,7 +42,7 @@ class LocomosAPI(WeatherAPI):
     #     'rh':'relh',
     #     'temp':'atmp',
     #     'prep':'pcpn',
-    #     'lws1':'lws0',   # this is not percent wet, but wet y/n -> 0/1
+    #     'lws1':'lws',   # this is not percent wet, but wet y/n -> 0/1
     # }
 
     # 2024 variables
@@ -51,7 +51,7 @@ class LocomosAPI(WeatherAPI):
         'humid':'relh',
         'temp':'atmp',
         'precip':'pcpn',
-        'lws1':'lws0',   # this is not percent wet, but wet y/n -> 0/1
+        'lws1':'lws',   # this is not percent wet, but wet y/n -> 0/1
     }
 
 
@@ -237,7 +237,7 @@ class LocomosAPI(WeatherAPI):
                 # we are not interested in all the values in the data, only those in our list of self.variables
                 if this_variable_name in self.ewx_var_mapping.keys():
                     ewx_variable_name = self.ewx_var_mapping[this_variable_name]
-                    if ewx_variable_name == 'lws0':
+                    if ewx_variable_name == 'lws':
                         readings[timestamp][ewx_variable_name] = self._lws_convert(sensor_record[colnumber["value.value"]])
                     else:
                         readings[timestamp][ewx_variable_name] = sensor_record[colnumber["value.value"]]
@@ -316,7 +316,7 @@ class LocomosAPI(WeatherAPI):
     #                 readings[result_dict['timestamp']] =  {'data_datetime': data_datetime}
                 
     #             # add sensor reading to reading dict for this timestamp
-    #             if var_name == "lws0":
+    #             if var_name == "lws":
     #                 readings[result_dict['timestamp']][var_name] = self._lws_convert(result_dict['value.value'])
     #             else:
     #                 readings[result_dict['timestamp']][var_name] = result_dict['value.value']

@@ -39,7 +39,7 @@ class ZentraAPI(WeatherAPI):
         'Air Temperature':'atmp', 
         'Precipitation':'pcpn',
         'Relative Humidity':'relh',
-        'Leaf Wetness':'lws0'
+        'Leaf Wetness':'lws'
         }
     
     def __init__(self, weather_station:WeatherStation, max_retries: int = 2):

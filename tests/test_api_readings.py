@@ -149,7 +149,7 @@ def test_get_responses_and_transform(station_type, db_with_data_session):
         assert isinstance(reading.relh , float)
 
         # leaf wetness is only on some stations, but we don't have a way to tell which sensors are present yet
-        # assert isinstance(reading.lws0 , float)
+        # assert isinstance(reading.lws , float)
 
 
 
