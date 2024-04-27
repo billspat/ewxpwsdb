@@ -79,13 +79,19 @@ class Reading(SQLModel, table=True):
     
     station_sampling_interval: int = Field(description = "number of minutes for sampling interval for this station, 5, 15 or 30.")
 
-    # sensor fields
-    # TODO use decimal for accuracy    
+    # sensor fields, see doc/weather_variables.md for details
     atmp  : Optional[float] = Field(default=None, description="air temperature, celsius") 
-    lws  : Optional[float] = Field(default=None, description="this is an nominal reading or 0 or 1 (wet / not wet)")  
+    dwpt  : Optional[float] = Field(default=None, description="dew point, celsius")
+    lws   : Optional[float] = Field(default=None, description="this is an nominal reading or 0 or 1 (wet / not wet)")  
     pcpn  : Optional[float] = Field(default=None, description="precipitation, mm, > 0")   
     relh  : Optional[float] = Field(default=None, description="relative humdity, percent")
-    
+    rpet  : Optional[float] = Field(default=None, description="Reference Potential Evapotranspiration")
+    smst  : Optional[float] = Field(default=None, description="soil moisture")
+    srad  : Optional[float] = Field(default=None, description="solar radiation")
+    wdir  : Optional[float] = Field(default=None, description="wind direction, deg from North")
+    wspd  : Optional[float] = Field(default=None, description="wind speed, kph")
+
+
 
     @classmethod
     def model_validate_from_station(cls, sensor_data:dict, api_response: APIResponse, database = True):

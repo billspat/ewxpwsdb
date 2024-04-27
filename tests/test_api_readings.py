@@ -122,11 +122,29 @@ def test_get_responses_and_transform(station_type, db_with_data_session):
     for reading in readings:
         # does it have an id => proxy for that is was saved in the db
         assert reading.id  is not None
-        # TODO not all stations will have all sensors, so may need to tailor this list depending on station type
+
+
+        # check that the attribute is defined _and_ the that value is float or nothing
+        # this is here to ensure the Reading model fields/attributes don't get update without also updating tests
+        assert isinstance(reading.atmp, float|None)  
+        assert isinstance(reading.dwpt, float|None)  
+        assert isinstance(reading.lws , float|None)  
+        assert isinstance(reading.pcpn, float|None)  
+        assert isinstance(reading.relh, float|None)  
+        assert isinstance(reading.rpet, float|None)  
+        assert isinstance(reading.smst, float|None)  
+        assert isinstance(reading.srad, float|None)  
+        assert isinstance(reading.wdir, float|None)  
+        assert isinstance(reading.wspd, float|None)  
+
+        # check that we definitely have working float values for sensors that _should_ be present
+        # note this test will fail if the weather station is down
         assert isinstance(reading.atmp, float)
         if station_type != 'LOCOMOS':
             assert isinstance(reading.pcpn , float)
         assert isinstance(reading.relh , float)
+
+
 
     # try to get the readings from the database and test them. 
     stmt = select(Reading, WeatherStation).join(WeatherStation).where(WeatherStation.id  == station.id)
