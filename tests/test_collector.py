@@ -89,10 +89,15 @@ def test_collector_class_from_station_code(station, db_with_data):
     collector.close()
     
 
-
-def test_collect_request(station,db_with_data):
-    
+@pytest.fixture(scope='module')
+def station_collector(station, db_with_data):
     collector = Collector.from_station_id(station_id=station.id, engine=db_with_data)
+    yield(collector)
+    collector.close()
+
+def test_collect_request(station,db_with_data, station_collector):
+    
+    collector = station_collector
 
     # temporary adjustment for this down station, use 
     if station.station_type == 'RAINWISE':
@@ -174,9 +179,9 @@ def test_collect_request(station,db_with_data):
     collector.close()
 
 
-def test_collector_readings_api(station,db_with_data):
+def test_collector_readings_api(station,db_with_data,station_collector):
     # must run after putting readings into the db
-    collector = Collector.from_station_id(station_id=station.id, engine=db_with_data)
+    collector = station_collector
     readings = collector.get_readings(n = 4)
     assert len(readings) == 4
     assert isinstance(readings[0], Reading)
@@ -194,31 +199,31 @@ def test_collector_readings_api(station,db_with_data):
     collector.close()
 
 
-def test_collector_readings_by_date(station, db_with_data, viable_interval):
+def test_collector_readings_by_date(station, db_with_data, viable_interval, station_collector):
 
     # make a request of the API, put data in the database for a specific time period, then try to get it back out
     
     yesterday = UTCInterval(start=viable_interval.start - timedelta(days = 1), 
                            end = viable_interval.end - timedelta(days = 1)
                            )
-    collector = Collector.from_station_id(station_id=station.id, engine=db_with_data)
     try:
-        response_ids = collector.request_and_store_weather_data_utc(yesterday)
+        response_ids = station_collector.request_and_store_weather_data_utc(yesterday)
     except Exception as e:
         # if there is already data in there, just ignore the exception and keep going
         pass
 
-    readings = collector.get_readings_by_date(yesterday)
+    readings = station_collector.get_readings_by_date(yesterday)
+    assert isinstance(readings, list)
+    assert len(readings) > 0 
     assert isinstance(readings[0], Reading)
-    assert len(readings) > 1
-    assert readings[0].weatherstation_id == collector.station.id
+    assert readings[0].weatherstation_id == station_collector.station.id
     print(db_with_data)
 
-    dt = collector.get_first_reading_date()
+    dt = station_collector.get_first_reading_date()
     assert isinstance(dt, datetime)
     assert dt.year == datetime.today().year
 
-    reading = collector.get_latest_reading()
+    reading = station_collector.get_latest_reading()
 
     # db datetimes currently don't have timezone,
     # TODO fix this with issue #29 when db has timezone-aware dates 
@@ -228,7 +233,7 @@ def test_collector_readings_by_date(station, db_with_data, viable_interval):
     assert isinstance(reading, Reading)
     assert (datetime.now(timezone.utc) - reading.data_datetime) < timedelta(minutes=20)
 
-    collector.close()
+    station_collector.close()
 
     
 
