@@ -9,6 +9,7 @@ import json
 from requests import Session, Request
 from datetime import datetime, timedelta, timezone
 from zoneinfo import ZoneInfo
+import logging
 
 # from pydantic import Field
 from . import STATION_TYPE
@@ -143,32 +144,91 @@ class DavisAPI(WeatherAPI):
         
         return False
         
+    # TODO move this to weather api for all classes to use
+    def f_to_c(self,f:float)->float:
+        """utility to convert Fahrenheit to centigrade
+
+        Args:
+            f (float): temp in F
+
+        Returns:
+            float: temperature in Celsius/centigrade
+        """
+        c:float = (f - 32.0) * (5.0 / 9.0)
+        return(c)
     
-    def _transform(self, response_data):
+    def _transform(self, response_data)->list:
         """
         Transforms data into a standardized format and returns it as a WeatherStationReadings object.
         data param if left to default tries for self.response_data processing
+
+        Based on sample from test station, the sensor IDs (which groups the readings) are as follows:
+
+        weather array (air temp, etc): 2
+        soil probe: 205
+        leaf wetness: 104
+        station health: 501
+        network connection: 502
+        atmos pressure: 3
+
         """
-        # if we can't decide to load JSON or not
+        # convert to JSON if it isn't already 
         if isinstance(response_data,str):
             response_data = json.loads(response_data)
 
         if 'sensors' not in response_data.keys():
+            ## no data
             return []
-        
-        readings = []
-        for lsid in response_data['sensors']:
-            for record in lsid['data']:    
-                if 'temp_out' in record.keys():
-                        reading = {            
-                            'data_datetime': datetime.utcfromtimestamp(record['ts']).astimezone(timezone.utc),
-                            'atmp': round((record['ts'] - 32) * 5 / 9, 2),
-                            'pcpn': round(record['rainfall_mm'] * 25.4, 2),
-                            'relh': round(record['hum_out'], 2)
-                            }
-                        readings.append(reading)
+
+
+        readings_by_datetime = {}
+
+        for sensor in response_data['sensors']:
+            if sensor['sensor_type'] == 2:  # weather array
+                for record in sensor['data']:
+                    record_datetime = datetime.utcfromtimestamp(record['ts']).astimezone(timezone.utc)
+                    if record_datetime not in readings_by_datetime:
+                        readings_by_datetime[record_datetime] = {'data_datetime': record_datetime}
+
+                    ## TODO confirm transforms esp for hum_out solar rad
+                    sensor2_data = {                        
+                        'atmp': round(self.f_to_c(record['temp_out']),2),
+                        'dwpt': round(self.f_to_c(record['dew_point_out']),2),
+                        'pcpn': record['rainfall_mm'],
+                        'relh': record['hum_out'],
+                        'srad': record['solar_rad_avg']
+                        }
+
+                    readings_by_datetime[record_datetime].update(sensor2_data)
+
+            elif sensor['sensor_type'] == 205:  # soil
+                for record in sensor['data']:
+                    record_datetime = datetime.utcfromtimestamp(record['ts']).astimezone(timezone.utc)
+                    if record_datetime not in readings_by_datetime:
+                        readings_by_datetime[record_datetime] = {'data_datetime': record_datetime}
+                    
+                    soil_sensor_data = {
+                        'smst' : record['moist_soil_last'],
+                        'stmp' : round(self.f_to_c(record['temp_last']),2)
+                    }
+                    readings_by_datetime[record_datetime].update(soil_sensor_data)
+
+            elif sensor['sensor_type'] == 104:  # leaf wetness
+                for record in sensor['data']:
+                    record_datetime = datetime.utcfromtimestamp(record['ts']).astimezone(timezone.utc)
+                    if record_datetime not in readings_by_datetime:
+                        readings_by_datetime[record_datetime] = {'data_datetime': record_datetime}
+                    # TODO confirm leaf wetness transform
+                    lws:int =  1 if record['wetness_hi'] >= 0.5 else 0
+                    wetness_sensor_data = {'lws':lws  }
+                    
+                    readings_by_datetime[record_datetime].update(wetness_sensor_data)
+
+        # convert from dictionary of dictionaries back to a list of dictionaries as expected
+        readings:list[dict] = list(readings_by_datetime.values())
 
         return readings
+    
 
     def _handle_error(self):
         """ place holder to remind that we need to add err handling to each class"""

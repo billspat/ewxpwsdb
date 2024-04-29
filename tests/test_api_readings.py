@@ -152,7 +152,16 @@ def test_get_responses_and_transform(station_type, db_with_data_session):
             assert isinstance(reading.srad, float)  
             assert isinstance(reading.stmp, float)
             assert isinstance(reading.wdir, float)  
-            assert isinstance(reading.wspd, float)  
+            assert isinstance(reading.wspd, float) 
+
+        if station_type == 'DAVIS':
+            assert isinstance(reading.atmp, float)
+            assert isinstance(reading.dwpt, float)
+            assert isinstance(reading.lws , float)  
+            assert isinstance(reading.srad, float)  
+            assert isinstance(reading.stmp, float)
+            assert isinstance(reading.smst, float)
+ 
 
 
     # try to get the readings from the database and test them. 
