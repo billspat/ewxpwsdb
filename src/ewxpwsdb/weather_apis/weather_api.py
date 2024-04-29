@@ -334,12 +334,27 @@ class WeatherAPI(ABC):
 
         return(dt.astimezone(timezone.utc))
     
+    def dt_utc_from_ts(self,ts:int)->datetime:
+        """convert numeric timestamp into utc timezone aware datetime
 
-    def dt_local_from_utc(self, dt:datetime):
+        Args:
+            ts (int): UTC timestamp
+
+        Returns:
+            datetime:  utc timezone aware datetime object
+        """
+
+        dt:datetime = datetime.utcfromtimestamp(ts).astimezone(timezone.utc)
+        return(dt)
+    
+    def dt_local_from_utc(self, dt:datetime)->datetime:
         """given a timezone-aware datetime in UTC, convert to station local time.
         
-        args:
+        Args:
             dt (datetime): datetime in UTC format
+        
+        Returns:
+            datetime: datatime in timezone to the station attribute of this object
         """
         
         if not is_utc(dt):
@@ -347,7 +362,18 @@ class WeatherAPI(ABC):
         
         return(dt.astimezone(tz=ZoneInfo(self.weather_station.timezone)))
 
+    def f_to_c(self,f:float)->float:
+        """utility to convert Fahrenheit to centigrade for transform functions
 
+        Args:
+            f (float): temp in F
+
+        Returns:
+            float: temperature in Celsius/centigrade
+        """
+        c:float = (f - 32.0) * (5.0 / 9.0)
+        return(c)
+    
     def get_test_reading(self):
         """ test that current config is working and station is online
         returns:

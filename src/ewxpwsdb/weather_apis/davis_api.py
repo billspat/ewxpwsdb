@@ -144,19 +144,6 @@ class DavisAPI(WeatherAPI):
         
         return False
         
-    # TODO move this to weather api for all classes to use
-    def f_to_c(self,f:float)->float:
-        """utility to convert Fahrenheit to centigrade
-
-        Args:
-            f (float): temp in F
-
-        Returns:
-            float: temperature in Celsius/centigrade
-        """
-        c:float = (f - 32.0) * (5.0 / 9.0)
-        return(c)
-    
     def _transform(self, response_data)->list:
         """
         Transforms data into a standardized format and returns it as a WeatherStationReadings object.
@@ -186,7 +173,7 @@ class DavisAPI(WeatherAPI):
         for sensor in response_data['sensors']:
             if sensor['sensor_type'] == 2:  # weather array
                 for record in sensor['data']:
-                    record_datetime = datetime.utcfromtimestamp(record['ts']).astimezone(timezone.utc)
+                    record_datetime = self.dt_utc_from_ts(record['ts'])
                     if record_datetime not in readings_by_datetime:
                         readings_by_datetime[record_datetime] = {'data_datetime': record_datetime}
 
@@ -203,7 +190,7 @@ class DavisAPI(WeatherAPI):
 
             elif sensor['sensor_type'] == 205:  # soil
                 for record in sensor['data']:
-                    record_datetime = datetime.utcfromtimestamp(record['ts']).astimezone(timezone.utc)
+                    record_datetime = self.dt_utc_from_ts(record['ts'])
                     if record_datetime not in readings_by_datetime:
                         readings_by_datetime[record_datetime] = {'data_datetime': record_datetime}
                     
@@ -215,7 +202,7 @@ class DavisAPI(WeatherAPI):
 
             elif sensor['sensor_type'] == 104:  # leaf wetness
                 for record in sensor['data']:
-                    record_datetime = datetime.utcfromtimestamp(record['ts']).astimezone(timezone.utc)
+                    record_datetime = self.dt_utc_from_ts(record['ts'])
                     if record_datetime not in readings_by_datetime:
                         readings_by_datetime[record_datetime] = {'data_datetime': record_datetime}
                     # TODO confirm leaf wetness transform
