@@ -7,7 +7,7 @@ from ewxpwsdb.db.database import init_db, create_engine
 
 
 logging.basicConfig(
-    level=os.environ.get('LOGLEVEL', 'IN').upper()
+    level=os.environ.get('LOGLEVEL', 'DEBUG').upper()
 )
 
 def pytest_addoption(parser):
