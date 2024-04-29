@@ -43,6 +43,7 @@ class OnsetAPI(WeatherAPI):
     APIConfigClass: type[OnsetAPIConfig] = OnsetAPIConfig
     _station_type: STATION_TYPE = 'ONSET'
     _sampling_interval = interval_min = 5
+    _lws_threshold = 50
 
     def __init__(self, weather_station:WeatherStation):    
         """ create class from config Type"""
@@ -135,8 +136,79 @@ class OnsetAPI(WeatherAPI):
         return False
 
     def _transform(self, response_data):
+        """
+        Tranform data from Onset API to EWX database values. 
+
+        Readings are in a flatnames space under 'observation list, on reading per sensor per timestamp. 
+        
+        Weather Variables in "sensor_measurement_type" field are named as follows:
+
+        - Battery
+        - Dew Point
+        - Gust Speed
+        - Rain
+        - RH
+        - Solar Radiation
+        - Temperature
+        - Wetness
+        - Wind Direction
+        - Wind Speed
+
+        """
+
+        if isinstance(response_data,str):
+            response_data = json.loads(response_data)
+
+        if 'observation_list' not in response_data.keys():
+            return None
+        
+        readings = {}
+
+        for sensor_reading in response_data["observation_list"]:
+
+            ts = sensor_reading["timestamp"]
+
+            # Remove Z's from ends of timestamps, which occur in Onset data
+            ts = ts.replace('Z', '')
+            
+            # Create new entry if time hasn't been encountered yet
+            if ts not in readings.keys():
+                readings[ts] = {"data_datetime" : self.dt_utc_from_str(ts) }
+            
+            # readings[ts]["data_datetime"] =  self# datetime.strptime(ts, '%Y-%m-%d %H:%M:%S').astimezone(timezone.utc)
+            
+            # Set entries to contain proper data
+            match sensor_reading["sensor_measurement_type"]:
+                case 'Dew Point':
+                    readings[ts]['dwpt'] = sensor_reading["si_value"]
+                case 'Rain':
+                    readings[ts]['pcpn'] = sensor_reading["si_value"]
+                case 'RH':
+                    readings[ts]['relh'] = sensor_reading["si_value"]
+                case 'Solar Radiation':
+                    readings[ts]['srad'] = sensor_reading["si_value"]
+                case 'Temperature':
+                    readings[ts]['atmp'] = sensor_reading["si_value"]
+                case 'Wetness':
+                    readings[ts]['lws']  = self.wetness_transform(sensor_reading["si_value"])  # %
+                case 'Wind Direction':
+                    readings[ts]['wdir'] = sensor_reading["si_value"]
+                case 'Wind Speed':
+                    readings[ts]['wspd'] = sensor_reading["si_value"]  # meters/sec
+                    
+            
+
+
+    def wetness_transform(self, w):
+        return 1 if w >= self._lws_threshold else 0
+    
+
+    def _transform_by_sensor_serial(self, response_data):
         """transform of response.text to list of dict
-        only handle response.text (sensor values) and nothing else
+        Use the sensor serial numbers as retrieved by former method. 
+
+       The latest api includes a key "sensor_measurement_type" in the response data so this is obsolete.  
+       See _tranform() method above
         """
         
 
