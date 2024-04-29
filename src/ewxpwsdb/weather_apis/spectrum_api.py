@@ -101,6 +101,17 @@ class SpectrumAPI(WeatherAPI):
         """
         Transforms data into a standardized format and returns it as a WeatherStationReadings object.
         data param if left to default tries for self.response_data processing
+
+        Spectrum Sensor Names: 
+            - Leaf Wetness
+            - Rainfall
+            - Relative Humidity
+            - Solar Radiation Light
+            - Temperature
+            - Wind Direction
+            - Wind Gust
+            - Wind Speed
+
         """
         
         if isinstance(response_data,str):
@@ -111,11 +122,26 @@ class SpectrumAPI(WeatherAPI):
         
         readings = []
         for record in response_data['EquipmentRecords']:
-            reading = { 'data_datetime': self.dt_utc_from_str(record['TimeStamp']),
-                        'atmp': round((record['SensorData'][1]["DecimalValue"] - 32) * 5 / 9, 2),
-                        'pcpn' : round(record['SensorData'][0]["DecimalValue"] * 25.4, 2),
-                        'relh' : round(record['SensorData'][2]["DecimalValue"], 2)
-            }
+            reading = { 'data_datetime': self.dt_utc_from_str(record['TimeStamp'])}
+            for sensor in record['SensorData']:
+                match sensor['SensorType']:
+                    case 'Temperature':
+                        reading['atmp'] = round(self.f_to_c(sensor["DecimalValue"]), 2)
+                    case 'Leaf Wetness':
+                        reading['lws'] = sensor["DecimalValue"]
+                    case 'Rainfall':
+                        reading['pcpn'] = sensor["DecimalValue"]  * 25.4  # inches to mm
+                    case 'Relative Humidity':
+                        reading['relh'] = sensor["DecimalValue"]
+                    case 'Solar Radiation Light':
+                        reading['srad'] = sensor["DecimalValue"]
+                    case 'Wind Direction':
+                        reading['wdir'] = sensor["DecimalValue"]
+                    case 'Wind Speed':
+                        reading['wspd'] = sensor["DecimalValue"] * 1.609344 # imph to kph
+                    case _:
+                        # we are only collecting the sensors above
+                        pass
 
             readings.append(reading)
 
