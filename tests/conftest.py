@@ -6,6 +6,10 @@ from ewxpwsdb.db.importdata import import_station_file, read_station_table
 from ewxpwsdb.db.database import init_db, create_engine
 
 
+logging.basicConfig(
+    level=os.environ.get('LOGLEVEL', 'IN').upper()
+)
+
 def pytest_addoption(parser):
 
     parser.addoption('--dburl',
