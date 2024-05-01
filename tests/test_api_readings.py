@@ -140,21 +140,10 @@ def test_get_responses_and_transform(station_type, db_with_data_session):
 
         # check that we definitely have working float values for sensors that _should_ be present
         # note this test will fail if the weather station is down
-        assert isinstance(reading.atmp, float)
-        if station_type != 'LOCOMOS':
-            assert isinstance(reading.pcpn , float)
-        assert isinstance(reading.relh , float)
 
         # STATION BY STATION TYPE test of transformed variables
         # TODO create station specific test files
-        if station_type == 'ZENTRA':
-            assert isinstance(reading.atmp, float)
-            assert isinstance(reading.lws , float)
-            assert isinstance(reading.pcpn, float)    
-            assert isinstance(reading.srad, float)  
-            assert isinstance(reading.stmp, float)
-            assert isinstance(reading.wdir, float)  
-            assert isinstance(reading.wspd, float) 
+
 
         if station_type == 'DAVIS':
             assert isinstance(reading.atmp, float)
@@ -164,7 +153,11 @@ def test_get_responses_and_transform(station_type, db_with_data_session):
             assert isinstance(reading.srad, float)  
             assert isinstance(reading.stmp, float)
             assert isinstance(reading.smst, float)
-        
+
+        if station_type == 'LOCOMOS':
+            assert isinstance(reading.atmp, float)
+            assert isinstance(reading.relh , float)
+
         if station_type == 'ONSET':
             assert isinstance(reading.atmp, float)
             assert isinstance(reading.dwpt, float)
@@ -186,18 +179,23 @@ def test_get_responses_and_transform(station_type, db_with_data_session):
             assert isinstance(reading.wdir, float)
             assert isinstance(reading.wspd, float)
 
+        if station_type == 'SPECTRUM':
+            assert isinstance(reading.atmp, float)
+            assert isinstance(reading.lws,  float)
+            assert isinstance(reading.pcpn, float)
+            assert isinstance(reading.relh, float)
+            assert isinstance(reading.wdir, float)
+            assert isinstance(reading.wspd, float)
 
-
-
-
-
-
-
-
-
-        
+        if station_type == 'ZENTRA':
+            assert isinstance(reading.atmp, float)
+            assert isinstance(reading.lws , float)
+            assert isinstance(reading.pcpn, float)    
+            assert isinstance(reading.srad, float)  
+            assert isinstance(reading.stmp, float)
+            assert isinstance(reading.wdir, float)  
+            assert isinstance(reading.wspd, float) 
  
-
 
     # try to get the readings from the database and test them. 
     stmt = select(Reading, WeatherStation).join(WeatherStation).where(WeatherStation.id  == station.id)
