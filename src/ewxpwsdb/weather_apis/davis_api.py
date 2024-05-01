@@ -158,6 +158,56 @@ class DavisAPI(WeatherAPI):
         network connection: 502
         atmos pressure: 3
 
+        The list of variables available from Davis are (not in sensor order): 
+        - abs_press
+        - air_density
+        - arch_int
+        - bar_alt
+        - bar_trend_3_hr
+        - bar
+        - deg_days_cool
+        - deg_days_heat
+        - dew_point_out
+        - emc
+        - et
+        - heat_index_out
+        - hum_out
+        - moist_soil_last
+        - night_cloud_cover
+        - pressure_last
+        - rain_rate_hi_clicks
+        - rain_rate_hi_in
+        - rain_rate_hi_mm
+        - rainfall_clicks
+        - rainfall_in
+        - rainfall_mm
+        - solar_energy
+        - solar_rad_avg
+        - solar_rad_hi
+        - temp_last
+        - temp_out_hi
+        - temp_out_lo
+        - temp_out
+        - thsw_index
+        - thw_index
+        - uv_dose
+        - uv_index_avg
+        - uv_index_hi
+        - wet_bulb
+        - wetness_hi_at
+        - wetness_hi
+        - wetness_last
+        - wetness_lo_at
+        - wetness_lo
+        - wetness_secs
+        - wind_chill
+        - wind_dir_of_hi
+        - wind_dir_of_prevail
+        - wind_num_samples
+        - wind_run
+        - wind_speed_avg
+        - wind_speed_hi
+
         """
         # convert to JSON if it isn't already 
         if isinstance(response_data,str):
