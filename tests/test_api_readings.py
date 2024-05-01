@@ -148,7 +148,9 @@ def test_get_responses_and_transform(station_type, db_with_data_session):
         # STATION BY STATION TYPE test of transformed variables
         # TODO create station specific test files
         if station_type == 'ZENTRA':
-            assert isinstance(reading.lws , float)  
+            assert isinstance(reading.atmp, float)
+            assert isinstance(reading.lws , float)
+            assert isinstance(reading.pcpn, float)    
             assert isinstance(reading.srad, float)  
             assert isinstance(reading.stmp, float)
             assert isinstance(reading.wdir, float)  
@@ -157,10 +159,43 @@ def test_get_responses_and_transform(station_type, db_with_data_session):
         if station_type == 'DAVIS':
             assert isinstance(reading.atmp, float)
             assert isinstance(reading.dwpt, float)
-            assert isinstance(reading.lws , float)  
+            assert isinstance(reading.lws , float)
+            assert isinstance(reading.pcpn, float)  
             assert isinstance(reading.srad, float)  
             assert isinstance(reading.stmp, float)
             assert isinstance(reading.smst, float)
+        
+        if station_type == 'ONSET':
+            assert isinstance(reading.atmp, float)
+            assert isinstance(reading.dwpt, float)
+            assert isinstance(reading.lws, float) 
+            assert isinstance(reading.pcpn, float)
+            assert isinstance(reading.relh, float)
+            assert isinstance(reading.srad, float)
+            assert isinstance(reading.wdir, float)
+            assert isinstance(reading.wspd, float)
+
+        if station_type == 'RAINWISE':
+            assert isinstance(reading.atmp, float)
+            assert isinstance(reading.dwpt, float)
+            assert isinstance(reading.lws,  float)
+            assert isinstance(reading.pcpn, float)
+            assert isinstance(reading.relh, float)
+            assert isinstance(reading.stmp, float)
+            assert isinstance(reading.srad, float)
+            assert isinstance(reading.wdir, float)
+            assert isinstance(reading.wspd, float)
+
+
+
+
+
+
+
+
+
+
+        
  
 
 

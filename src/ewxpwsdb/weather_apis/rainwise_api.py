@@ -91,6 +91,38 @@ class RainwiseAPI(WeatherAPI):
         """
         Transforms data into a standardized format and returns it as a WeatherStationReadings object.
         data param if left to default tries for self.response_data processing
+
+        The following variables are availabe from the Rainwise API: 
+            - times
+            - temp
+            - temp_lo
+            - temp_hi
+            - itemp
+            - itemp_lo
+            - itemp_hi
+            - hum
+            - hum_lo
+            - hum_hi
+            - pressure
+            - pressure_lo
+            - pressure_hi
+            - windchill
+            - dewpoint
+            - wind
+            - wind_gust
+            - wind_dir
+            - leaf_wetness
+            - heat_index
+            - precip
+            - solar_radiation
+            - temperature_1
+            - temperature_1_lo
+            - temperature_1_hi
+            - soil_tension
+            - soil_temperature
+
+        Values in JSON are quoted and are read as string, so need to convert using 'float()' 
+        
         """
 
         if isinstance(response_data,str):
@@ -102,11 +134,18 @@ class RainwiseAPI(WeatherAPI):
 
         readings = []        
         for key in response_data['times']:
+            #TODO confirm lws, wspd, srad transforms for this station
             reading = {
                     'data_datetime' : self.dt_utc_from_str(response_data['times'][key]),
-                    'atmp': round((float(response_data['temp'][key]) - 32) * 5/9, 2),
-                    'pcpn' : round(float(response_data['precip'][key]) * 25.4, 2),
-                    'relh' : round(float(response_data['hum'][key]), 2)
+                    'atmp' : round(self.f_to_c(float(response_data['temp'][key])), 2),
+                    'dwpt' : round(self.f_to_c(float(response_data['dewpoint'][key])),2),
+                    'lws'  : float(response_data['leaf_wetness'][key]),
+                    'pcpn' : float(response_data['precip'][key]) * 25.4,
+                    'relh' : float(response_data['hum'][key]),
+                    'stmp' : round(self.f_to_c(float(response_data['soil_temperature'][key])), 2),
+                    'srad' : float(response_data['solar_radiation'][key]),
+                    'wdir' : float(response_data['wind_dir'][key]),
+                    'wspd' : float(response_data['wind'][key])
                     }
             
             readings.append(reading)
