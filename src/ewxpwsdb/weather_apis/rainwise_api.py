@@ -17,7 +17,7 @@ from ewxpwsdb.db.models import WeatherStation, APIResponse
 
 class RainwiseAPIConfig(WeatherAPIConfig):
         _station_type   : STATION_TYPE = 'RAINWISE'
-        username       : str|None = None
+        username       : str # user name, quoted integer
         sid            : str # Site id, assigned by Rainwise.
         pid            : str # Password id, assigned by Rainwise.
         mac            : str # MAC of the weather station. Must be in the group assigned to username.
@@ -52,17 +52,19 @@ class RainwiseAPI(WeatherAPI):
         """
 
         # note start/end times in station timezone
-        response = get( url='http://api.rainwise.net/main/v1.5/registered/get-historical.php',
-                        params={'username': self.api_config.username,
+        url = 'http://api.rainwise.net/main/v1.5/registered/get-historical.php'
+        params: dict[str,int|str] = {
+                                'username': self.api_config.username,
                                 'sid': self.api_config.sid,
                                 'pid': self.api_config.pid,
                                 'mac': self.api_config.mac,
                                 'format': self.api_config.ret_form,
                                 'interval': interval,
-                                'sdate': self.dt_local_from_utc( start_datetime ), 
-                                'edate': self.dt_local_from_utc( end_datetime )
+                                'sdate': self._format_time(self.dt_local_from_utc( start_datetime )), 
+                                'edate': self._format_time(self.dt_local_from_utc( end_datetime ))
                                 }
-                        )
+        
+        response = get(url= url, params=params)
 
         return [response]
 
