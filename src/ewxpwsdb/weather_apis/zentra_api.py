@@ -31,6 +31,7 @@ class ZentraAPI(WeatherAPI):
     _sampling_interval = interval_min = 5
 
     _MAX_READINGS_PER_PAGE:int = 2000
+    supported_variables = ['atmp', 'lws', 'pcpn', 'relh', 'srad', 'smst', 'stmp', 'wspd', 'wdir']
 
 
     # sensor names that appear in response data and equiv EWX fields.  

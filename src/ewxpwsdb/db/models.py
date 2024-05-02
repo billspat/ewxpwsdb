@@ -12,7 +12,8 @@ class StationType(SQLModel, table = True):
     """code representing the type of station, which dictates which class to use for API connecting and decoding """
     station_type: str = Field(primary_key=True)
     sampling_interval: Optional[int] = Field(description="period for which each reading covers in minutes, one of 5, 15, 30")
-
+    supported_variables: Optional[str] = Field(default = None, description = "JSON array of variable names and maps to API names for information only")
+    
 class WeatherStation(SQLModel, table=True): 
     id: Optional[int] = Field(default=None, primary_key=True)
     station_code: str = Field(unique=True) # use annotated to limit number of chars in this field 

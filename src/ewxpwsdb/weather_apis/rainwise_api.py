@@ -2,6 +2,37 @@
 Subclass of WeatherAPI for the Rainwise type weather stations with methods for 
 requesting data (_get_readings) and transforming data (_transform) called by 
 methods in the parent class.
+
+The following variables are availabe from the Rainwise API: 
+
+ - times
+ - temp
+ - temp_lo
+ - temp_hi
+ - itemp
+ - itemp_lo
+ - itemp_hi
+ - hum
+ - hum_lo
+ - hum_hi
+ - pressure
+ - pressure_lo
+ - pressure_hi
+ - windchill
+ - dewpoint
+ - wind
+ - wind_gust
+ - wind_dir
+ - leaf_wetness
+ - heat_index
+ - precip
+ - solar_radiation
+ - temperature_1
+ - temperature_1_lo
+ - temperature_1_hi
+ - soil_tension
+ - soil_temperature
+
 """
 #####  REQUIRES UPDATE TO WORK WITH CURRENT SYSTEM
 
@@ -30,6 +61,8 @@ class RainwiseAPI(WeatherAPI):
     APIConfigClass: type[RainwiseAPIConfig] = RainwiseAPIConfig
     _station_type: STATION_TYPE = 'RAINWISE'
     _sampling_interval = interval_min = 15
+    supported_variables = ['atmp', 'lws', 'pcpn', 'relh', 'srad', 'smst', 'stmp', 'wspd', 'wdir']
+
 
 
     def __init__(self, weather_station:WeatherStation):
@@ -93,35 +126,6 @@ class RainwiseAPI(WeatherAPI):
         """
         Transforms data into a standardized format and returns it as a WeatherStationReadings object.
         data param if left to default tries for self.response_data processing
-
-        The following variables are availabe from the Rainwise API: 
-            - times
-            - temp
-            - temp_lo
-            - temp_hi
-            - itemp
-            - itemp_lo
-            - itemp_hi
-            - hum
-            - hum_lo
-            - hum_hi
-            - pressure
-            - pressure_lo
-            - pressure_hi
-            - windchill
-            - dewpoint
-            - wind
-            - wind_gust
-            - wind_dir
-            - leaf_wetness
-            - heat_index
-            - precip
-            - solar_radiation
-            - temperature_1
-            - temperature_1_lo
-            - temperature_1_hi
-            - soil_tension
-            - soil_temperature
 
         Values in JSON are quoted and are read as string, so need to convert using 'float()' 
         

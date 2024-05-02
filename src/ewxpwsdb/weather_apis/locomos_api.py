@@ -32,11 +32,16 @@ class LocomosAPI(WeatherAPI):
     APIConfigClass: type[LocomosAPIConfig] = LocomosAPIConfig
     _station_type: STATION_TYPE = 'LOCOMOS'
     _sampling_interval = interval_min = 30
+    # this list of supported vars is for 2024 test station only
+
+    supported_variables = ['atmp', 'lws', 'relh']
+    
+    
     # object variable may be overridden per station if necessary #TODO create a property
 
-    # LOCOMOS variable names are not the same as EWX variable/column names.  
-    # when adding variables, update this list
-    # 2023
+    # LOCOMOS uses variable names to identify sensors, and this dict maps to PWS database names
+    # var names must be assigned manual when the station is added to Ubidots, so may change 
+    # 2023 variables - saved for reference
     # ewx_var_mapping = {
     #     # LOCOMOS: EWX
     #     'rh':'relh',
@@ -51,7 +56,7 @@ class LocomosAPI(WeatherAPI):
         'humid':'relh',
         'temp':'atmp',
         'precip':'pcpn',
-        'lws1':'lws',   # this is not percent wet, but wet y/n -> 0/1
+        'lws1':'lws',  
     }
 
 

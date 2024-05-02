@@ -2,6 +2,16 @@
 Subclass of WeatherAPI for the Spectrum type weather stations with methods for 
 requesting data (_get_readings) and transforming data (_transform) called by 
 methods in the parent class.
+
+Spectrum Sensor Names: 
+- Leaf Wetness
+- Rainfall
+- Relative Humidity
+- Solar Radiation Light
+- Temperature
+- Wind Direction
+- Wind Gust
+- Wind Speed
 """
 
 import json
@@ -27,6 +37,8 @@ class SpectrumAPI(WeatherAPI):
     APIConfigClass: type[SpectrumAPIConfig] = SpectrumAPIConfig
     _station_type: STATION_TYPE = 'SPECTRUM'
     _sampling_interval = interval_min = 5
+
+    supported_variables = ['atmp', 'lws', 'pcpn', 'relh', 'srad', 'wspd', 'wdir']
 
 
     def __init__(self, weather_station:WeatherStation):
@@ -101,16 +113,6 @@ class SpectrumAPI(WeatherAPI):
         """
         Transforms data into a standardized format and returns it as a WeatherStationReadings object.
         data param if left to default tries for self.response_data processing
-
-        Spectrum Sensor Names: 
-            - Leaf Wetness
-            - Rainfall
-            - Relative Humidity
-            - Solar Radiation Light
-            - Temperature
-            - Wind Direction
-            - Wind Gust
-            - Wind Speed
 
         """
         

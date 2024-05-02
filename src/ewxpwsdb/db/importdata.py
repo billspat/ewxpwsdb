@@ -75,6 +75,8 @@ def import_station_records(weatherstation_data:list, engine):
         return True
     
 
+import json
+
 def import_station_types(engine):
     """Insert the station types from API modules, for populating a new DB. 
 
@@ -85,9 +87,13 @@ def import_station_types(engine):
     from ewxpwsdb.db.models import StationType
     from ewxpwsdb.weather_apis import API_CLASS_TYPES
 
-    # create list of station models to insert into DB
+    # create list of station models to insert into DB based on classes in weather_apis package/modules.  see __init__.py
     station_models =  [
-            StationType(station_type =station_type, sampling_interval = APIClass._sampling_interval ) for 
+            StationType(
+                station_type =station_type, 
+                sampling_interval = APIClass._sampling_interval,
+                supported_variables = json.dumps(APIClass.supported_variables)
+                ) for 
             (station_type, APIClass) in 
             API_CLASS_TYPES.items()
             ]
