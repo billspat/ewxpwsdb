@@ -3,7 +3,7 @@
 from datetime import datetime, timedelta, timezone
 
 
-from sqlmodel import SQLModel, select
+from sqlmodel import SQLModel, select, update
 from sqlalchemy import Engine, asc, desc
 from sqlalchemy.sql import func
 from sqlalchemy.exc import SQLAlchemyError
@@ -14,6 +14,7 @@ from ewxpwsdb.db.database import Session, engine
 from ewxpwsdb.db.models import WeatherStation, APIResponse, Reading
 from ewxpwsdb.weather_apis import API_CLASS_TYPES
 from ewxpwsdb.time_intervals import one_day_interval, UTCInterval, is_utc, previous_fourteen_minute_interval, fifteen_minute_mark
+
 
 class Collector():
     """class to enable collecting data from station apis and store in a database.  
@@ -196,6 +197,71 @@ class Collector():
             raise RuntimeError(f"no data present in response for station for {self.station.id} for interval {start_datetime} to {end_datetime}: {responses}")
         else:
             raise RuntimeError(f"no response from station for {self.station.id} for interval {start_datetime} to {end_datetime}")
+        
+
+    # TODO move these to station_readings class since will almost always be selecting/inserting for one station at atime
+    def reading_by_time_and_station(self, data_datetime, weatherstation_id):
+        with Session(self._engine) as session:
+            stmt = select(Reading).where(Reading.data_datetime == data_datetime).where(Reading.weatherstation_id == weatherstation_id)
+            reading:Reading = session.exec(stmt).first()
+
+        return(reading)
+    
+    def insert_or_update_reading(self, new_reading:Reading):
+        """inserts the reading data into the database.   If there is a conflict with existing record (e.g. in same time and station), 
+        (see Reading model, but currently this is a unique constractin on [data_datetime, weatherstation_id]), instead of throwing a
+        SQL error, is uses the SQLAlchemy + Postgresql special 'upsert' feature. 
+
+        This preserves t, data_datetime, and weatherstation_id fields but 
+        updates all the other data from the reading sent (ostensibly  transformed from a current APIResponse)
+
+        Args:
+            reading: Reading a reading object with data for inserting
+
+        Returns:
+            Reading: reading model as retrieved from the db after inserting 
+
+        """
+
+        ## note about this code.   It would be great to use Postgresl upsert function, for example this mostly works
+        # reading_data = dict(reading)
+        # reading_data.pop('id') 
+        # from sqlalchemy.dialects.postgresql import insert as pg_insert
+        # stmt = pg_insert(Reading).values(reading_data).returning(Reading.__table__.c.id)
+        # upsert_stmt = stmt.on_conflict_do_update(constraint="timeplaceconstraint",set_=stmt.excluded)
+        # with Session(self._engine) as session:
+        #   r = session.exec(upsert_stmt)
+        #   session.commit()
+        
+        # but because we are looking for conflict on timestamp and station id and _not_ the primary key, you have to take out the null ID
+        # and then the id serial pk gets updated +1 every time, which 
+        # can break relations etc.   solution would be to use a compound primary key timestamp + stationid
+        # however this code _could_ cause race conditions because if the same record is read in another process right beore it gets updated, it may be the old data
+
+        existing_reading = self.reading_by_time_and_station(new_reading.data_datetime, new_reading.weatherstation_id)
+        
+        if existing_reading:
+            # update
+            record_id = existing_reading.id
+
+            reading_data = dict(new_reading)
+            reading_data.pop('id')
+            reading_data.pop('data_datetime')
+            reading_data.pop('weatherstation_id')
+    
+            
+            with Session(self._engine) as session:
+                stmt = update(Reading).where(Reading.id == record_id).values(reading_data) # .returning(Reading.__table__.c.id)
+                session.exec(stmt)
+                session.commit()
+        else:
+            # insert
+            with Session(self._engine) as session:
+                session.add(new_reading)
+                session.commit()
+                record_id = new_reading.id
+
+        return record_id
     
 
     def save_readings_from_responses(self, api_responses:APIResponse|list[APIResponse])->list[int]:
@@ -210,13 +276,10 @@ class Collector():
         # transform expects list of responses
         readings = self.weather_api.transform(api_responses)
         if readings:
-            #TODO check for missing readings
-
             for reading in readings:
-                self._session.add(reading)
-                self._session.commit()
-                if reading.id:
-                    saved_reading_ids.append(reading.id)
+                new_id = self.insert_or_update_reading(new_reading = reading)
+                if new_id:
+                    saved_reading_ids.append(new_id)
                 else:
                     raise RuntimeError(f"could not insert PWS API response record into database")
         else: 
