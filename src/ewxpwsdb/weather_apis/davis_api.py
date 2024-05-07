@@ -82,7 +82,7 @@ class DavisAPI(WeatherAPI):
     APIConfigClass: type[DavisAPIConfig] = DavisAPIConfig
     _station_type = 'DAVIS'
     _sampling_interval = interval_min = 15
-    supported_variables = ['atmp', 'dwpt', 'lws', 'pcpn', 'relh', 'srad', 'smst', 'stmp']
+    supported_variables = ['atmp', 'dwpt', 'lws', 'pcpn', 'relh', 'srad', 'smst', 'stmp','wdir', 'wspd', 'wspd_max']
 
     
     def __init__(self, weather_station:WeatherStation):
@@ -236,7 +236,10 @@ class DavisAPI(WeatherAPI):
                         'dwpt': round(self.f_to_c(record['dew_point_out']),2),
                         'pcpn': record['rainfall_mm'],
                         'relh': record['hum_out'],
-                        'srad': record['solar_rad_avg']
+                        'srad': record['solar_rad_avg'],
+                        'wdir': record['wind_dir_of_prevail'],
+                        'wspd': record['wind_speed_avg'],
+                        'wspd_max': record['wind_speed_hi']
                         }
 
                     readings_by_datetime[record_datetime].update(sensor2_data)

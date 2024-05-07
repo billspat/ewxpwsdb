@@ -2,6 +2,31 @@
 Subclass of WeatherAPI for the Zentra type weather stations with methods for 
 requesting data (_get_readings) and transforming data (_transform) called by 
 methods in the parent class.
+
+Variables available from the Zentra API: 
+
+- Air Temperature
+- Atmospheric Pressure
+- Battery Percent
+- Battery Voltage
+- Gust Speed (m/s)
+- Leaf Wetness
+- Lightning Activity
+- Lightning Distance
+- Logger Temperature
+- Max Precip Rate
+- Precipitation
+- RH Sensor Temp
+- Reference Pressure
+- Relative Humidity
+- Soil Temperature
+- Solar Radiation
+- VPD
+- Water Content
+- Wetness Level
+- Wind Direction
+- Wind Speed (m/s)
+
 """
 
 import json, logging, time
@@ -31,7 +56,7 @@ class ZentraAPI(WeatherAPI):
     _sampling_interval = interval_min = 5
 
     _MAX_READINGS_PER_PAGE:int = 2000
-    supported_variables = ['atmp', 'lws', 'pcpn', 'relh', 'srad', 'smst', 'stmp', 'wspd', 'wdir']
+    supported_variables = ['atmp', 'lws', 'pcpn', 'relh', 'srad', 'smst', 'stmp', 'wspd', 'wdir', 'wspd_max']
 
 
     # sensor names that appear in response data and equiv EWX fields.  
@@ -45,6 +70,7 @@ class ZentraAPI(WeatherAPI):
         'Solar Radiation':'srad',
         'Wind Speed':'wspd',
         'Wind Direction':'wdir',
+        'Gust Speed':'wspd_max',
         
         }
     

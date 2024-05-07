@@ -38,7 +38,7 @@ class SpectrumAPI(WeatherAPI):
     _station_type: STATION_TYPE = 'SPECTRUM'
     _sampling_interval = interval_min = 5
 
-    supported_variables = ['atmp', 'lws', 'pcpn', 'relh', 'srad', 'wspd', 'wdir']
+    supported_variables = ['atmp', 'lws', 'pcpn', 'relh', 'srad', 'wspd', 'wdir', 'wspd_max']
 
 
     def __init__(self, weather_station:WeatherStation):
@@ -140,7 +140,9 @@ class SpectrumAPI(WeatherAPI):
                     case 'Wind Direction':
                         reading['wdir'] = sensor["DecimalValue"]
                     case 'Wind Speed':
-                        reading['wspd'] = sensor["DecimalValue"] * 1.609344 # imph to kph
+                        reading['wspd'] =  self.mph_to_ms(sensor["DecimalValue"])
+                    case 'Wind Gust':
+                        reading['wspd_max'] = self.mph_to_ms(sensor["DecimalValue"])
                     case _:
                         # we are only collecting the sensors above
                         pass

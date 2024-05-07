@@ -375,6 +375,20 @@ class WeatherAPI(ABC):
         c:float = (f - 32.0) * (5.0 / 9.0)
         return(c)
     
+    def mph_to_ms(self, mph:float) -> float:  
+        """convert mile per hour to meters per second   
+
+        Args:
+            mph (float): floating point value of mile per hour
+
+        Returns:
+            float: equiv value in meters per second
+        """
+
+        m_per_s:float = mph * 0.44704
+
+        return(m_per_s)
+
     def get_test_reading(self):
         """ test that current config is working and station is online
         returns:

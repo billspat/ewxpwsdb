@@ -91,7 +91,8 @@ class Reading(SQLModel, table=True):
     stmp  : Optional[float] = Field(default=None, description="soil temperature, at depth 4 in, celsius")
     srad  : Optional[float] = Field(default=None, description="solar radiation")
     wdir  : Optional[float] = Field(default=None, description="wind direction, deg from North")
-    wspd  : Optional[float] = Field(default=None, description="wind speed, kph")
+    wspd  : Optional[float] = Field(default=None, description="average, wind speed, m/s")
+    wspd_max  : Optional[float] = Field(default=None, description="maximum wind speed for the sampling period, sometimes recorded as 'gust', m/s")
 
 
 

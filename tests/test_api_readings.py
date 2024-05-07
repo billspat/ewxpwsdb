@@ -153,6 +153,9 @@ def test_get_responses_and_transform(station_type, db_with_data_session):
             assert isinstance(reading.srad, float)  
             assert isinstance(reading.stmp, float)
             assert isinstance(reading.smst, float)
+            assert isinstance(reading.wdir, float)
+            assert isinstance(reading.wspd, float)
+            assert isinstance(reading.wspd_max, float)
 
         if station_type == 'LOCOMOS':
             assert isinstance(reading.atmp, float)
@@ -167,6 +170,7 @@ def test_get_responses_and_transform(station_type, db_with_data_session):
             assert isinstance(reading.srad, float)
             assert isinstance(reading.wdir, float)
             assert isinstance(reading.wspd, float)
+            assert isinstance(reading.wspd_max, float)
 
         if station_type == 'RAINWISE':
             assert isinstance(reading.atmp, float)
@@ -178,6 +182,7 @@ def test_get_responses_and_transform(station_type, db_with_data_session):
             assert isinstance(reading.srad, float)
             assert isinstance(reading.wdir, float)
             assert isinstance(reading.wspd, float)
+            assert isinstance(reading.wspd_max, float)
 
         if station_type == 'SPECTRUM':
             assert isinstance(reading.atmp, float)
@@ -186,6 +191,7 @@ def test_get_responses_and_transform(station_type, db_with_data_session):
             assert isinstance(reading.relh, float)
             assert isinstance(reading.wdir, float)
             assert isinstance(reading.wspd, float)
+            assert isinstance(reading.wspd_max, float)
 
         if station_type == 'ZENTRA':
             assert isinstance(reading.atmp, float)
@@ -194,8 +200,9 @@ def test_get_responses_and_transform(station_type, db_with_data_session):
             assert isinstance(reading.srad, float)  
             assert isinstance(reading.stmp, float)
             assert isinstance(reading.wdir, float)  
-            assert isinstance(reading.wspd, float) 
- 
+            assert isinstance(reading.wspd, float)
+            assert isinstance(reading.wspd_max, float)
+
 
     # try to get the readings from the database and test them. 
     stmt = select(Reading, WeatherStation).join(WeatherStation).where(WeatherStation.id  == station.id)
