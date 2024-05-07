@@ -197,8 +197,8 @@ class OnsetAPI(WeatherAPI):
                 case 'Wind Speed':
                     readings[ts]['wspd'] = sensor_reading["si_value"]  # meters/sec
                     
-            
-
+        return list(readings.values())
+        
 
     def wetness_transform(self, w):
         return 1 if w >= self._lws_threshold else 0
