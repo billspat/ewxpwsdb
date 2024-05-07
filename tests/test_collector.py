@@ -173,8 +173,15 @@ def test_collect_request(station,db_with_data, station_collector):
         session.close()
 
     # attempt to save the same readings again and see if it fails
-    with pytest.raises(Exception) as e_info:
-        collector.save_readings_from_responses(api_responses = response_from_db)
+    # it should not, just re-insert the data!   
+
+    current_reading_ids = collector.current_reading_ids
+    resaved_reading_ids = collector.save_readings_from_responses(api_responses = response_from_db)
+
+    assert current_reading_ids == resaved_reading_ids
+
+    # with pytest.raises(Exception) as e_info:
+    #     collector.save_readings_from_responses(api_responses = response_from_db)
     
     collector.close()
 
