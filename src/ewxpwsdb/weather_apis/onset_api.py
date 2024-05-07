@@ -196,6 +196,8 @@ class OnsetAPI(WeatherAPI):
                     readings[ts]['wdir'] = sensor_reading["si_value"]
                 case 'Wind Speed':
                     readings[ts]['wspd'] = sensor_reading["si_value"]  # meters/sec
+                case 'Gust Speed':
+                    readings[ts]['wspd_max'] = sensor_reading["si_value"]  # meters/sec
                     
         return list(readings.values())
         

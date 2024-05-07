@@ -11,15 +11,17 @@ in `db/models.py` edit the class Reading and add a new field
     None indicates no value was created, which is not the same as zero. 
   - example: `wspd  : Optional[float] = Field(default=None, description="average, wind speed, m/s")`
 
-2. Add variable to API tranforms, 
+2. Add variable to API transforms, 
 
 for each API class (SpectrumAPI, ZentraAPI, etc), edit the function `_transform()` which is specific to that vendor type. 
 
 this function is called by the `tranform()` function in the parent class `WeatherAPI` so 
 it only has to focus on converting a dictionary of keys and numbers into individual variables.  
 
-Not all station types will support the variable being added, and don't need to add it and fill it with None as the `Reading` model has the 
-default as `None` if the variable is not present. 
+Not all station types will support the variable being added, and don't need to add it and fill it with None as the `Reading` model has the default as `None` if the variable is not present. 
+
+Note that to work with the particular API, in the folder `doc/external_apis` are example data in the JSON format
+as output by the API request, e.g. `davis_example_data.json` to work from
 
 3. Add tests
 
@@ -46,7 +48,16 @@ for all tests.
 
 without the `--station_type` param it runs spectrum station by default.  
 
-4. Add value validation
+4. update supported variables
+
+the WeatherAPI classes have an attribute `supported_variables = []`, a 
+simple list of str variable names to be used for later processes (REST api, validation, etc)
+
+For each API class, update that list to include the new variable name as it appears in the 
+`Reading` model and in the transform.  
+
+
+5. Add value validation
 
 TBD
 

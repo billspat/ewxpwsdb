@@ -61,7 +61,7 @@ class RainwiseAPI(WeatherAPI):
     APIConfigClass: type[RainwiseAPIConfig] = RainwiseAPIConfig
     _station_type: STATION_TYPE = 'RAINWISE'
     _sampling_interval = interval_min = 15
-    supported_variables = ['atmp', 'lws', 'pcpn', 'relh', 'srad', 'smst', 'stmp', 'wspd', 'wdir']
+    supported_variables = ['atmp', 'lws', 'pcpn', 'relh', 'srad', 'smst', 'stmp', 'wspd', 'wdir', 'wspd_max']
 
 
 
@@ -151,7 +151,9 @@ class RainwiseAPI(WeatherAPI):
                     'stmp' : round(self.f_to_c(float(response_data['soil_temperature'][key])), 2),
                     'srad' : float(response_data['solar_radiation'][key]),
                     'wdir' : float(response_data['wind_dir'][key]),
-                    'wspd' : float(response_data['wind'][key])
+                    'wspd' : float(response_data['wind'][key]),
+                    'wspd_max' : float(response_data['wind_gust'][key])
+                    
                     }
             
             readings.append(reading)
