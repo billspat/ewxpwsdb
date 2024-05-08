@@ -179,13 +179,11 @@ def test_get_responses_and_transform(station_type, db_with_data_session):
 
         if station_type == 'RAINWISE':
             assert isinstance(reading.atmp, float)
-            assert isinstance(reading.atmp_min, float)
-            assert isinstance(reading.atmp_max, float)
             assert isinstance(reading.dwpt, float)
             assert isinstance(reading.lws,  float)
             assert isinstance(reading.pcpn, float)
             assert isinstance(reading.relh, float)
-            assert isinstance(reading.stmp, float)
+            assert isinstance(reading.smst, float)
             assert isinstance(reading.srad, float)
             assert isinstance(reading.wdir, float)
             assert isinstance(reading.wspd, float)

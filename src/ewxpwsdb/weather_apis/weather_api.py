@@ -388,7 +388,20 @@ class WeatherAPI(ABC):
         m_per_s:float = mph * 0.44704
 
         return(m_per_s)
+    
+    def kph_to_ms(self, kph:float) ->float:
+        """convert kilometers per hour to meters per second
 
+        Args:
+            kph (float): kilometers per hour value
+
+        Returns:
+            float: converted value in meters/sec
+        """
+        conversion = 1000.0 / (60*60) 
+        meters_per_second = round(kph * conversion, 2)
+        return(meters_per_second)
+    
     def get_test_reading(self):
         """ test that current config is working and station is online
         returns:

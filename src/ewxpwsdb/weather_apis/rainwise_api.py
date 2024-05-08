@@ -5,33 +5,33 @@ methods in the parent class.
 
 The following variables are availabe from the Rainwise API: 
 
- - times
- - temp
- - temp_lo
- - temp_hi
- - itemp
- - itemp_lo
- - itemp_hi
- - hum
- - hum_lo
- - hum_hi
+ - times local time
+ - temp C if units=metric
+ - temp_lo NOT USED always 0F or -18C
+ - temp_hi NOT USED always 0F or -18C
+ - itemp   NOT USED always 0F or -18C
+ - itemp_lo  NOT USED always 0F or -18C
+ - itemp_hi  NOT USED always 0F or -18C
+ - hum percent
+ - hum_lo NOT USED always 0
+ - hum_hi NOT USED always 0
  - pressure
- - pressure_lo
- - pressure_hi
+ - pressure_lo NOT USED always 0
+ - pressure_hi NOT USED always 0
  - windchill
  - dewpoint
- - wind
- - wind_gust
+ - wind  assuming kph
+ - wind_gust assuming kph
  - wind_dir
  - leaf_wetness
  - heat_index
  - precip
  - solar_radiation
- - temperature_1
- - temperature_1_lo
- - temperature_1_hi
- - soil_tension
- - soil_temperature
+ - temperature_1  alternative temp sensor
+ - temperature_1_lo NOT USED always 0F or -18C
+ - temperature_1_hi NOT USED always 0F or -18C
+ - soil_tension  
+ - soil_temperature NOT USED always 0F or -18C
 
 """
 #####  REQUIRES UPDATE TO WORK WITH CURRENT SYSTEM
@@ -61,7 +61,7 @@ class RainwiseAPI(WeatherAPI):
     APIConfigClass: type[RainwiseAPIConfig] = RainwiseAPIConfig
     _station_type: STATION_TYPE = 'RAINWISE'
     _sampling_interval = interval_min = 15
-    supported_variables = ['atmp', 'atmp_min', 'atmp_max', 'lws', 'pcpn', 'relh', 'srad', 'smst', 'stmp', 'wspd', 'wdir', 'wspd_max']
+    supported_variables = ['atmp', 'lws', 'pcpn', 'relh', 'srad', 'smst', 'wspd', 'wdir', 'wspd_max']
 
 
 
@@ -85,6 +85,7 @@ class RainwiseAPI(WeatherAPI):
         """
 
         # note start/end times in station timezone
+        
         url = 'http://api.rainwise.net/main/v1.5/registered/get-historical.php'
         params: dict[str,int|str] = {
                                 'username': self.api_config.username,
@@ -94,13 +95,21 @@ class RainwiseAPI(WeatherAPI):
                                 'format': self.api_config.ret_form,
                                 'interval': interval,
                                 'sdate': self._format_time(self.dt_local_from_utc( start_datetime )), 
-                                'edate': self._format_time(self.dt_local_from_utc( end_datetime ))
+                                'edate': self._format_time(self.dt_local_from_utc( end_datetime )),
+                                'units':'metric' 
                                 }
         
         response = get(url= url, params=params)
 
         return [response]
 
+    
+    def _get_readings_current(self) -> Response:
+        """ use the Rainwse public api to get 'current' data.  This has different output format than the historical data"""
+        current_data_url = f"http://api.rainwise.net/main/v1.5/get-data.php?mac={self.api_config.mac}&format=json"
+        response = get(url= current_data_url)
+        return response
+    
 
     def _data_present_in_response(self, response_data:dict)->bool:
         """check for presence of data in response
@@ -128,6 +137,19 @@ class RainwiseAPI(WeatherAPI):
         data param if left to default tries for self.response_data processing
 
         Values in JSON are quoted and are read as string, so need to convert using 'float()' 
+
+        Assumes the parameter 'units' was sent as 'metric' (RainwiseAPI has option for 'english' or 'metric' )
+
+        note that even though there are some variables with values in the API response, they are not actual measurements
+        and are not converted here.  for example temp_hi and temp_lo are always 0F or -17.8C
+        for historical data API endpoint in our tests
+
+        Args:
+            response_data = content of response, or 'text' attribute of a python Requests Response object
+        
+        Returns:
+            list of dictionary: readings variables to be used to build a Readings object.  Does not include the metadata, only 
+            the timestamp of the observation and transformed values available from this station
         
         """
 
@@ -143,18 +165,19 @@ class RainwiseAPI(WeatherAPI):
             #TODO confirm lws, wspd, srad transforms for this station
             reading = {
                     'data_datetime' : self.dt_utc_from_str(response_data['times'][key]),
-                    'atmp' : round(self.f_to_c(float(response_data['temp'][key])), 2),
-                    'atmp_min' : round(self.f_to_c(float(response_data['temp_lo'][key])), 2),
-                    'atmp_max' : round(self.f_to_c(float(response_data['temp_hi'][key])), 2),
-                    'dwpt' : round(self.f_to_c(float(response_data['dewpoint'][key])),2),
+                    'atmp' : float(response_data['temp'][key]),
+                    #'atmp_min' : float(response_data['temp_lo'][key]),   # this is reported but always 0F
+                    #'atmp_max' : float(response_data['temp_hi'][key]),   # this is reported but always 0F
+                    'dwpt' : float(response_data['dewpoint'][key]),
                     'lws'  : float(response_data['leaf_wetness'][key]),
                     'pcpn' : float(response_data['precip'][key]) * 25.4,
                     'relh' : float(response_data['hum'][key]),
-                    'stmp' : round(self.f_to_c(float(response_data['soil_temperature'][key])), 2),
+                    'smst' : float(response_data['soil_tension'][key]),  # units are 'CB' = ?
+                    # 'stmp' : round(self.f_to_c(float(response_data['soil_temperature'][key])), 2),  this is always 0F
                     'srad' : float(response_data['solar_radiation'][key]),
                     'wdir' : float(response_data['wind_dir'][key]),
-                    'wspd' : float(response_data['wind'][key]),
-                    'wspd_max' : float(response_data['wind_gust'][key])
+                    'wspd' : self.kph_to_ms(float(response_data['wind'][key])),  
+                    'wspd_max' : self.kph_to_ms(float(response_data['wind_gust'][key]))
                     
                     }
             
