@@ -82,6 +82,8 @@ class Reading(SQLModel, table=True):
 
     # sensor fields, see doc/weather_variables.md for details
     atmp  : Optional[float] = Field(default=None, description="air temperature, celsius") 
+    atmp_min  : Optional[float] = Field(default=None, description="min air temperature, celsius") 
+    atmp_max  : Optional[float] = Field(default=None, description="max air temperature, celsius") 
     dwpt  : Optional[float] = Field(default=None, description="dew point, celsius")
     lws   : Optional[float] = Field(default=None, description="this is an nominal reading or 0 or 1 (wet / not wet)")  
     pcpn  : Optional[float] = Field(default=None, description="precipitation, mm, > 0")   

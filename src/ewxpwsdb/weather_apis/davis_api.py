@@ -82,7 +82,7 @@ class DavisAPI(WeatherAPI):
     APIConfigClass: type[DavisAPIConfig] = DavisAPIConfig
     _station_type = 'DAVIS'
     _sampling_interval = interval_min = 15
-    supported_variables = ['atmp', 'dwpt', 'lws', 'pcpn', 'relh', 'srad', 'smst', 'stmp','wdir', 'wspd', 'wspd_max']
+    supported_variables = ['atmp', 'atmp_min', 'atmp_max', 'dwpt', 'lws', 'pcpn', 'relh', 'srad', 'smst', 'stmp','wdir', 'wspd', 'wspd_max']
 
     
     def __init__(self, weather_station:WeatherStation):
@@ -233,6 +233,8 @@ class DavisAPI(WeatherAPI):
                     ## TODO confirm transforms esp for hum_out solar rad
                     sensor2_data = {                        
                         'atmp': round(self.f_to_c(record['temp_out']),2),
+                        'atmp_min': round(self.f_to_c(record['temp_out_lo']),2),
+                        'atmp_max': round(self.f_to_c(record['temp_out_hi']),2),
                         'dwpt': round(self.f_to_c(record['dew_point_out']),2),
                         'pcpn': record['rainfall_mm'],
                         'relh': record['hum_out'],

@@ -65,7 +65,7 @@ class WeatherAPI(ABC):
     # station type must be one of STATION_TYPE type, reset this in 
     _station_type: STATION_TYPE = None
     _sampling_interval = 0 
-    supported_variables:list[str] = ['atmp', 'lws', 'pcpn', 'relh', 'srad', 'smst', 'stmp', 'wspd', 'wdir']
+    supported_variables:list[str] = ['atmp', 'atmp_min', 'atmp_max', 'lws', 'pcpn', 'relh', 'srad', 'smst', 'stmp', 'wspd', 'wsp_max', 'wdir']
     empty_response = ['{}']
 
 

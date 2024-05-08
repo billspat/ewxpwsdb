@@ -61,7 +61,7 @@ class RainwiseAPI(WeatherAPI):
     APIConfigClass: type[RainwiseAPIConfig] = RainwiseAPIConfig
     _station_type: STATION_TYPE = 'RAINWISE'
     _sampling_interval = interval_min = 15
-    supported_variables = ['atmp', 'lws', 'pcpn', 'relh', 'srad', 'smst', 'stmp', 'wspd', 'wdir', 'wspd_max']
+    supported_variables = ['atmp', 'atmp_min', 'atmp_max', 'lws', 'pcpn', 'relh', 'srad', 'smst', 'stmp', 'wspd', 'wdir', 'wspd_max']
 
 
 
@@ -144,6 +144,8 @@ class RainwiseAPI(WeatherAPI):
             reading = {
                     'data_datetime' : self.dt_utc_from_str(response_data['times'][key]),
                     'atmp' : round(self.f_to_c(float(response_data['temp'][key])), 2),
+                    'atmp_min' : round(self.f_to_c(float(response_data['temp_lo'][key])), 2),
+                    'atmp_max' : round(self.f_to_c(float(response_data['temp_hi'][key])), 2),
                     'dwpt' : round(self.f_to_c(float(response_data['dewpoint'][key])),2),
                     'lws'  : float(response_data['leaf_wetness'][key]),
                     'pcpn' : float(response_data['precip'][key]) * 25.4,

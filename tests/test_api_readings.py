@@ -126,7 +126,9 @@ def test_get_responses_and_transform(station_type, db_with_data_session):
 
         # check that the attribute is defined _and_ the that value is float or nothing
         # this is here to ensure the Reading model fields/attributes don't get update without also updating tests
-        assert isinstance(reading.atmp, float|None)  
+        assert isinstance(reading.atmp, float|None)
+        assert isinstance(reading.atmp_min, float|None)  
+        assert isinstance(reading.atmp_max, float|None)
         assert isinstance(reading.dwpt, float|None)  
         assert isinstance(reading.lws , float|None)  
         assert isinstance(reading.pcpn, float|None)  
@@ -137,6 +139,7 @@ def test_get_responses_and_transform(station_type, db_with_data_session):
         assert isinstance(reading.srad, float|None)  
         assert isinstance(reading.wdir, float|None)  
         assert isinstance(reading.wspd, float|None)  
+        assert isinstance(reading.wspd_max, float|None)  
 
         # check that we definitely have working float values for sensors that _should_ be present
         # note this test will fail if the weather station is down
@@ -147,6 +150,8 @@ def test_get_responses_and_transform(station_type, db_with_data_session):
 
         if station_type == 'DAVIS':
             assert isinstance(reading.atmp, float)
+            assert isinstance(reading.atmp_min, float)
+            assert isinstance(reading.atmp_max, float)
             assert isinstance(reading.dwpt, float)
             assert isinstance(reading.lws , float)
             assert isinstance(reading.pcpn, float)  
@@ -174,6 +179,8 @@ def test_get_responses_and_transform(station_type, db_with_data_session):
 
         if station_type == 'RAINWISE':
             assert isinstance(reading.atmp, float)
+            assert isinstance(reading.atmp_min, float)
+            assert isinstance(reading.atmp_max, float)
             assert isinstance(reading.dwpt, float)
             assert isinstance(reading.lws,  float)
             assert isinstance(reading.pcpn, float)
