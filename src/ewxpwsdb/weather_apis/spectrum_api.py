@@ -122,9 +122,9 @@ class SpectrumAPI(WeatherAPI):
         if 'EquipmentRecords' not in response_data.keys():
             return []
         
-        readings = []
+        readings:list[dict] = []
         for record in response_data['EquipmentRecords']:
-            reading = { 'data_datetime': self.dt_utc_from_str(record['TimeStamp'])}
+            reading:dict[str,Any] = { 'data_datetime': self.dt_utc_from_str(record['TimeStamp'])}
             for sensor in record['SensorData']:
                 match sensor['SensorType']:
                     case 'Temperature':
