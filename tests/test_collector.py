@@ -186,30 +186,8 @@ def test_collect_request(station,db_with_data, station_collector):
     collector.close()
 
 
-def test_collector_readings_api(station,db_with_data,station_collector):
+def test_collector_readings_api(viable_interval, db_with_data,station_collector):
     # must run after putting readings into the db
-    collector = station_collector
-    readings = collector.get_readings(n = 4)
-    assert len(readings) == 4
-    assert isinstance(readings[0], Reading)
-
-    # test api parameter for sorting
-    readings = collector.get_readings(n =4, order_by ='desc')
-    assert len(readings) == 4
-    assert isinstance(readings[0], Reading)
-    assert readings[0].weatherstation_id == collector.station.id
-    
-    readings = collector.get_readings(n =4, order_by ='asc')
-    assert len(readings) == 4
-    assert isinstance(readings[0], Reading)
-    assert readings[0].weatherstation_id == collector.station.id
-    collector.close()
-
-
-def test_collector_readings_by_date(station, db_with_data, viable_interval, station_collector):
-
-    # make a request of the API, put data in the database for all of today and yesterday
-    
     today_interval = UTCInterval.one_day_interval()  # this defaults to getting the time range from midnight to now
     two_day_interval = UTCInterval(start = (today_interval.start - timedelta(days = 1)), end = today_interval.end)
 
@@ -219,6 +197,7 @@ def test_collector_readings_by_date(station, db_with_data, viable_interval, stat
     some_time_yesterday = UTCInterval(start=viable_interval.start - timedelta(days = 1), 
                            end = viable_interval.end - timedelta(days = 1)
                            )
+    
     readings = station_collector.get_readings_by_date(some_time_yesterday)
     assert isinstance(readings, list)
     assert len(readings) > 0 
@@ -231,16 +210,26 @@ def test_collector_readings_by_date(station, db_with_data, viable_interval, stat
     assert dt.year == datetime.today().year
 
     reading = station_collector.get_latest_reading()
-
-    # db datetimes currently don't have timezone,
-    # TODO fix this with issue #29 when db has timezone-aware dates 
     
-    reading.data_datetime = reading.data_datetime.replace(tzinfo = timezone.utc)
-
     assert isinstance(reading, Reading)
     assert (datetime.now(timezone.utc) - reading.data_datetime) < timedelta(minutes=21)
 
+    readings = station_collector.get_readings(n = 4)
+    assert len(readings) == 4
+    assert isinstance(readings[0], Reading)
+
+    # test api parameter for sorting
+    readings = station_collector.get_readings(n =4, order_by ='desc')
+    assert len(readings) == 4
+    assert isinstance(readings[0], Reading)
+    assert readings[0].weatherstation_id == station_collector.station.id
+    
+    readings = station_collector.get_readings(n =4, order_by ='asc')
+    assert len(readings) == 4
+    assert isinstance(readings[0], Reading)
+    assert readings[0].weatherstation_id == station_collector.station.id
     station_collector.close()
+
 
     
 
