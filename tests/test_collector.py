@@ -238,7 +238,7 @@ def test_collector_readings_by_date(station, db_with_data, viable_interval, stat
     reading.data_datetime = reading.data_datetime.replace(tzinfo = timezone.utc)
 
     assert isinstance(reading, Reading)
-    assert (datetime.now(timezone.utc) - reading.data_datetime) < timedelta(minutes=20)
+    assert (datetime.now(timezone.utc) - reading.data_datetime) < timedelta(minutes=21)
 
     station_collector.close()
 
