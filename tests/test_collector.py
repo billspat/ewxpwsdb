@@ -38,13 +38,13 @@ def viable_interval(station_type):
     duration_min = 70
 
     # temporary adjustment for this down station, use 
-    if station_type == 'RAINWISE':
-        # rainwise goes down, so set the period for when the station was up and there is data
-        from datetime import datetime, UTC
-        datetime_rainwise_was_working = datetime(year=2024, month=2, day=19, hour=12, minute=0, second=0, tzinfo=UTC)
-        interval = UTCInterval.previous_interval(dtm = datetime_rainwise_was_working, delta_mins=duration_min) # previous_fourteen_minute_interval(datetime_rainwise_was_working)
-    else:
-        interval = UTCInterval.previous_interval(delta_mins=duration_min)
+    # if station_type == 'RAINWISE':
+    #     # rainwise goes down, so set the period for when the station was up and there is data
+    #     from datetime import datetime, UTC
+    #     datetime_rainwise_was_working = datetime(year=2024, month=2, day=19, hour=12, minute=0, second=0, tzinfo=UTC)
+    #     interval = UTCInterval.previous_interval(dtm = datetime_rainwise_was_working, delta_mins=duration_min) # previous_fourteen_minute_interval(datetime_rainwise_was_working)
+    # else:
+    interval = UTCInterval.previous_interval(delta_mins=duration_min)
     
     return(interval)
 
@@ -208,18 +208,18 @@ def test_collector_readings_api(station,db_with_data,station_collector):
 
 def test_collector_readings_by_date(station, db_with_data, viable_interval, station_collector):
 
-    # make a request of the API, put data in the database for a specific time period, then try to get it back out
+    # make a request of the API, put data in the database for all of today and yesterday
     
-    yesterday = UTCInterval(start=viable_interval.start - timedelta(days = 1), 
+    today_interval = UTCInterval.one_day_interval()  # this defaults to getting the time range from midnight to now
+    two_day_interval = UTCInterval(start = (today_interval.start - timedelta(days = 1)), end = today_interval.end)
+
+    response_ids = station_collector.request_and_store_weather_data_utc(two_day_interval)
+    assert len(response_ids) > 0 
+
+    some_time_yesterday = UTCInterval(start=viable_interval.start - timedelta(days = 1), 
                            end = viable_interval.end - timedelta(days = 1)
                            )
-    try:
-        response_ids = station_collector.request_and_store_weather_data_utc(yesterday)
-    except Exception as e:
-        # if there is already data in there, just ignore the exception and keep going
-        pass
-
-    readings = station_collector.get_readings_by_date(yesterday)
+    readings = station_collector.get_readings_by_date(some_time_yesterday)
     assert isinstance(readings, list)
     assert len(readings) > 0 
     assert isinstance(readings[0], Reading)
