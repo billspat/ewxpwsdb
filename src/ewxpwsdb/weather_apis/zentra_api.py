@@ -54,6 +54,8 @@ class ZentraAPI(WeatherAPI):
     APIConfigClass = ZentraAPIConfig    # type: ignore[assignment]
     _station_type = 'ZENTRA'
     _sampling_interval = interval_min = 5
+    _lws_threshold = 450
+
 
     _MAX_READINGS_PER_PAGE:int = 2000
     supported_variables = ['atmp', 'lws', 'pcpn', 'relh', 'srad', 'smst', 'stmp', 'wspd', 'wdir', 'wspd_max']
@@ -229,6 +231,9 @@ class ZentraAPI(WeatherAPI):
 
         # no longer need the timestamp keys, and calling program is expecting a list ()
         return list(readings_by_timestamp.values())
+    
+    def wetness_transform(self, w):
+        return 1 if w >= self._lws_threshold else 0
     
     def _handle_error(self):
         """ place holder to remind that we need to add err handling to each class"""
