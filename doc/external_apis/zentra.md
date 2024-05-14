@@ -38,7 +38,7 @@ Zentra weather station API requires an ***API Key*** that is an user token each 
 
    - Full information about the ZENTRA Cloud API can be found at https://zentracloud.com/api/v3/documentation/. This site includes all available API calls, their correct use and formatting.
 
-### Python Binding
+### Variable mapping
 
 - Required Parameters
 
@@ -50,7 +50,7 @@ Zentra weather station API requires an ***API Key*** that is an user token each 
 | end_datetime   | End date and time (UTC time zone expected)                   | datetime |
 | tz             | Time zone information of the station (options: 'HT', 'AT', 'PT', 'MT', 'CT', 'ET') | str      |
 
-> NOTE: start_datetime & end_datetime must be in UTC time zone for Python binding to correctly interpret date and time
+> NOTE: start_datetime & end_datetime must be in UTC time zone for Variable mapping to correctly interpret date and time
 
 > NOTE: HT: Hawaii Time / AT: Alaska Time / PT: Pacific Time / MT: Mountain Time / CT: Central Time / ET: Eastern Time
 

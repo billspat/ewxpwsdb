@@ -1,0 +1,2512 @@
+{
+    "pagination": {
+        "per_page": 2000,
+        "page_num": 1,
+        "next_url": "redacted - the url for the next page. ",
+        "max_mrid": 112802,
+        "page_num_readings": 9,
+        "page_num_outputs": 216,
+        "page_start_date": "2024-05-03 15:20:00-04:00",
+        "page_end_date": "2024-05-03 16:00:00-04:00",
+        "page_start_mrid": 112791,
+        "page_end_mrid": 112799
+    },
+    "data": {
+        "Air Temperature": [
+            {
+                "metadata": {
+                    "device_sn": "redacted",
+                    "device_name": "envwx-meter-fo2",
+                    "port_number": 1,
+                    "sensor_sn": "ATM-410008286",
+                    "sensor_name": "ATMOS 41",
+                    "units": " \\u00b0C"
+                },
+                "readings": [
+                    {
+                        "timestamp_utc": 1714766400,
+                        "datetime": "2024-05-03 16:00:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 17.4,
+                        "precision": 1,
+                        "mrid": 112799,
+                        "error_flag": false,
+                        "error_description": null
+                    },
+                    {
+                        "timestamp_utc": 1714766100,
+                        "datetime": "2024-05-03 15:55:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 17.2,
+                        "precision": 1,
+                        "mrid": 112798,
+                        "error_flag": false,
+                        "error_description": null
+                    },
+                    {
+                        "timestamp_utc": 1714765800,
+                        "datetime": "2024-05-03 15:50:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 17.1,
+                        "precision": 1,
+                        "mrid": 112797,
+                        "error_flag": false,
+                        "error_description": null
+                    },
+                    {
+                        "timestamp_utc": 1714765500,
+                        "datetime": "2024-05-03 15:45:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 17.1,
+                        "precision": 1,
+                        "mrid": 112796,
+                        "error_flag": false,
+                        "error_description": null
+                    },
+                    {
+                        "timestamp_utc": 1714765200,
+                        "datetime": "2024-05-03 15:40:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 17,
+                        "precision": 1,
+                        "mrid": 112795,
+                        "error_flag": false,
+                        "error_description": null
+                    },
+                    {
+                        "timestamp_utc": 1714764900,
+                        "datetime": "2024-05-03 15:35:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 17.2,
+                        "precision": 1,
+                        "mrid": 112794,
+                        "error_flag": false,
+                        "error_description": null
+                    },
+                    {
+                        "timestamp_utc": 1714764600,
+                        "datetime": "2024-05-03 15:30:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 17.3,
+                        "precision": 1,
+                        "mrid": 112793,
+                        "error_flag": false,
+                        "error_description": null
+                    },
+                    {
+                        "timestamp_utc": 1714764300,
+                        "datetime": "2024-05-03 15:25:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 17.3,
+                        "precision": 1,
+                        "mrid": 112792,
+                        "error_flag": false,
+                        "error_description": null
+                    },
+                    {
+                        "timestamp_utc": 1714764000,
+                        "datetime": "2024-05-03 15:20:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 17.5,
+                        "precision": 1,
+                        "mrid": 112791,
+                        "error_flag": false,
+                        "error_description": null
+                    }
+                ]
+            }
+        ],
+        "Atmospheric Pressure": [
+            {
+                "metadata": {
+                    "device_sn": "redacted",
+                    "device_name": "envwx-meter-fo2",
+                    "port_number": 1,
+                    "sensor_sn": "ATM-410008286",
+                    "sensor_name": "ATMOS 41",
+                    "units": " kPa"
+                },
+                "readings": [
+                    {
+                        "timestamp_utc": 1714766400,
+                        "datetime": "2024-05-03 16:00:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 98.48,
+                        "precision": 2,
+                        "mrid": 112799,
+                        "error_flag": false,
+                        "error_description": null
+                    },
+                    {
+                        "timestamp_utc": 1714766100,
+                        "datetime": "2024-05-03 15:55:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 98.48,
+                        "precision": 2,
+                        "mrid": 112798,
+                        "error_flag": false,
+                        "error_description": null
+                    },
+                    {
+                        "timestamp_utc": 1714765800,
+                        "datetime": "2024-05-03 15:50:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 98.48,
+                        "precision": 2,
+                        "mrid": 112797,
+                        "error_flag": false,
+                        "error_description": null
+                    },
+                    {
+                        "timestamp_utc": 1714765500,
+                        "datetime": "2024-05-03 15:45:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 98.48,
+                        "precision": 2,
+                        "mrid": 112796,
+                        "error_flag": false,
+                        "error_description": null
+                    },
+                    {
+                        "timestamp_utc": 1714765200,
+                        "datetime": "2024-05-03 15:40:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 98.47,
+                        "precision": 2,
+                        "mrid": 112795,
+                        "error_flag": false,
+                        "error_description": null
+                    },
+                    {
+                        "timestamp_utc": 1714764900,
+                        "datetime": "2024-05-03 15:35:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 98.47,
+                        "precision": 2,
+                        "mrid": 112794,
+                        "error_flag": false,
+                        "error_description": null
+                    },
+                    {
+                        "timestamp_utc": 1714764600,
+                        "datetime": "2024-05-03 15:30:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 98.47,
+                        "precision": 2,
+                        "mrid": 112793,
+                        "error_flag": false,
+                        "error_description": null
+                    },
+                    {
+                        "timestamp_utc": 1714764300,
+                        "datetime": "2024-05-03 15:25:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 98.45,
+                        "precision": 2,
+                        "mrid": 112792,
+                        "error_flag": false,
+                        "error_description": null
+                    },
+                    {
+                        "timestamp_utc": 1714764000,
+                        "datetime": "2024-05-03 15:20:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 98.44,
+                        "precision": 2,
+                        "mrid": 112791,
+                        "error_flag": false,
+                        "error_description": null
+                    }
+                ]
+            }
+        ],
+        "Battery Percent": [
+            {
+                "metadata": {
+                    "device_sn": "redacted",
+                    "device_name": "envwx-meter-fo2",
+                    "port_number": 7,
+                    "sensor_sn": null,
+                    "sensor_name": "Battery",
+                    "units": "%"
+                },
+                "readings": [
+                    {
+                        "timestamp_utc": 1714766400,
+                        "datetime": "2024-05-03 16:00:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 100,
+                        "precision": 0,
+                        "mrid": 112799,
+                        "error_flag": false,
+                        "error_description": null
+                    },
+                    {
+                        "timestamp_utc": 1714766100,
+                        "datetime": "2024-05-03 15:55:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 100,
+                        "precision": 0,
+                        "mrid": 112798,
+                        "error_flag": false,
+                        "error_description": null
+                    },
+                    {
+                        "timestamp_utc": 1714765800,
+                        "datetime": "2024-05-03 15:50:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 100,
+                        "precision": 0,
+                        "mrid": 112797,
+                        "error_flag": false,
+                        "error_description": null
+                    },
+                    {
+                        "timestamp_utc": 1714765500,
+                        "datetime": "2024-05-03 15:45:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 100,
+                        "precision": 0,
+                        "mrid": 112796,
+                        "error_flag": false,
+                        "error_description": null
+                    },
+                    {
+                        "timestamp_utc": 1714765200,
+                        "datetime": "2024-05-03 15:40:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 100,
+                        "precision": 0,
+                        "mrid": 112795,
+                        "error_flag": false,
+                        "error_description": null
+                    },
+                    {
+                        "timestamp_utc": 1714764900,
+                        "datetime": "2024-05-03 15:35:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 100,
+                        "precision": 0,
+                        "mrid": 112794,
+                        "error_flag": false,
+                        "error_description": null
+                    },
+                    {
+                        "timestamp_utc": 1714764600,
+                        "datetime": "2024-05-03 15:30:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 100,
+                        "precision": 0,
+                        "mrid": 112793,
+                        "error_flag": false,
+                        "error_description": null
+                    },
+                    {
+                        "timestamp_utc": 1714764300,
+                        "datetime": "2024-05-03 15:25:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 100,
+                        "precision": 0,
+                        "mrid": 112792,
+                        "error_flag": false,
+                        "error_description": null
+                    },
+                    {
+                        "timestamp_utc": 1714764000,
+                        "datetime": "2024-05-03 15:20:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 100,
+                        "precision": 0,
+                        "mrid": 112791,
+                        "error_flag": false,
+                        "error_description": null
+                    }
+                ]
+            }
+        ],
+        "Battery Voltage": [
+            {
+                "metadata": {
+                    "device_sn": "redacted",
+                    "device_name": "envwx-meter-fo2",
+                    "port_number": 7,
+                    "sensor_sn": null,
+                    "sensor_name": "Battery",
+                    "units": " mV"
+                },
+                "readings": [
+                    {
+                        "timestamp_utc": 1714766400,
+                        "datetime": "2024-05-03 16:00:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 8350,
+                        "precision": 0,
+                        "mrid": 112799,
+                        "error_flag": false,
+                        "error_description": null
+                    },
+                    {
+                        "timestamp_utc": 1714766100,
+                        "datetime": "2024-05-03 15:55:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 8355,
+                        "precision": 0,
+                        "mrid": 112798,
+                        "error_flag": false,
+                        "error_description": null
+                    },
+                    {
+                        "timestamp_utc": 1714765800,
+                        "datetime": "2024-05-03 15:50:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 8356,
+                        "precision": 0,
+                        "mrid": 112797,
+                        "error_flag": false,
+                        "error_description": null
+                    },
+                    {
+                        "timestamp_utc": 1714765500,
+                        "datetime": "2024-05-03 15:45:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 8358,
+                        "precision": 0,
+                        "mrid": 112796,
+                        "error_flag": false,
+                        "error_description": null
+                    },
+                    {
+                        "timestamp_utc": 1714765200,
+                        "datetime": "2024-05-03 15:40:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 8359,
+                        "precision": 0,
+                        "mrid": 112795,
+                        "error_flag": false,
+                        "error_description": null
+                    },
+                    {
+                        "timestamp_utc": 1714764900,
+                        "datetime": "2024-05-03 15:35:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 8360,
+                        "precision": 0,
+                        "mrid": 112794,
+                        "error_flag": false,
+                        "error_description": null
+                    },
+                    {
+                        "timestamp_utc": 1714764600,
+                        "datetime": "2024-05-03 15:30:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 8368,
+                        "precision": 0,
+                        "mrid": 112793,
+                        "error_flag": false,
+                        "error_description": null
+                    },
+                    {
+                        "timestamp_utc": 1714764300,
+                        "datetime": "2024-05-03 15:25:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 8371,
+                        "precision": 0,
+                        "mrid": 112792,
+                        "error_flag": false,
+                        "error_description": null
+                    },
+                    {
+                        "timestamp_utc": 1714764000,
+                        "datetime": "2024-05-03 15:20:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 8374,
+                        "precision": 0,
+                        "mrid": 112791,
+                        "error_flag": false,
+                        "error_description": null
+                    }
+                ]
+            }
+        ],
+        "Gust Speed": [
+            {
+                "metadata": {
+                    "device_sn": "redacted",
+                    "device_name": "envwx-meter-fo2",
+                    "port_number": 1,
+                    "sensor_sn": "ATM-410008286",
+                    "sensor_name": "ATMOS 41",
+                    "units": " m/s"
+                },
+                "readings": [
+                    {
+                        "timestamp_utc": 1714766400,
+                        "datetime": "2024-05-03 16:00:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 3.22,
+                        "precision": 2,
+                        "mrid": 112799,
+                        "error_flag": false,
+                        "error_description": null
+                    },
+                    {
+                        "timestamp_utc": 1714766100,
+                        "datetime": "2024-05-03 15:55:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 3.43,
+                        "precision": 2,
+                        "mrid": 112798,
+                        "error_flag": false,
+                        "error_description": null
+                    },
+                    {
+                        "timestamp_utc": 1714765800,
+                        "datetime": "2024-05-03 15:50:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 4.25,
+                        "precision": 2,
+                        "mrid": 112797,
+                        "error_flag": false,
+                        "error_description": null
+                    },
+                    {
+                        "timestamp_utc": 1714765500,
+                        "datetime": "2024-05-03 15:45:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 4.64,
+                        "precision": 2,
+                        "mrid": 112796,
+                        "error_flag": false,
+                        "error_description": null
+                    },
+                    {
+                        "timestamp_utc": 1714765200,
+                        "datetime": "2024-05-03 15:40:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 6.03,
+                        "precision": 2,
+                        "mrid": 112795,
+                        "error_flag": false,
+                        "error_description": null
+                    },
+                    {
+                        "timestamp_utc": 1714764900,
+                        "datetime": "2024-05-03 15:35:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 4.84,
+                        "precision": 2,
+                        "mrid": 112794,
+                        "error_flag": false,
+                        "error_description": null
+                    },
+                    {
+                        "timestamp_utc": 1714764600,
+                        "datetime": "2024-05-03 15:30:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 5.52,
+                        "precision": 2,
+                        "mrid": 112793,
+                        "error_flag": false,
+                        "error_description": null
+                    },
+                    {
+                        "timestamp_utc": 1714764300,
+                        "datetime": "2024-05-03 15:25:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 8.59,
+                        "precision": 2,
+                        "mrid": 112792,
+                        "error_flag": false,
+                        "error_description": null
+                    },
+                    {
+                        "timestamp_utc": 1714764000,
+                        "datetime": "2024-05-03 15:20:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 6.9,
+                        "precision": 2,
+                        "mrid": 112791,
+                        "error_flag": false,
+                        "error_description": null
+                    }
+                ]
+            }
+        ],
+        "Leaf Wetness": [
+            {
+                "metadata": {
+                    "device_sn": "redacted",
+                    "device_name": "envwx-meter-fo2",
+                    "port_number": 2,
+                    "sensor_sn": "",
+                    "sensor_name": "PHYTOS 31",
+                    "units": " min"
+                },
+                "readings": [
+                    {
+                        "timestamp_utc": 1714766400,
+                        "datetime": "2024-05-03 16:00:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 5,
+                        "precision": 0,
+                        "mrid": 112799,
+                        "error_flag": false,
+                        "error_description": null
+                    },
+                    {
+                        "timestamp_utc": 1714766100,
+                        "datetime": "2024-05-03 15:55:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 5,
+                        "precision": 0,
+                        "mrid": 112798,
+                        "error_flag": false,
+                        "error_description": null
+                    },
+                    {
+                        "timestamp_utc": 1714765800,
+                        "datetime": "2024-05-03 15:50:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 5,
+                        "precision": 0,
+                        "mrid": 112797,
+                        "error_flag": false,
+                        "error_description": null
+                    },
+                    {
+                        "timestamp_utc": 1714765500,
+                        "datetime": "2024-05-03 15:45:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 5,
+                        "precision": 0,
+                        "mrid": 112796,
+                        "error_flag": false,
+                        "error_description": null
+                    },
+                    {
+                        "timestamp_utc": 1714765200,
+                        "datetime": "2024-05-03 15:40:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 5,
+                        "precision": 0,
+                        "mrid": 112795,
+                        "error_flag": false,
+                        "error_description": null
+                    },
+                    {
+                        "timestamp_utc": 1714764900,
+                        "datetime": "2024-05-03 15:35:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 5,
+                        "precision": 0,
+                        "mrid": 112794,
+                        "error_flag": false,
+                        "error_description": null
+                    },
+                    {
+                        "timestamp_utc": 1714764600,
+                        "datetime": "2024-05-03 15:30:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 5,
+                        "precision": 0,
+                        "mrid": 112793,
+                        "error_flag": false,
+                        "error_description": null
+                    },
+                    {
+                        "timestamp_utc": 1714764300,
+                        "datetime": "2024-05-03 15:25:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 5,
+                        "precision": 0,
+                        "mrid": 112792,
+                        "error_flag": false,
+                        "error_description": null
+                    },
+                    {
+                        "timestamp_utc": 1714764000,
+                        "datetime": "2024-05-03 15:20:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 5,
+                        "precision": 0,
+                        "mrid": 112791,
+                        "error_flag": false,
+                        "error_description": null
+                    }
+                ]
+            }
+        ],
+        "Leaf Wetness (high)": [
+            {
+                "metadata": {
+                    "device_sn": "redacted",
+                    "device_name": "envwx-meter-fo2",
+                    "port_number": 2,
+                    "sensor_sn": "",
+                    "sensor_name": "PHYTOS 31",
+                    "units": " min"
+                },
+                "readings": [
+                    {
+                        "timestamp_utc": 1714766400,
+                        "datetime": "2024-05-03 16:00:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 5,
+                        "precision": 0,
+                        "mrid": 112799,
+                        "error_flag": false,
+                        "error_description": null
+                    },
+                    {
+                        "timestamp_utc": 1714766100,
+                        "datetime": "2024-05-03 15:55:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 5,
+                        "precision": 0,
+                        "mrid": 112798,
+                        "error_flag": false,
+                        "error_description": null
+                    },
+                    {
+                        "timestamp_utc": 1714765800,
+                        "datetime": "2024-05-03 15:50:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 5,
+                        "precision": 0,
+                        "mrid": 112797,
+                        "error_flag": false,
+                        "error_description": null
+                    },
+                    {
+                        "timestamp_utc": 1714765500,
+                        "datetime": "2024-05-03 15:45:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 5,
+                        "precision": 0,
+                        "mrid": 112796,
+                        "error_flag": false,
+                        "error_description": null
+                    },
+                    {
+                        "timestamp_utc": 1714765200,
+                        "datetime": "2024-05-03 15:40:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 5,
+                        "precision": 0,
+                        "mrid": 112795,
+                        "error_flag": false,
+                        "error_description": null
+                    },
+                    {
+                        "timestamp_utc": 1714764900,
+                        "datetime": "2024-05-03 15:35:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 5,
+                        "precision": 0,
+                        "mrid": 112794,
+                        "error_flag": false,
+                        "error_description": null
+                    },
+                    {
+                        "timestamp_utc": 1714764600,
+                        "datetime": "2024-05-03 15:30:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 5,
+                        "precision": 0,
+                        "mrid": 112793,
+                        "error_flag": false,
+                        "error_description": null
+                    },
+                    {
+                        "timestamp_utc": 1714764300,
+                        "datetime": "2024-05-03 15:25:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 5,
+                        "precision": 0,
+                        "mrid": 112792,
+                        "error_flag": false,
+                        "error_description": null
+                    },
+                    {
+                        "timestamp_utc": 1714764000,
+                        "datetime": "2024-05-03 15:20:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 5,
+                        "precision": 0,
+                        "mrid": 112791,
+                        "error_flag": false,
+                        "error_description": null
+                    }
+                ]
+            }
+        ],
+        "Lightning Activity": [
+            {
+                "metadata": {
+                    "device_sn": "redacted",
+                    "device_name": "envwx-meter-fo2",
+                    "port_number": 1,
+                    "sensor_sn": "ATM-410008286",
+                    "sensor_name": "ATMOS 41",
+                    "units": ""
+                },
+                "readings": [
+                    {
+                        "timestamp_utc": 1714766400,
+                        "datetime": "2024-05-03 16:00:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 0,
+                        "precision": 0,
+                        "mrid": 112799,
+                        "error_flag": false,
+                        "error_description": null
+                    },
+                    {
+                        "timestamp_utc": 1714766100,
+                        "datetime": "2024-05-03 15:55:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 0,
+                        "precision": 0,
+                        "mrid": 112798,
+                        "error_flag": false,
+                        "error_description": null
+                    },
+                    {
+                        "timestamp_utc": 1714765800,
+                        "datetime": "2024-05-03 15:50:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 0,
+                        "precision": 0,
+                        "mrid": 112797,
+                        "error_flag": false,
+                        "error_description": null
+                    },
+                    {
+                        "timestamp_utc": 1714765500,
+                        "datetime": "2024-05-03 15:45:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 0,
+                        "precision": 0,
+                        "mrid": 112796,
+                        "error_flag": false,
+                        "error_description": null
+                    },
+                    {
+                        "timestamp_utc": 1714765200,
+                        "datetime": "2024-05-03 15:40:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 0,
+                        "precision": 0,
+                        "mrid": 112795,
+                        "error_flag": false,
+                        "error_description": null
+                    },
+                    {
+                        "timestamp_utc": 1714764900,
+                        "datetime": "2024-05-03 15:35:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 0,
+                        "precision": 0,
+                        "mrid": 112794,
+                        "error_flag": false,
+                        "error_description": null
+                    },
+                    {
+                        "timestamp_utc": 1714764600,
+                        "datetime": "2024-05-03 15:30:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 0,
+                        "precision": 0,
+                        "mrid": 112793,
+                        "error_flag": false,
+                        "error_description": null
+                    },
+                    {
+                        "timestamp_utc": 1714764300,
+                        "datetime": "2024-05-03 15:25:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 0,
+                        "precision": 0,
+                        "mrid": 112792,
+                        "error_flag": false,
+                        "error_description": null
+                    },
+                    {
+                        "timestamp_utc": 1714764000,
+                        "datetime": "2024-05-03 15:20:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 0,
+                        "precision": 0,
+                        "mrid": 112791,
+                        "error_flag": false,
+                        "error_description": null
+                    }
+                ]
+            }
+        ],
+        "Lightning Distance": [
+            {
+                "metadata": {
+                    "device_sn": "redacted",
+                    "device_name": "envwx-meter-fo2",
+                    "port_number": 1,
+                    "sensor_sn": "ATM-410008286",
+                    "sensor_name": "ATMOS 41",
+                    "units": " km"
+                },
+                "readings": [
+                    {
+                        "timestamp_utc": 1714766400,
+                        "datetime": "2024-05-03 16:00:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 0,
+                        "precision": 0,
+                        "mrid": 112799,
+                        "error_flag": false,
+                        "error_description": null
+                    },
+                    {
+                        "timestamp_utc": 1714766100,
+                        "datetime": "2024-05-03 15:55:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 0,
+                        "precision": 0,
+                        "mrid": 112798,
+                        "error_flag": false,
+                        "error_description": null
+                    },
+                    {
+                        "timestamp_utc": 1714765800,
+                        "datetime": "2024-05-03 15:50:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 0,
+                        "precision": 0,
+                        "mrid": 112797,
+                        "error_flag": false,
+                        "error_description": null
+                    },
+                    {
+                        "timestamp_utc": 1714765500,
+                        "datetime": "2024-05-03 15:45:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 0,
+                        "precision": 0,
+                        "mrid": 112796,
+                        "error_flag": false,
+                        "error_description": null
+                    },
+                    {
+                        "timestamp_utc": 1714765200,
+                        "datetime": "2024-05-03 15:40:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 0,
+                        "precision": 0,
+                        "mrid": 112795,
+                        "error_flag": false,
+                        "error_description": null
+                    },
+                    {
+                        "timestamp_utc": 1714764900,
+                        "datetime": "2024-05-03 15:35:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 0,
+                        "precision": 0,
+                        "mrid": 112794,
+                        "error_flag": false,
+                        "error_description": null
+                    },
+                    {
+                        "timestamp_utc": 1714764600,
+                        "datetime": "2024-05-03 15:30:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 0,
+                        "precision": 0,
+                        "mrid": 112793,
+                        "error_flag": false,
+                        "error_description": null
+                    },
+                    {
+                        "timestamp_utc": 1714764300,
+                        "datetime": "2024-05-03 15:25:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 0,
+                        "precision": 0,
+                        "mrid": 112792,
+                        "error_flag": false,
+                        "error_description": null
+                    },
+                    {
+                        "timestamp_utc": 1714764000,
+                        "datetime": "2024-05-03 15:20:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 0,
+                        "precision": 0,
+                        "mrid": 112791,
+                        "error_flag": false,
+                        "error_description": null
+                    }
+                ]
+            }
+        ],
+        "Logger Temperature": [
+            {
+                "metadata": {
+                    "device_sn": "redacted",
+                    "device_name": "envwx-meter-fo2",
+                    "port_number": 8,
+                    "sensor_sn": "1663256312",
+                    "sensor_name": "Barometer",
+                    "units": " \\u00b0C"
+                },
+                "readings": [
+                    {
+                        "timestamp_utc": 1714766400,
+                        "datetime": "2024-05-03 16:00:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 19,
+                        "precision": 1,
+                        "mrid": 112799,
+                        "error_flag": false,
+                        "error_description": null
+                    },
+                    {
+                        "timestamp_utc": 1714766100,
+                        "datetime": "2024-05-03 15:55:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 19.1,
+                        "precision": 1,
+                        "mrid": 112798,
+                        "error_flag": false,
+                        "error_description": null
+                    },
+                    {
+                        "timestamp_utc": 1714765800,
+                        "datetime": "2024-05-03 15:50:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 19.2,
+                        "precision": 1,
+                        "mrid": 112797,
+                        "error_flag": false,
+                        "error_description": null
+                    },
+                    {
+                        "timestamp_utc": 1714765500,
+                        "datetime": "2024-05-03 15:45:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 19.3,
+                        "precision": 1,
+                        "mrid": 112796,
+                        "error_flag": false,
+                        "error_description": null
+                    },
+                    {
+                        "timestamp_utc": 1714765200,
+                        "datetime": "2024-05-03 15:40:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 19.6,
+                        "precision": 1,
+                        "mrid": 112795,
+                        "error_flag": false,
+                        "error_description": null
+                    },
+                    {
+                        "timestamp_utc": 1714764900,
+                        "datetime": "2024-05-03 15:35:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 20,
+                        "precision": 1,
+                        "mrid": 112794,
+                        "error_flag": false,
+                        "error_description": null
+                    },
+                    {
+                        "timestamp_utc": 1714764600,
+                        "datetime": "2024-05-03 15:30:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 20.4,
+                        "precision": 1,
+                        "mrid": 112793,
+                        "error_flag": false,
+                        "error_description": null
+                    },
+                    {
+                        "timestamp_utc": 1714764300,
+                        "datetime": "2024-05-03 15:25:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 21.1,
+                        "precision": 1,
+                        "mrid": 112792,
+                        "error_flag": false,
+                        "error_description": null
+                    },
+                    {
+                        "timestamp_utc": 1714764000,
+                        "datetime": "2024-05-03 15:20:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 22.3,
+                        "precision": 1,
+                        "mrid": 112791,
+                        "error_flag": false,
+                        "error_description": null
+                    }
+                ]
+            }
+        ],
+        "Max Precip Rate": [
+            {
+                "metadata": {
+                    "device_sn": "redacted",
+                    "device_name": "envwx-meter-fo2",
+                    "port_number": 1,
+                    "sensor_sn": "ATM-410008286",
+                    "sensor_name": "ATMOS 41",
+                    "units": " mm/h"
+                },
+                "readings": [
+                    {
+                        "timestamp_utc": 1714766400,
+                        "datetime": "2024-05-03 16:00:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 2,
+                        "precision": 1,
+                        "mrid": 112799,
+                        "error_flag": false,
+                        "error_description": null
+                    },
+                    {
+                        "timestamp_utc": 1714766100,
+                        "datetime": "2024-05-03 15:55:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 1,
+                        "precision": 1,
+                        "mrid": 112798,
+                        "error_flag": false,
+                        "error_description": null
+                    },
+                    {
+                        "timestamp_utc": 1714765800,
+                        "datetime": "2024-05-03 15:50:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 2,
+                        "precision": 1,
+                        "mrid": 112797,
+                        "error_flag": false,
+                        "error_description": null
+                    },
+                    {
+                        "timestamp_utc": 1714765500,
+                        "datetime": "2024-05-03 15:45:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 9.2,
+                        "precision": 1,
+                        "mrid": 112796,
+                        "error_flag": false,
+                        "error_description": null
+                    },
+                    {
+                        "timestamp_utc": 1714765200,
+                        "datetime": "2024-05-03 15:40:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 12.2,
+                        "precision": 1,
+                        "mrid": 112795,
+                        "error_flag": false,
+                        "error_description": null
+                    },
+                    {
+                        "timestamp_utc": 1714764900,
+                        "datetime": "2024-05-03 15:35:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 8.2,
+                        "precision": 1,
+                        "mrid": 112794,
+                        "error_flag": false,
+                        "error_description": null
+                    },
+                    {
+                        "timestamp_utc": 1714764600,
+                        "datetime": "2024-05-03 15:30:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 23.5,
+                        "precision": 1,
+                        "mrid": 112793,
+                        "error_flag": false,
+                        "error_description": null
+                    },
+                    {
+                        "timestamp_utc": 1714764300,
+                        "datetime": "2024-05-03 15:25:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 22.4,
+                        "precision": 1,
+                        "mrid": 112792,
+                        "error_flag": false,
+                        "error_description": null
+                    },
+                    {
+                        "timestamp_utc": 1714764000,
+                        "datetime": "2024-05-03 15:20:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 11.2,
+                        "precision": 1,
+                        "mrid": 112791,
+                        "error_flag": false,
+                        "error_description": null
+                    }
+                ]
+            }
+        ],
+        "Precipitation": [
+            {
+                "metadata": {
+                    "device_sn": "redacted",
+                    "device_name": "envwx-meter-fo2",
+                    "port_number": 1,
+                    "sensor_sn": "ATM-410008286",
+                    "sensor_name": "ATMOS 41",
+                    "units": " mm"
+                },
+                "readings": [
+                    {
+                        "timestamp_utc": 1714766400,
+                        "datetime": "2024-05-03 16:00:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 0.119,
+                        "precision": 3,
+                        "mrid": 112799,
+                        "error_flag": false,
+                        "error_description": null
+                    },
+                    {
+                        "timestamp_utc": 1714766100,
+                        "datetime": "2024-05-03 15:55:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 0.017,
+                        "precision": 3,
+                        "mrid": 112798,
+                        "error_flag": false,
+                        "error_description": null
+                    },
+                    {
+                        "timestamp_utc": 1714765800,
+                        "datetime": "2024-05-03 15:50:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 0.085,
+                        "precision": 3,
+                        "mrid": 112797,
+                        "error_flag": false,
+                        "error_description": null
+                    },
+                    {
+                        "timestamp_utc": 1714765500,
+                        "datetime": "2024-05-03 15:45:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 0.443,
+                        "precision": 3,
+                        "mrid": 112796,
+                        "error_flag": false,
+                        "error_description": null
+                    },
+                    {
+                        "timestamp_utc": 1714765200,
+                        "datetime": "2024-05-03 15:40:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 0.817,
+                        "precision": 3,
+                        "mrid": 112795,
+                        "error_flag": false,
+                        "error_description": null
+                    },
+                    {
+                        "timestamp_utc": 1714764900,
+                        "datetime": "2024-05-03 15:35:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 0.613,
+                        "precision": 3,
+                        "mrid": 112794,
+                        "error_flag": false,
+                        "error_description": null
+                    },
+                    {
+                        "timestamp_utc": 1714764600,
+                        "datetime": "2024-05-03 15:30:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 1.14,
+                        "precision": 3,
+                        "mrid": 112793,
+                        "error_flag": false,
+                        "error_description": null
+                    },
+                    {
+                        "timestamp_utc": 1714764300,
+                        "datetime": "2024-05-03 15:25:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 1.362,
+                        "precision": 3,
+                        "mrid": 112792,
+                        "error_flag": false,
+                        "error_description": null
+                    },
+                    {
+                        "timestamp_utc": 1714764000,
+                        "datetime": "2024-05-03 15:20:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 0.766,
+                        "precision": 3,
+                        "mrid": 112791,
+                        "error_flag": false,
+                        "error_description": null
+                    }
+                ]
+            }
+        ],
+        "RH Sensor Temp": [
+            {
+                "metadata": {
+                    "device_sn": "redacted",
+                    "device_name": "envwx-meter-fo2",
+                    "port_number": 1,
+                    "sensor_sn": "ATM-410008286",
+                    "sensor_name": "ATMOS 41",
+                    "units": " \\u00b0C"
+                },
+                "readings": [
+                    {
+                        "timestamp_utc": 1714766400,
+                        "datetime": "2024-05-03 16:00:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 17.9,
+                        "precision": 1,
+                        "mrid": 112799,
+                        "error_flag": false,
+                        "error_description": null
+                    },
+                    {
+                        "timestamp_utc": 1714766100,
+                        "datetime": "2024-05-03 15:55:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 17.8,
+                        "precision": 1,
+                        "mrid": 112798,
+                        "error_flag": false,
+                        "error_description": null
+                    },
+                    {
+                        "timestamp_utc": 1714765800,
+                        "datetime": "2024-05-03 15:50:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 17.8,
+                        "precision": 1,
+                        "mrid": 112797,
+                        "error_flag": false,
+                        "error_description": null
+                    },
+                    {
+                        "timestamp_utc": 1714765500,
+                        "datetime": "2024-05-03 15:45:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 17.9,
+                        "precision": 1,
+                        "mrid": 112796,
+                        "error_flag": false,
+                        "error_description": null
+                    },
+                    {
+                        "timestamp_utc": 1714765200,
+                        "datetime": "2024-05-03 15:40:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 18,
+                        "precision": 1,
+                        "mrid": 112795,
+                        "error_flag": false,
+                        "error_description": null
+                    },
+                    {
+                        "timestamp_utc": 1714764900,
+                        "datetime": "2024-05-03 15:35:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 18.3,
+                        "precision": 1,
+                        "mrid": 112794,
+                        "error_flag": false,
+                        "error_description": null
+                    },
+                    {
+                        "timestamp_utc": 1714764600,
+                        "datetime": "2024-05-03 15:30:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 18.9,
+                        "precision": 1,
+                        "mrid": 112793,
+                        "error_flag": false,
+                        "error_description": null
+                    },
+                    {
+                        "timestamp_utc": 1714764300,
+                        "datetime": "2024-05-03 15:25:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 19.9,
+                        "precision": 1,
+                        "mrid": 112792,
+                        "error_flag": false,
+                        "error_description": null
+                    },
+                    {
+                        "timestamp_utc": 1714764000,
+                        "datetime": "2024-05-03 15:20:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 21.3,
+                        "precision": 1,
+                        "mrid": 112791,
+                        "error_flag": false,
+                        "error_description": null
+                    }
+                ]
+            }
+        ],
+        "Reference Pressure": [
+            {
+                "metadata": {
+                    "device_sn": "redacted",
+                    "device_name": "envwx-meter-fo2",
+                    "port_number": 8,
+                    "sensor_sn": "1663256312",
+                    "sensor_name": "Barometer",
+                    "units": " kPa"
+                },
+                "readings": [
+                    {
+                        "timestamp_utc": 1714766400,
+                        "datetime": "2024-05-03 16:00:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 98.46,
+                        "precision": 2,
+                        "mrid": 112799,
+                        "error_flag": false,
+                        "error_description": null
+                    },
+                    {
+                        "timestamp_utc": 1714766100,
+                        "datetime": "2024-05-03 15:55:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 98.46,
+                        "precision": 2,
+                        "mrid": 112798,
+                        "error_flag": false,
+                        "error_description": null
+                    },
+                    {
+                        "timestamp_utc": 1714765800,
+                        "datetime": "2024-05-03 15:50:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 98.45,
+                        "precision": 2,
+                        "mrid": 112797,
+                        "error_flag": false,
+                        "error_description": null
+                    },
+                    {
+                        "timestamp_utc": 1714765500,
+                        "datetime": "2024-05-03 15:45:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 98.45,
+                        "precision": 2,
+                        "mrid": 112796,
+                        "error_flag": false,
+                        "error_description": null
+                    },
+                    {
+                        "timestamp_utc": 1714765200,
+                        "datetime": "2024-05-03 15:40:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 98.44,
+                        "precision": 2,
+                        "mrid": 112795,
+                        "error_flag": false,
+                        "error_description": null
+                    },
+                    {
+                        "timestamp_utc": 1714764900,
+                        "datetime": "2024-05-03 15:35:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 98.44,
+                        "precision": 2,
+                        "mrid": 112794,
+                        "error_flag": false,
+                        "error_description": null
+                    },
+                    {
+                        "timestamp_utc": 1714764600,
+                        "datetime": "2024-05-03 15:30:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 98.43,
+                        "precision": 2,
+                        "mrid": 112793,
+                        "error_flag": false,
+                        "error_description": null
+                    },
+                    {
+                        "timestamp_utc": 1714764300,
+                        "datetime": "2024-05-03 15:25:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 98.42,
+                        "precision": 2,
+                        "mrid": 112792,
+                        "error_flag": false,
+                        "error_description": null
+                    },
+                    {
+                        "timestamp_utc": 1714764000,
+                        "datetime": "2024-05-03 15:20:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 98.41,
+                        "precision": 2,
+                        "mrid": 112791,
+                        "error_flag": false,
+                        "error_description": null
+                    }
+                ]
+            }
+        ],
+        "Relative Humidity": [
+            {
+                "metadata": {
+                    "device_sn": "redacted",
+                    "device_name": "envwx-meter-fo2",
+                    "port_number": 1,
+                    "sensor_sn": "ATM-410008286",
+                    "sensor_name": "ATMOS 41",
+                    "units": "%"
+                },
+                "readings": [
+                    {
+                        "timestamp_utc": 1714766400,
+                        "datetime": "2024-05-03 16:00:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 99,
+                        "precision": 1,
+                        "mrid": 112799,
+                        "error_flag": false,
+                        "error_description": null
+                    },
+                    {
+                        "timestamp_utc": 1714766100,
+                        "datetime": "2024-05-03 15:55:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 99.3,
+                        "precision": 1,
+                        "mrid": 112798,
+                        "error_flag": false,
+                        "error_description": null
+                    },
+                    {
+                        "timestamp_utc": 1714765800,
+                        "datetime": "2024-05-03 15:50:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 99,
+                        "precision": 1,
+                        "mrid": 112797,
+                        "error_flag": false,
+                        "error_description": null
+                    },
+                    {
+                        "timestamp_utc": 1714765500,
+                        "datetime": "2024-05-03 15:45:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 98.9,
+                        "precision": 1,
+                        "mrid": 112796,
+                        "error_flag": false,
+                        "error_description": null
+                    },
+                    {
+                        "timestamp_utc": 1714765200,
+                        "datetime": "2024-05-03 15:40:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 99,
+                        "precision": 1,
+                        "mrid": 112795,
+                        "error_flag": false,
+                        "error_description": null
+                    },
+                    {
+                        "timestamp_utc": 1714764900,
+                        "datetime": "2024-05-03 15:35:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 98.5,
+                        "precision": 1,
+                        "mrid": 112794,
+                        "error_flag": false,
+                        "error_description": null
+                    },
+                    {
+                        "timestamp_utc": 1714764600,
+                        "datetime": "2024-05-03 15:30:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 98.6,
+                        "precision": 1,
+                        "mrid": 112793,
+                        "error_flag": false,
+                        "error_description": null
+                    },
+                    {
+                        "timestamp_utc": 1714764300,
+                        "datetime": "2024-05-03 15:25:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 99.8,
+                        "precision": 1,
+                        "mrid": 112792,
+                        "error_flag": false,
+                        "error_description": null
+                    },
+                    {
+                        "timestamp_utc": 1714764000,
+                        "datetime": "2024-05-03 15:20:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 100.7,
+                        "precision": 1,
+                        "mrid": 112791,
+                        "error_flag": false,
+                        "error_description": null
+                    }
+                ]
+            }
+        ],
+        "Soil Temperature": [
+            {
+                "metadata": {
+                    "device_sn": "redacted",
+                    "device_name": "envwx-meter-fo2",
+                    "port_number": 3,
+                    "sensor_sn": "T11-00021738",
+                    "sensor_name": "TEROS 11",
+                    "units": " \\u00b0C"
+                },
+                "readings": [
+                    {
+                        "timestamp_utc": 1714766400,
+                        "datetime": "2024-05-03 16:00:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 17.5,
+                        "precision": 1,
+                        "mrid": 112799,
+                        "error_flag": false,
+                        "error_description": null
+                    },
+                    {
+                        "timestamp_utc": 1714766100,
+                        "datetime": "2024-05-03 15:55:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 17.4,
+                        "precision": 1,
+                        "mrid": 112798,
+                        "error_flag": false,
+                        "error_description": null
+                    },
+                    {
+                        "timestamp_utc": 1714765800,
+                        "datetime": "2024-05-03 15:50:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 17.4,
+                        "precision": 1,
+                        "mrid": 112797,
+                        "error_flag": false,
+                        "error_description": null
+                    },
+                    {
+                        "timestamp_utc": 1714765500,
+                        "datetime": "2024-05-03 15:45:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 17.4,
+                        "precision": 1,
+                        "mrid": 112796,
+                        "error_flag": false,
+                        "error_description": null
+                    },
+                    {
+                        "timestamp_utc": 1714765200,
+                        "datetime": "2024-05-03 15:40:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 17.4,
+                        "precision": 1,
+                        "mrid": 112795,
+                        "error_flag": false,
+                        "error_description": null
+                    },
+                    {
+                        "timestamp_utc": 1714764900,
+                        "datetime": "2024-05-03 15:35:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 17.3,
+                        "precision": 1,
+                        "mrid": 112794,
+                        "error_flag": false,
+                        "error_description": null
+                    },
+                    {
+                        "timestamp_utc": 1714764600,
+                        "datetime": "2024-05-03 15:30:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 17.3,
+                        "precision": 1,
+                        "mrid": 112793,
+                        "error_flag": false,
+                        "error_description": null
+                    },
+                    {
+                        "timestamp_utc": 1714764300,
+                        "datetime": "2024-05-03 15:25:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 17.3,
+                        "precision": 1,
+                        "mrid": 112792,
+                        "error_flag": false,
+                        "error_description": null
+                    },
+                    {
+                        "timestamp_utc": 1714764000,
+                        "datetime": "2024-05-03 15:20:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 17.2,
+                        "precision": 1,
+                        "mrid": 112791,
+                        "error_flag": false,
+                        "error_description": null
+                    }
+                ]
+            }
+        ],
+        "Solar Radiation": [
+            {
+                "metadata": {
+                    "device_sn": "redacted",
+                    "device_name": "envwx-meter-fo2",
+                    "port_number": 1,
+                    "sensor_sn": "ATM-410008286",
+                    "sensor_name": "ATMOS 41",
+                    "units": " W/m\\u00b2"
+                },
+                "readings": [
+                    {
+                        "timestamp_utc": 1714766400,
+                        "datetime": "2024-05-03 16:00:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 103.4,
+                        "precision": 1,
+                        "mrid": 112799,
+                        "error_flag": false,
+                        "error_description": null
+                    },
+                    {
+                        "timestamp_utc": 1714766100,
+                        "datetime": "2024-05-03 15:55:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 149.6,
+                        "precision": 1,
+                        "mrid": 112798,
+                        "error_flag": false,
+                        "error_description": null
+                    },
+                    {
+                        "timestamp_utc": 1714765800,
+                        "datetime": "2024-05-03 15:50:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 130,
+                        "precision": 1,
+                        "mrid": 112797,
+                        "error_flag": false,
+                        "error_description": null
+                    },
+                    {
+                        "timestamp_utc": 1714765500,
+                        "datetime": "2024-05-03 15:45:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 115.4,
+                        "precision": 1,
+                        "mrid": 112796,
+                        "error_flag": false,
+                        "error_description": null
+                    },
+                    {
+                        "timestamp_utc": 1714765200,
+                        "datetime": "2024-05-03 15:40:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 106.8,
+                        "precision": 1,
+                        "mrid": 112795,
+                        "error_flag": false,
+                        "error_description": null
+                    },
+                    {
+                        "timestamp_utc": 1714764900,
+                        "datetime": "2024-05-03 15:35:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 91.8,
+                        "precision": 1,
+                        "mrid": 112794,
+                        "error_flag": false,
+                        "error_description": null
+                    },
+                    {
+                        "timestamp_utc": 1714764600,
+                        "datetime": "2024-05-03 15:30:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 67.8,
+                        "precision": 1,
+                        "mrid": 112793,
+                        "error_flag": false,
+                        "error_description": null
+                    },
+                    {
+                        "timestamp_utc": 1714764300,
+                        "datetime": "2024-05-03 15:25:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 52.2,
+                        "precision": 1,
+                        "mrid": 112792,
+                        "error_flag": false,
+                        "error_description": null
+                    },
+                    {
+                        "timestamp_utc": 1714764000,
+                        "datetime": "2024-05-03 15:20:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 39.6,
+                        "precision": 1,
+                        "mrid": 112791,
+                        "error_flag": false,
+                        "error_description": null
+                    }
+                ]
+            }
+        ],
+        "VPD": [
+            {
+                "metadata": {
+                    "device_sn": "redacted",
+                    "device_name": "envwx-meter-fo2",
+                    "port_number": 1,
+                    "sensor_sn": "ATM-410008286",
+                    "sensor_name": "ATMOS 41",
+                    "units": " kPa"
+                },
+                "readings": [
+                    {
+                        "timestamp_utc": 1714766400,
+                        "datetime": "2024-05-03 16:00:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 0.02,
+                        "precision": 2,
+                        "mrid": 112799,
+                        "error_flag": false,
+                        "error_description": ""
+                    },
+                    {
+                        "timestamp_utc": 1714766100,
+                        "datetime": "2024-05-03 15:55:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 0.01,
+                        "precision": 2,
+                        "mrid": 112798,
+                        "error_flag": false,
+                        "error_description": ""
+                    },
+                    {
+                        "timestamp_utc": 1714765800,
+                        "datetime": "2024-05-03 15:50:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 0.02,
+                        "precision": 2,
+                        "mrid": 112797,
+                        "error_flag": false,
+                        "error_description": ""
+                    },
+                    {
+                        "timestamp_utc": 1714765500,
+                        "datetime": "2024-05-03 15:45:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 0.02,
+                        "precision": 2,
+                        "mrid": 112796,
+                        "error_flag": false,
+                        "error_description": ""
+                    },
+                    {
+                        "timestamp_utc": 1714765200,
+                        "datetime": "2024-05-03 15:40:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 0.02,
+                        "precision": 2,
+                        "mrid": 112795,
+                        "error_flag": false,
+                        "error_description": ""
+                    },
+                    {
+                        "timestamp_utc": 1714764900,
+                        "datetime": "2024-05-03 15:35:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 0.03,
+                        "precision": 2,
+                        "mrid": 112794,
+                        "error_flag": false,
+                        "error_description": ""
+                    },
+                    {
+                        "timestamp_utc": 1714764600,
+                        "datetime": "2024-05-03 15:30:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 0.03,
+                        "precision": 2,
+                        "mrid": 112793,
+                        "error_flag": false,
+                        "error_description": ""
+                    },
+                    {
+                        "timestamp_utc": 1714764300,
+                        "datetime": "2024-05-03 15:25:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 0,
+                        "precision": 2,
+                        "mrid": 112792,
+                        "error_flag": false,
+                        "error_description": ""
+                    },
+                    {
+                        "timestamp_utc": 1714764000,
+                        "datetime": "2024-05-03 15:20:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 0,
+                        "precision": 2,
+                        "mrid": 112791,
+                        "error_flag": false,
+                        "error_description": ""
+                    }
+                ]
+            }
+        ],
+        "Water Content": [
+            {
+                "metadata": {
+                    "device_sn": "redacted",
+                    "device_name": "envwx-meter-fo2",
+                    "port_number": 3,
+                    "sensor_sn": "T11-00021738",
+                    "sensor_name": "TEROS 11",
+                    "units": " m\\u00b3/m\\u00b3"
+                },
+                "readings": [
+                    {
+                        "timestamp_utc": 1714766400,
+                        "datetime": "2024-05-03 16:00:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 0.329,
+                        "precision": 3,
+                        "mrid": 112799,
+                        "error_flag": false,
+                        "error_description": null
+                    },
+                    {
+                        "timestamp_utc": 1714766100,
+                        "datetime": "2024-05-03 15:55:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 0.326,
+                        "precision": 3,
+                        "mrid": 112798,
+                        "error_flag": false,
+                        "error_description": null
+                    },
+                    {
+                        "timestamp_utc": 1714765800,
+                        "datetime": "2024-05-03 15:50:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 0.322,
+                        "precision": 3,
+                        "mrid": 112797,
+                        "error_flag": false,
+                        "error_description": null
+                    },
+                    {
+                        "timestamp_utc": 1714765500,
+                        "datetime": "2024-05-03 15:45:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 0.318,
+                        "precision": 3,
+                        "mrid": 112796,
+                        "error_flag": false,
+                        "error_description": null
+                    },
+                    {
+                        "timestamp_utc": 1714765200,
+                        "datetime": "2024-05-03 15:40:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 0.316,
+                        "precision": 3,
+                        "mrid": 112795,
+                        "error_flag": false,
+                        "error_description": null
+                    },
+                    {
+                        "timestamp_utc": 1714764900,
+                        "datetime": "2024-05-03 15:35:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 0.315,
+                        "precision": 3,
+                        "mrid": 112794,
+                        "error_flag": false,
+                        "error_description": null
+                    },
+                    {
+                        "timestamp_utc": 1714764600,
+                        "datetime": "2024-05-03 15:30:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 0.314,
+                        "precision": 3,
+                        "mrid": 112793,
+                        "error_flag": false,
+                        "error_description": null
+                    },
+                    {
+                        "timestamp_utc": 1714764300,
+                        "datetime": "2024-05-03 15:25:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 0.314,
+                        "precision": 3,
+                        "mrid": 112792,
+                        "error_flag": false,
+                        "error_description": null
+                    },
+                    {
+                        "timestamp_utc": 1714764000,
+                        "datetime": "2024-05-03 15:20:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 0.314,
+                        "precision": 3,
+                        "mrid": 112791,
+                        "error_flag": false,
+                        "error_description": null
+                    }
+                ]
+            }
+        ],
+        "Wetness Level": [
+            {
+                "metadata": {
+                    "device_sn": "redacted",
+                    "device_name": "envwx-meter-fo2",
+                    "port_number": 2,
+                    "sensor_sn": "",
+                    "sensor_name": "PHYTOS 31",
+                    "units": ""
+                },
+                "readings": [
+                    {
+                        "timestamp_utc": 1714766400,
+                        "datetime": "2024-05-03 16:00:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 697,
+                        "precision": 0,
+                        "mrid": 112799,
+                        "error_flag": false,
+                        "error_description": null
+                    },
+                    {
+                        "timestamp_utc": 1714766100,
+                        "datetime": "2024-05-03 15:55:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 626,
+                        "precision": 0,
+                        "mrid": 112798,
+                        "error_flag": false,
+                        "error_description": null
+                    },
+                    {
+                        "timestamp_utc": 1714765800,
+                        "datetime": "2024-05-03 15:50:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 551,
+                        "precision": 0,
+                        "mrid": 112797,
+                        "error_flag": false,
+                        "error_description": null
+                    },
+                    {
+                        "timestamp_utc": 1714765500,
+                        "datetime": "2024-05-03 15:45:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 652,
+                        "precision": 0,
+                        "mrid": 112796,
+                        "error_flag": false,
+                        "error_description": null
+                    },
+                    {
+                        "timestamp_utc": 1714765200,
+                        "datetime": "2024-05-03 15:40:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 724,
+                        "precision": 0,
+                        "mrid": 112795,
+                        "error_flag": false,
+                        "error_description": null
+                    },
+                    {
+                        "timestamp_utc": 1714764900,
+                        "datetime": "2024-05-03 15:35:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 749,
+                        "precision": 0,
+                        "mrid": 112794,
+                        "error_flag": false,
+                        "error_description": null
+                    },
+                    {
+                        "timestamp_utc": 1714764600,
+                        "datetime": "2024-05-03 15:30:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 717,
+                        "precision": 0,
+                        "mrid": 112793,
+                        "error_flag": false,
+                        "error_description": null
+                    },
+                    {
+                        "timestamp_utc": 1714764300,
+                        "datetime": "2024-05-03 15:25:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 796,
+                        "precision": 0,
+                        "mrid": 112792,
+                        "error_flag": false,
+                        "error_description": null
+                    },
+                    {
+                        "timestamp_utc": 1714764000,
+                        "datetime": "2024-05-03 15:20:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 708,
+                        "precision": 0,
+                        "mrid": 112791,
+                        "error_flag": false,
+                        "error_description": null
+                    }
+                ]
+            }
+        ],
+        "Wind Direction": [
+            {
+                "metadata": {
+                    "device_sn": "redacted",
+                    "device_name": "envwx-meter-fo2",
+                    "port_number": 1,
+                    "sensor_sn": "ATM-410008286",
+                    "sensor_name": "ATMOS 41",
+                    "units": "\\u00b0"
+                },
+                "readings": [
+                    {
+                        "timestamp_utc": 1714766400,
+                        "datetime": "2024-05-03 16:00:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 24,
+                        "precision": 0,
+                        "mrid": 112799,
+                        "error_flag": false,
+                        "error_description": null
+                    },
+                    {
+                        "timestamp_utc": 1714766100,
+                        "datetime": "2024-05-03 15:55:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 20,
+                        "precision": 0,
+                        "mrid": 112798,
+                        "error_flag": false,
+                        "error_description": null
+                    },
+                    {
+                        "timestamp_utc": 1714765800,
+                        "datetime": "2024-05-03 15:50:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 17,
+                        "precision": 0,
+                        "mrid": 112797,
+                        "error_flag": false,
+                        "error_description": null
+                    },
+                    {
+                        "timestamp_utc": 1714765500,
+                        "datetime": "2024-05-03 15:45:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 16,
+                        "precision": 0,
+                        "mrid": 112796,
+                        "error_flag": false,
+                        "error_description": null
+                    },
+                    {
+                        "timestamp_utc": 1714765200,
+                        "datetime": "2024-05-03 15:40:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 13,
+                        "precision": 0,
+                        "mrid": 112795,
+                        "error_flag": false,
+                        "error_description": null
+                    },
+                    {
+                        "timestamp_utc": 1714764900,
+                        "datetime": "2024-05-03 15:35:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 17,
+                        "precision": 0,
+                        "mrid": 112794,
+                        "error_flag": false,
+                        "error_description": null
+                    },
+                    {
+                        "timestamp_utc": 1714764600,
+                        "datetime": "2024-05-03 15:30:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 5,
+                        "precision": 0,
+                        "mrid": 112793,
+                        "error_flag": false,
+                        "error_description": null
+                    },
+                    {
+                        "timestamp_utc": 1714764300,
+                        "datetime": "2024-05-03 15:25:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 354,
+                        "precision": 0,
+                        "mrid": 112792,
+                        "error_flag": false,
+                        "error_description": null
+                    },
+                    {
+                        "timestamp_utc": 1714764000,
+                        "datetime": "2024-05-03 15:20:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 345,
+                        "precision": 0,
+                        "mrid": 112791,
+                        "error_flag": false,
+                        "error_description": null
+                    }
+                ]
+            }
+        ],
+        "Wind Speed": [
+            {
+                "metadata": {
+                    "device_sn": "redacted",
+                    "device_name": "envwx-meter-fo2",
+                    "port_number": 1,
+                    "sensor_sn": "ATM-410008286",
+                    "sensor_name": "ATMOS 41",
+                    "units": " m/s"
+                },
+                "readings": [
+                    {
+                        "timestamp_utc": 1714766400,
+                        "datetime": "2024-05-03 16:00:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 2.39,
+                        "precision": 2,
+                        "mrid": 112799,
+                        "error_flag": false,
+                        "error_description": null
+                    },
+                    {
+                        "timestamp_utc": 1714766100,
+                        "datetime": "2024-05-03 15:55:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 2.27,
+                        "precision": 2,
+                        "mrid": 112798,
+                        "error_flag": false,
+                        "error_description": null
+                    },
+                    {
+                        "timestamp_utc": 1714765800,
+                        "datetime": "2024-05-03 15:50:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 2.41,
+                        "precision": 2,
+                        "mrid": 112797,
+                        "error_flag": false,
+                        "error_description": null
+                    },
+                    {
+                        "timestamp_utc": 1714765500,
+                        "datetime": "2024-05-03 15:45:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 3.08,
+                        "precision": 2,
+                        "mrid": 112796,
+                        "error_flag": false,
+                        "error_description": null
+                    },
+                    {
+                        "timestamp_utc": 1714765200,
+                        "datetime": "2024-05-03 15:40:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 3.19,
+                        "precision": 2,
+                        "mrid": 112795,
+                        "error_flag": false,
+                        "error_description": null
+                    },
+                    {
+                        "timestamp_utc": 1714764900,
+                        "datetime": "2024-05-03 15:35:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 3.54,
+                        "precision": 2,
+                        "mrid": 112794,
+                        "error_flag": false,
+                        "error_description": null
+                    },
+                    {
+                        "timestamp_utc": 1714764600,
+                        "datetime": "2024-05-03 15:30:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 4.13,
+                        "precision": 2,
+                        "mrid": 112793,
+                        "error_flag": false,
+                        "error_description": null
+                    },
+                    {
+                        "timestamp_utc": 1714764300,
+                        "datetime": "2024-05-03 15:25:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 4.87,
+                        "precision": 2,
+                        "mrid": 112792,
+                        "error_flag": false,
+                        "error_description": null
+                    },
+                    {
+                        "timestamp_utc": 1714764000,
+                        "datetime": "2024-05-03 15:20:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 5.09,
+                        "precision": 2,
+                        "mrid": 112791,
+                        "error_flag": false,
+                        "error_description": null
+                    }
+                ]
+            }
+        ],
+        "X-axis Level": [
+            {
+                "metadata": {
+                    "device_sn": "redacted",
+                    "device_name": "envwx-meter-fo2",
+                    "port_number": 1,
+                    "sensor_sn": "ATM-410008286",
+                    "sensor_name": "ATMOS 41",
+                    "units": "\\u00b0"
+                },
+                "readings": [
+                    {
+                        "timestamp_utc": 1714766400,
+                        "datetime": "2024-05-03 16:00:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 1,
+                        "precision": 1,
+                        "mrid": 112799,
+                        "error_flag": false,
+                        "error_description": null
+                    },
+                    {
+                        "timestamp_utc": 1714766100,
+                        "datetime": "2024-05-03 15:55:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 0.8,
+                        "precision": 1,
+                        "mrid": 112798,
+                        "error_flag": false,
+                        "error_description": null
+                    },
+                    {
+                        "timestamp_utc": 1714765800,
+                        "datetime": "2024-05-03 15:50:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 1,
+                        "precision": 1,
+                        "mrid": 112797,
+                        "error_flag": false,
+                        "error_description": null
+                    },
+                    {
+                        "timestamp_utc": 1714765500,
+                        "datetime": "2024-05-03 15:45:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 0.8,
+                        "precision": 1,
+                        "mrid": 112796,
+                        "error_flag": false,
+                        "error_description": null
+                    },
+                    {
+                        "timestamp_utc": 1714765200,
+                        "datetime": "2024-05-03 15:40:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 0.6,
+                        "precision": 1,
+                        "mrid": 112795,
+                        "error_flag": false,
+                        "error_description": null
+                    },
+                    {
+                        "timestamp_utc": 1714764900,
+                        "datetime": "2024-05-03 15:35:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 0.8,
+                        "precision": 1,
+                        "mrid": 112794,
+                        "error_flag": false,
+                        "error_description": null
+                    },
+                    {
+                        "timestamp_utc": 1714764600,
+                        "datetime": "2024-05-03 15:30:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 1,
+                        "precision": 1,
+                        "mrid": 112793,
+                        "error_flag": false,
+                        "error_description": null
+                    },
+                    {
+                        "timestamp_utc": 1714764300,
+                        "datetime": "2024-05-03 15:25:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 1.6,
+                        "precision": 1,
+                        "mrid": 112792,
+                        "error_flag": false,
+                        "error_description": null
+                    },
+                    {
+                        "timestamp_utc": 1714764000,
+                        "datetime": "2024-05-03 15:20:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 0.9,
+                        "precision": 1,
+                        "mrid": 112791,
+                        "error_flag": false,
+                        "error_description": null
+                    }
+                ]
+            }
+        ],
+        "Y-axis Level": [
+            {
+                "metadata": {
+                    "device_sn": "redacted",
+                    "device_name": "envwx-meter-fo2",
+                    "port_number": 1,
+                    "sensor_sn": "ATM-410008286",
+                    "sensor_name": "ATMOS 41",
+                    "units": "\\u00b0"
+                },
+                "readings": [
+                    {
+                        "timestamp_utc": 1714766400,
+                        "datetime": "2024-05-03 16:00:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 0,
+                        "precision": 1,
+                        "mrid": 112799,
+                        "error_flag": false,
+                        "error_description": null
+                    },
+                    {
+                        "timestamp_utc": 1714766100,
+                        "datetime": "2024-05-03 15:55:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 0.1,
+                        "precision": 1,
+                        "mrid": 112798,
+                        "error_flag": false,
+                        "error_description": null
+                    },
+                    {
+                        "timestamp_utc": 1714765800,
+                        "datetime": "2024-05-03 15:50:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 0,
+                        "precision": 1,
+                        "mrid": 112797,
+                        "error_flag": false,
+                        "error_description": null
+                    },
+                    {
+                        "timestamp_utc": 1714765500,
+                        "datetime": "2024-05-03 15:45:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 0.1,
+                        "precision": 1,
+                        "mrid": 112796,
+                        "error_flag": false,
+                        "error_description": null
+                    },
+                    {
+                        "timestamp_utc": 1714765200,
+                        "datetime": "2024-05-03 15:40:00-04:00",
+                        "tz_offset": -14400,
+                        "value": -0.3,
+                        "precision": 1,
+                        "mrid": 112795,
+                        "error_flag": false,
+                        "error_description": null
+                    },
+                    {
+                        "timestamp_utc": 1714764900,
+                        "datetime": "2024-05-03 15:35:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 0.3,
+                        "precision": 1,
+                        "mrid": 112794,
+                        "error_flag": false,
+                        "error_description": null
+                    },
+                    {
+                        "timestamp_utc": 1714764600,
+                        "datetime": "2024-05-03 15:30:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 0.3,
+                        "precision": 1,
+                        "mrid": 112793,
+                        "error_flag": false,
+                        "error_description": null
+                    },
+                    {
+                        "timestamp_utc": 1714764300,
+                        "datetime": "2024-05-03 15:25:00-04:00",
+                        "tz_offset": -14400,
+                        "value": 0.7,
+                        "precision": 1,
+                        "mrid": 112792,
+                        "error_flag": false,
+                        "error_description": null
+                    },
+                    {
+                        "timestamp_utc": 1714764000,
+                        "datetime": "2024-05-03 15:20:00-04:00",
+                        "tz_offset": -14400,
+                        "value": -0.3,
+                        "precision": 1,
+                        "mrid": 112791,
+                        "error_flag": false,
+                        "error_description": null
+                    }
+                ]
+            }
+        ]
+    }
+}
