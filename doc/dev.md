@@ -42,9 +42,11 @@ Requirements:
 
 1. get the station data
 
-    you need the file with weather station information and secrets, which is a tab-separated value file (TSV).  See the `/data` folder for an example
+    If you are working with the Enviroweather project, contact the main devs to get a copy of the file with weather station information and secrets, which is a tab-separated value file (TSV).  Note that is must be TSV, not CSV, format due to some quoting issues and python.   There is an example in the the `/data` folder with secrets removed. 
 
-    copy the station csv file into the `/data` folder of this project.  
+    - copy the station csv file into the `/data` folder of this project.  
+    - the default name used by the tests is `test_stations.tsv`, but there is a way to use a different name
+
 
 1. to work in the terminal with the poetry virtual env, use this command 
 
@@ -55,17 +57,32 @@ Requirements:
 1. now you can run tests inside this shell
 
     `pytest tests`
+    
+    This will test for one type of station. 
 
-1.  in VS code, select the poetry env
+1. Test for different station types. 
+
+    You can run tests for different station types using a command line parameter: 
+
+    `pytest tests --station_type=DAVIS
+
+    The station type names are defined in the file `src/ewxpwsdb/weather_apis/__init__.py`
+
+    There is not an option to test all station types at once, but you could use the zsh shell command: 
+
+    ```shell
+    for st in 'ZENTRA', 'ONSET', 'DAVIS', 'RAINWISE', 'SPECTRUM', 'LOCOMOS'; do pytest tests --station_type=$st; done
+    ```
+
+    Note that some stations throttle access (especially Zentra/Meter group), so some tests take a veyr long time to complete
 
 
-    to have code open this folder
+1.  You can run tests and get pacakges inside VS code. 
 
-    use the command prompt (on mac is shift+command+p)  and search for  "python select interpreter..."
+    After opening this folder in vscode, select the environment that poetry created (with the install command), by using
+    the command prompt (on mac is shift+command+p)  and search for  "python select interpreter..."
 
-    it should pick the poetry env for you.  
+    it should pick the poetry env for you, but if not, you can identify poetry environments by the folder, which are somewhere in your home 
+    directory, but inside a folder that looks like `pypoetry/virtualenvs/ewxpwsdb....`
 
-    in my vs code, the correct Poetry env is automatically selected.  
-    in my case on Mac, the Poetry env path ilooks something like this: 
-
-    `~/Library/Caches/pypoetry/virtualenvs/ewxpwsdb-XXXX-py3.11`
+    
