@@ -44,7 +44,7 @@ class OnsetAPI(WeatherAPI):
     _station_type: STATION_TYPE = 'ONSET'
     _sampling_interval = interval_min = 5
     _lws_threshold = 50
-    supported_variables = ['atmp', 'dwpt', 'lws', 'pcpn', 'relh', 'wdir', 'wspd', 'wspd_max']
+    supported_variables = ['atmp', 'dwpt', 'lws', 'pcpn', 'relh', 'srad', 'wdir', 'wspd', 'wspd_max']
 
     def __init__(self, weather_station:WeatherStation):    
         """ create class from config Type"""
