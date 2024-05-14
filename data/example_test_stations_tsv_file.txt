@@ -1,0 +1,7 @@
+'station_code'	'station_type'	'install_date'	'timezone'	'ewx_user_id'	'lat'	'lon'	'location_description'	'background_place'	'api_config'
+'TESTLOCOMOS06'	'LOCOMOS'	'2023-05-01'	'US/Eastern'	0	40.689247	-74.044502	'Test Station Location'	'HTC'	'{"token":"REDACTED","id":"REDACTED"}'
+'TESTDAVIS01'	'DAVIS'	'2023-05-01'	'US/Eastern'	0	40.689247	-74.044502	'Test Station Location'	'HTC'	'{"sn":"REDACTED","apikey":"REDACTED","apisec":"REDACTED"}'
+'TESTSPECTRUM01'	'SPECTRUM'	'2023-05-01'	'US/Eastern'	0	40.689247	-74.044502	'Test Station Location'	'HTC'	'{"sn":"REDACTED","apikey":"REDACTED"}'
+'TESTONSET01'	'ONSET'	'2023-05-01'	'US/Eastern'	0	40.689247	-74.044502	'Test Station Location'	'HTC'	'{"sn":"REDACTED","client_id":"Enviroweather_WS","client_secret":"REDACTED","ret_form":"JSON","user_id":"REDACTED","sensor_sn":{"atemp":"alphanum-id","pcpn":"alphanum-id","relh":"alphanum-id"}}'
+'TESTMETERFO'	'ZENTRA'	'2023-05-01'	'US/Eastern'	0	40.689247	-74.044502	'Test Station Location'	'HTC'	'{"sn":"REDACTED","token":"5b8f637a718b9e3ad6e31eec81f0b51d91ac38bd"}'
+'TESTRAINWISE01'	'RAINWISE'	'2023-05-01'	'US/Eastern'	0	40.689247	-74.044502	'Test Station Location'	'HTC'	'{"sid":"REDACTED","pid":"REDACTED","ret_form":"json","mac":"12-DIGIT-NUMBER","username":"SAME-AS-MAC-VALUE"}'
