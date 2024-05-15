@@ -1,27 +1,27 @@
 # Enviroweather Personal Weather Stations Database (ewxpwsdb)
 
-## Instructions for developers
+**Instructions for developers**
 
-Requirements: 
+## Requirements: 
 
 - Python 3.10 or higher installed 
 - Python Poetry Package manager: https://python-poetry.org. You may have to install this for your system rather than in an virtual environment
 - A local copy or access to a remote Postgresql Database server.   This has been tested with version 15 but earlier or later versions should work
 - File with our test-bed weather stations information and API access secrets.  
 
+## Tasks
+
 1. Get a database server running or accessible
 
-Install Postgresql server on your computer.  The there are functions for creating new temporary database instances. 
-To install...
+    Install Postgresql server on your computer.  The there are functions for creating new temporary database instances. 
 
-  - On Mac, the easiestversion for local testing https://postgresapp.com 
-  - On Windows, a version for local testing, this is often e version from EDB: https://www.enterprisedb.com/downloads/postgres-postgresql-downloads
-  - There are free cloud services for small database you can also try 
+    - On Mac, the easiestversion for local testing https://postgresapp.com 
+    - On Windows, a version for local testing, this is often e version from EDB: https://www.enterprisedb.com/downloads/postgres-postgresql-downloads
+    - There are free cloud services for small database you can also try 
 
-  For now, the code assumes this database server is running on port 5432 (the default) and that the test URL has full 
-  admin access (to be able to create new, empty, temporary database instances, or schemas in postgresql terms)
+    For now, the code assumes this database server is running on port 5432 (the default) and that the test URL has full admin access (to be able to create new, empty, temporary database instances, or schemas in postgresql terms)
 
-  Optionally you can install any number of database SQL Gui applications.   I use beekeeper studio as it's lightweight and free.  
+    Optionally, to view the data, you can install any number of desktop applications for SQL databases.   I use [beekeeper studio](https://www.beekeeperstudio.io) as it's multi-database, lightweight, and free but many use [PGAdmin](https://www.pgadmin.org) since we only use Postgresql *
 
 1. create a database instance in the server
 
@@ -153,3 +153,7 @@ To install...
     `pip install ewxpwsdb@git+https://github.com/billspat/ewxpwsdb`
 
     
+
+### Footnotes
+
+* this package currently requires Postgresql because it stores timestamps with a timezone, which is not part of the SQLStandard and uses database-custom data types for this.   It's possible to code to have multiple databases but would require programming to adapt the table classes in `db/models.py`
