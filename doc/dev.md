@@ -21,6 +21,24 @@ To install...
   For now, the code assumes this database server is running on port 5432 (the default) and that the test URL has full 
   admin access (to be able to create new, empty, temporary database instances, or schemas in postgresql terms)
 
+  Optionally you can install any number of database SQL Gui applications.   I use beekeeper studio as it's lightweight and free.  
+
+1. create a database instance in the server
+
+    inside the server, create a database to hold weather readings.   This is not necessary for the tests (which create temporary db and deletes it), but useful for building a larger and persistent database.   
+
+    To create a database in postgresql, in the terminal run
+
+    `psql` 
+
+    For most local, developer database installed (e.g. Postgres.app), you don't need to specify username. 
+
+    `create database ewxpws;`
+
+    Any database name will work (pws-testing, ewx-temp-db) but use all lower case.  Remember this db name for later. 
+
+    Once done, exit the psql shell with  `\q`  
+
 1. Install Poetry
 
    - on Mac, we use homebrew works brew install python; brew install poetry.   
@@ -46,8 +64,13 @@ To install...
     The details for accessing the database must be put into a configuration file the code can read.  A 
     standard way to do this in Python is called 'dot-env'  
      - create a new blank file at the top level direction named `.env`  (start with a dot)
-     - in this file there is one line that has the Python SQLAlchemy database 'URL' for access.   There is an example to view in `doc/example_dot_env.txt`  with a Postgresql URL that works with postgresql.app.   Note if the 
+     - in this file there is one line that has the Python SQLAlchemy database 'URL' for access.  
+     - There is an example to view in `doc/example_dot_env.txt`  with a Postgresql URL that works with postgresql.app.   Note if the 
      database is installed to use the default username as an admin (your logged-in user name), you don't need to specify a password.   However if you are using a remote server, you will to include those things. 
+
+     This URL includes a database name, use the same name as you used in the step "create a database instance in the server."   
+     
+     An example URL and variable setting in .env is `EWXPWSDB_URL=postgresql+psycopg2://localhost:5432/ewxpws` which works with Postgres.app where there is no password needed. 
 
      See the [PostgreSQL dialect page for SQLAlchemy](https://docs.sqlalchemy.org/en/20/dialects/postgresql.html) for details on how to write a Postgresql URL.  The package uses the psycopg2 library to connect. 
 
@@ -95,6 +118,9 @@ To install...
 
     Note that some stations throttle access (especially Zentra/Meter group), so some tests take a veyr long time to complete
 
+1. Build the package 
+
+    The command for installing things with Poetry will also install the package.  If you make changes to the code, you can rebuild the package with `poetry build` in the top level directory. 
 
 1. Using VS Code
 
