@@ -7,11 +7,21 @@ Requirements:
 - Python 3.10 or higher installed 
 - Python Poetry Package manager: https://python-poetry.org. You may have to install this for your system rather than in an virtual environment
 - A local copy or access to a remote Postgresql Database server.   This has been tested with version 15 but earlier or later versions should work
-  - Masc version for local testing https://postgresapp.com 
-  - Windows version for local testing, this is often e version from EDB: https://www.enterprisedb.com/downloads/postgres-postgresql-downloads
 - File with our test-bed weather stations information and API access secrets.  
 
-1. Install Poetry: 
+1. Get a database server running or accessible
+
+Install Postgresql server on your computer.  The there are functions for creating new temporary database instances. 
+To install...
+
+  - On Mac, the easiestversion for local testing https://postgresapp.com 
+  - On Windows, a version for local testing, this is often e version from EDB: https://www.enterprisedb.com/downloads/postgres-postgresql-downloads
+  - There are free cloud services for small database you can also try 
+
+  For now, the code assumes this database server is running on port 5432 (the default) and that the test URL has full 
+  admin access (to be able to create new, empty, temporary database instances, or schemas in postgresql terms)
+
+1. Install Poetry
 
    - on Mac, we use homebrew works brew install python; brew install poetry.   
    - Windows... ?
@@ -31,8 +41,17 @@ Requirements:
    The poetry commands should be run in the project folder <br>
    `cd ewxpwsdb`  # replace if you used a different directory name
 
+1. create a settings file for database access
 
-3. use poetry to create an enviroment with all the dependencies installed
+    The details for accessing the database must be put into a configuration file the code can read.  A 
+    standard way to do this in Python is called 'dot-env'  
+     - create a new blank file at the top level direction named `.env`  (start with a dot)
+     - in this file there is one line that has the Python SQLAlchemy database 'URL' for access.   There is an example to view in `doc/example_dot_env.txt`  with a Postgresql URL that works with postgresql.app.   Note if the 
+     database is installed to use the default username as an admin (your logged-in user name), you don't need to specify a password.   However if you are using a remote server, you will to include those things. 
+
+     See the [PostgreSQL dialect page for SQLAlchemy](https://docs.sqlalchemy.org/en/20/dialects/postgresql.html) for details on how to write a Postgresql URL.  The package uses the psycopg2 library to connect. 
+
+1. use poetry to create an enviroment with all the dependencies installed
 
    do this in the root directory of the project
 
@@ -77,12 +96,16 @@ Requirements:
     Note that some stations throttle access (especially Zentra/Meter group), so some tests take a veyr long time to complete
 
 
-1.  You can run tests and get pacakges inside VS code. 
+1. Using VS Code
 
-    After opening this folder in vscode, select the environment that poetry created (with the install command), by using
-    the command prompt (on mac is shift+command+p)  and search for  "python select interpreter..."
+    After opening this folder in vscode, select the environment that poetry created (with the install command), by using the command prompt (on mac is shift+command+p)  and search for  "python select interpreter..."
 
-    it should pick the poetry env for you, but if not, you can identify poetry environments by the folder, which are somewhere in your home 
-    directory, but inside a folder that looks like `pypoetry/virtualenvs/ewxpwsdb....`
+    it should pick the poetry env for you, but if not, you can identify poetry environments by the folder, which are somewhere in your home directory, but inside a folder that looks like `pypoetry/virtualenvs/ewxpwsdb....`
+
+    Note that you can use the terminal in VS Code to run python
+
+1. Explore the python notebooks
+
+    in the `/doc` folder are several notebooks (`.ipynb` files) that can be opened with VS Code that demonstrate and walk through some code to work with this package, step by step.    Please see if those will work.  
 
     
