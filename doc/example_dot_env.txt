@@ -1,0 +1,2 @@
+EWXPWSDB_URL=postgresql+psycopg2://localhost:5432/ewxpws
+# save this file in the top directory and name it .env
