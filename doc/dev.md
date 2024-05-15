@@ -100,9 +100,7 @@ To install...
 
     `pytest tests`
     
-    This will test for one type of station. 
-
-1. Test for different station types. 
+    This will test for one type of station (SPECTRUM type by default)
 
     You can run tests for different station types using a command line parameter: 
 
@@ -117,6 +115,20 @@ To install...
     ```
 
     Note that some stations throttle access (especially Zentra/Meter group), so some tests take a veyr long time to complete
+
+    There are other options for the tests, for example the db url to use and the location of the test station info.  You can get these 
+    options using `pytest -h` in the top level directory (but this also outputs many other options for pytest)
+
+    ```
+    Custom options:
+    --dburl=DBURL               sqlalchemy db url for test.  otherwise the tests create a temporary db.  Note the tests will add data
+    --file=FILE                 tsv file to use for test data
+    --no-import                 use this to skip importing data (assumes test db already has data)
+    --echo                      enable SQL echo-ing
+    --station_type=STATION_TYPE station type in all caps
+    ```
+
+
 
 1. Build the package 
 
