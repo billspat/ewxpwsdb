@@ -146,4 +146,10 @@ To install...
 
     in the `/doc` folder are several notebooks (`.ipynb` files) that can be opened with VS Code that demonstrate and walk through some code to work with this package, step by step.    Please see if those will work.  
 
+1. Installing package from git
+
+    There is a public mirror of this repo on github which is mostly up-to-date.  If you need to `pip install` this package for use in another system (not for testing or dev work), use 
+
+    `pip install ewxpwsdb@git+https://github.com/billspat/ewxpwsdb`
+
     
