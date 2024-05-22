@@ -139,7 +139,7 @@ def rm_sqlite_file(db_url):
 
     return True
 
-def list_pg_databases(host:str = 'localhost')->list[str]|None:
+def list_pg_databases(admin_db_url)->list[str]|None:
     """get list of tables from pg tables, includes tables from all schema.  assumes the database is accessible without a password 
     list the MacOS postgres.app
     
@@ -149,15 +149,13 @@ def list_pg_databases(host:str = 'localhost')->list[str]|None:
     Returns
         list[str]|None: list of database names from all schema if the db can be connected to, or None if there was any problem connecting 
     """
-    admin_db_url = f"postgresql+psycopg2://postgres@{host}:5432/postgres"
 
     try:
-        with create_engine(admin_db_url,
-        isolation_level='AUTOCOMMIT').connect() as connection:
-            result = connection.execute(text('SELECT datname FROM pg_database')).fetchall()
-            tablelist = [row[0] for row in result]
+        with create_engine(admin_db_url, isolation_level='AUTOCOMMIT').connect() as connection:
+                result = connection.execute(text('SELECT datname FROM pg_database')).fetchall()
+                tablelist = [row[0] for row in result]
     except Exception as e:
-        warn(f"could not get list of databases from host {host}: {e}")
+        warn(f"could not get list of databases from dburl: {e}")
         return None
 
     return(tablelist)
