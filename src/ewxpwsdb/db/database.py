@@ -28,6 +28,25 @@ def get_db_url(fallback_url = "sqlite:///ewxpws.db" )-> str:
         # no matching env variable found, so use the fall back. 
         return(fallback_url)
 
+def check_db_url(db_url:str, echo=False)->bool:
+    """checks if SQLAlchemy database URL is valid, e.g. can be used to connect to 
+
+    Args:
+        db_url (str): a valid SQLAlchemy connection string
+
+    Returns:
+        bool: True if a simple SQL statement can run against the db_url, false if not
+    """
+    engine = create_engine(url = db_url, echo = echo)
+    try:
+        with engine.connect() as connection:
+            result = connection.execute(text('SELECT 1;'))
+
+    except Exception as e:
+        return False
+
+    return True
+
 
 def get_engine(db_url = None, echo = False):
     """ create an engine using sqlmodel and database URL. 
