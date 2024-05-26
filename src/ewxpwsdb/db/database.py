@@ -8,7 +8,7 @@ from warnings import warn
 
 import os, logging
 from sqlmodel import SQLModel, create_engine, Session
-from sqlalchemy import Engine,create_engine, text
+from sqlalchemy import Engine,create_engine, text, inspect
 
 from ewxpwsdb.db.importdata import import_station_types, import_station_file
 
@@ -88,7 +88,7 @@ def get_engine(db_url = None, echo = False):
 engine = get_engine()
 
 
-def list_pg_tables(engine=engine):
+def list_pg_tables(engine=engine)->list[str]:
     """get list of tables in database engine, that are data, no catalog or schema tables
 
     Args:
@@ -97,26 +97,44 @@ def list_pg_tables(engine=engine):
     Returns:
         list: list of string table names    
     """
-    sql = "SELECT table_name FROM information_schema.table WHERE table_type = 'BASE TABLE' AND table_schema NOT IN ('pg_catalog', 'information_schema');"
+    inspector = inspect(engine)
+    table_names = inspector.get_table_names()
+    return table_names
 
-    try:
-        with engine.connect() as connection:
-            result = connection.execute(text(sql)).fetchall()
-            tablelist = [row[0] for row in result]
-    except Exception as e:
-        Warning(f"error getting list of tables: {e}")    
-        tablelist =  []
+# this could be the source of circular imports as it related to the models, not the database
+# but necessary to ensure the database is created correctly. Potentially move this to init py if necessary
+def table_classes()->list[str]:
+    """for this package, inspects the module with the sqlmodel classes and returns the names of classes that are used for tables, which are those used by sqlmodel package. 
+
+    Returns:
+        list[str]: list of names of classes that are tables, which are the names of the tables. 
+    """
+    import inspect as python_inspect  #  since we importing inspect from sqlalchemy as well
+    import ewxpwsdb.db.models as model_module  # for this package, this is the module with all the tables in it
     
-    return tablelist
+    # use inspect to get class, but only those with sqlmodel as super class
+    # sqlmodel uses lower case for actual table names since mixed case names must be quoted in postgresql
+    # p.s. mypy can't handle this one
+    tables = [name.lower() for name, obj in python_inspect.getmembers(model_module) if python_inspect.isclass(obj) and obj.__class__.__name__ == 'SQLModelMetaclass']  #ignore type
+    return tables
 
 
-def check_db(engine=engine)->bool:
-    """check that database at engine is present and has tables in it. """
+def check_db_table_list(engine=engine)->bool:
+    """check that database at engine is present and has tables in it.  
+    This does not check if the fields are create 
+    
+    Returns:
+        bool:  True is there is a table created in the engine for each models.  
+    """
+    
     if check_db_url(engine.url) == False:
         Warning('unable to connect with given URL')
         return False
     
-    return True
+    tables_in_db = list_pg_tables(engine)
+    tables_defined = table_classes()
+    return set(tables_in_db) == set(tables_defined)
+    
     
 ##### NEED A LIST OF THE TABLES IN THIS DATABASE THAT ARE NOT JUST CATALOG TABLES
 
