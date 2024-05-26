@@ -37,7 +37,12 @@ def check_db_url(db_url:str, echo=False)->bool:
     Returns:
         bool: True if a simple SQL statement can run against the db_url, false if not
     """
-    engine = create_engine(url = db_url, echo = echo)
+    try:
+        engine = create_engine(url = db_url, echo = echo)
+    except Exception as e:
+        # could not even parse the connection string
+        return False
+
     try:
         with engine.connect() as connection:
             result = connection.execute(text('SELECT 1;'))
@@ -82,9 +87,38 @@ def get_engine(db_url = None, echo = False):
 # create global engine var for this app.  override this variable. 
 engine = get_engine()
 
-def check_db(engine=engine):
+
+def list_pg_tables(engine=engine):
+    """get list of tables in database engine, that are data, no catalog or schema tables
+
+    Args:
+        engine (Engine, optional): A sqlAlchemy Engine  Defaults to engine global defined in this module.
+
+    Returns:
+        list: list of string table names    
+    """
+    sql = "SELECT table_name FROM information_schema.table WHERE table_type = 'BASE TABLE' AND table_schema NOT IN ('pg_catalog', 'information_schema');"
+
+    try:
+        with engine.connect() as connection:
+            result = connection.execute(text(sql)).fetchall()
+            tablelist = [row[0] for row in result]
+    except Exception as e:
+        Warning(f"error getting list of tables: {e}")    
+        tablelist =  []
+    
+    return tablelist
+
+
+def check_db(engine=engine)->bool:
     """check that database at engine is present and has tables in it. """
+    if check_db_url(engine.url) == False:
+        Warning('unable to connect with given URL')
+        return False
+    
     return True
+    
+##### NEED A LIST OF THE TABLES IN THIS DATABASE THAT ARE NOT JUST CATALOG TABLES
 
 
 def init_db(engine=engine, station_tsv_file=None):
