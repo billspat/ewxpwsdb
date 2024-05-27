@@ -26,7 +26,7 @@ def test_check_db_url(test_db_url):
 
 
 def test_postrgresql_table_list(test_engine):
-
+    """can we get the list of tables from a postgresql database?"""
     if not 'postgresql' in str(test_engine.url):
         Warning("db url is not for postgreql, can't test pg functions")
         assert False
@@ -34,7 +34,7 @@ def test_postrgresql_table_list(test_engine):
     tbl_list = list_pg_tables(test_engine)
     assert isinstance(tbl_list, list)
     assert len(tbl_list) > 0
-
+    # TODO - create table, check that it's in the list, delete the table (idempotent)
 
 
 def test_get_package_tables():
@@ -46,7 +46,7 @@ def test_get_package_tables():
     assert isinstance(model_list, list)
     assert 'reading' in model_list
     
-# def test_check_db_table_list(test_engine):
-#     # for this test to pass
-#     # TODO : create a temp db and use init_db to fill it up to guarantee is the has the correct table list
-#     assert check_db_table_list(test_engine)
+def test_check_db_table_list(test_engine):
+    # for this test to pass
+    # TODO : create a temp db and use init_db to fill it up to guarantee is the has the correct table list
+    assert check_db_table_list(test_engine)

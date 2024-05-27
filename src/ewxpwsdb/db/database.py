@@ -115,8 +115,11 @@ def table_classes()->list[str]:
     # use inspect to get class, but only those with sqlmodel as super class
     # sqlmodel uses lower case for actual table names since mixed case names must be quoted in postgresql
     # p.s. mypy can't handle this one
-    tables = [name.lower() for name, obj in python_inspect.getmembers(model_module) if python_inspect.isclass(obj) and obj.__class__.__name__ == 'SQLModelMetaclass']  #ignore type
-    return tables
+
+    models = {name:obj for name, obj in python_inspect.getmembers(model_module) if python_inspect.isclass(obj) and hasattr(obj, '__table__')}
+    table_names = [k.lower() for k in models.keys()]
+
+    return table_names
 
 
 def check_db_table_list(engine=engine)->bool:
