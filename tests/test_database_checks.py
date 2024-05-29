@@ -25,7 +25,7 @@ def test_check_db_url(test_db_url):
     rm_sqlite_file(sqlite_url_to_test)
 
 
-def test_postrgresql_table_list(test_engine):
+def test_postgresql_table_list(test_engine):
     """can we get the list of tables from a postgresql database?"""
     if not 'postgresql' in str(test_engine.url):
         Warning("db url is not for postgreql, can't test pg functions")
