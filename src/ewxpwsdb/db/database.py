@@ -87,6 +87,25 @@ def get_engine(db_url = None, echo = False):
 # create global engine var for this app.  override this variable. 
 engine = get_engine()
 
+def db_name_from_url(db_url:str)->str:
+    """extract the just the name of the database from a SQLAlchemy connection URL
+
+    Args:
+        db_url (str): a SQLAlchemy URL that includes the database name, e.g. "postgresql+psycopg2://localhost:5432/not_an_actual_database"
+
+    Returns:
+        str: the name of the database, or the empty string if there is a problem with the URL
+    """
+
+    try:
+        engine =  get_engine(db_url)
+    except Exception as e:
+        Warning('not a valid URL, cannot get the database name')
+        return ''
+
+    return engine.url.database
+
+
 
 def list_pg_tables(engine=engine)->list[str]:
     """get list of tables in database engine, that are data, no catalog or schema tables

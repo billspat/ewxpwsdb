@@ -3,7 +3,7 @@ this tests checks validity of databse connections and db contents in database.py
 
 """
 from os import getenv
-from ewxpwsdb.db.database import Session, get_engine,  check_db_url, get_engine,list_pg_tables, check_db_table_list
+from ewxpwsdb.db.database import Session, get_engine,  check_db_url, get_engine,list_pg_tables, check_db_table_list, list_pg_databases, db_name_from_url
 import pytest
 
 @pytest.fixture
@@ -13,6 +13,10 @@ def test_engine(test_db_url):
     engine.dispose()
 
 # note to test anything other than a default db_url, this test currently requires  --dburl param to the test, loaded into the test_db_url fixture
+def test_db_name_from_url():
+    db_name = "not_an_actual_database"
+    fake_url = f"postgresql+psycopg2://localhost:5432/{db_name}"
+    assert db_name == db_name_from_url(fake_url)
 
 def test_check_db_url(test_db_url):
     assert check_db_url(test_db_url) == True
@@ -35,6 +39,16 @@ def test_postgresql_table_list(test_engine):
     assert isinstance(tbl_list, list)
     assert len(tbl_list) > 0
     # TODO - create table, check that it's in the list, delete the table (idempotent)
+
+
+def test_postgresql_db_list(test_db_url):
+    db_list = list_pg_databases(test_db_url)
+    assert isinstance(db_list, list)
+    assert len(db_list) > 0
+
+    # the name of the db in the URL should be on the list of databases
+    db_name = db_name_from_url(test_db_url)
+    assert db_name in db_list
 
 
 def test_get_package_tables():
