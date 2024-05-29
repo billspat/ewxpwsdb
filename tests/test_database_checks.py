@@ -3,12 +3,13 @@ this tests checks validity of databse connections and db contents in database.py
 
 """
 from os import getenv
-from ewxpwsdb.db.database import Session, get_engine,  check_db_url, get_engine,list_pg_tables, check_db_table_list, list_pg_databases, db_name_from_url
+from ewxpwsdb.db.database import Session, get_engine,  check_db_url, get_engine,list_pg_tables, check_db_table_list, list_pg_databases, db_name_from_url, init_db
 import pytest
 
 @pytest.fixture
 def test_engine(test_db_url):
     engine =  get_engine(test_db_url)
+    init_db(engine)
     yield engine
     engine.dispose()
 
@@ -35,10 +36,10 @@ def test_postgresql_table_list(test_engine):
         Warning("db url is not for postgreql, can't test pg functions")
         assert False
         return
+    
     tbl_list = list_pg_tables(test_engine)
     assert isinstance(tbl_list, list)
     assert len(tbl_list) > 0
-    # TODO - create table, check that it's in the list, delete the table (idempotent)
 
 
 def test_postgresql_db_list(test_db_url):
