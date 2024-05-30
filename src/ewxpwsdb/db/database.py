@@ -12,24 +12,32 @@ from sqlalchemy import Engine,create_engine, text, inspect
 
 from ewxpwsdb.db.importdata import import_station_types, import_station_file
 
-def get_db_url(fallback_url = "sqlite:///ewxpws.db" )-> str:
-    """get the canonical database connection URL to use with SQL the run, can be overridden with tests
+_EWXPWSDB_URL_VAR = "EWXPWSDB_URL"
+
+def get_db_url(fallback_url:str = '')-> str:
+    """get the database connection URL from the environment, or use a parameter if one is sent
     
-    parameters
-        fallback_url: str, if nothing is found in the environment, a default URL for dev/test
+    Args:
+        fallback_url: str, default empty string.  if a URL is here, use that.  otherwise check the environment 
     
-    Returns string for connecting to db.  This is not checked for validity.  
+    Returns:
+        str: string for connecting to db.  This is not checked for validity and may be blank if no url is sent and nothing in the environment
     """
-    load_dotenv()
-    ewxpwsdb_url = os.environ.get("EWXPWSDB_URL")
-    if ewxpwsdb_url:
-        return(ewxpwsdb_url)
-    else:
-        # no matching env variable found, so use the fall back. 
-        return(fallback_url)
+
+    # consider using local host postgresql
+    # fallback_url:str = "postgresql+psycopg2://postgres@localhost:5432/postgres"
+    ewxpwsdb_url = fallback_url
+    
+    if not fallback_url:
+        load_dotenv()
+        # if env var is not set, this returns 'None' but we want to return empty string
+        ewxpwsdb_url = ( os.environ.get(_EWXPWSDB_URL_VAR) or '')
+    
+    return(ewxpwsdb_url)
+    
 
 def check_db_url(db_url:str, echo=False)->bool:
-    """checks if SQLAlchemy database URL is valid, e.g. can be used to connect to 
+    """checks if SQLAlchemy database URL is valid, e.g. can be used to connect. 
 
     Args:
         db_url (str): a valid SQLAlchemy connection string
@@ -42,6 +50,20 @@ def check_db_url(db_url:str, echo=False)->bool:
     except Exception as e:
         # could not even parse the connection string
         return False
+    
+    return check_engine(engine)
+
+
+def check_engine(engine:Engine)->bool:
+    """You can create a SQL alchemy engine with a wellformed connection string that is not a real database. 
+    this checks that a database actually exists for that URL
+
+    Args:
+        engine (Engine): SQLAlchemy engine, most likely from create_engine(url)
+
+    Returns:
+        bool: True if can connect to the engine, false otherwise
+    """
 
     try:
         with engine.connect() as connection:
@@ -51,6 +73,7 @@ def check_db_url(db_url:str, echo=False)->bool:
         return False
 
     return True
+
 
 
 def get_engine(db_url = None, echo = False):
@@ -70,22 +93,24 @@ def get_engine(db_url = None, echo = False):
     if not db_url:
         db_url = get_db_url()
 
-    #TODO: check if it's a valid SQLalchemy URL.  Regular Expression?
     
-    if "postgres" in db_url:
-        db_connect_args = {"options": "-c timezone=utc"}
+    if not db_url:
+        raise ValueError(f"no database connection string sent and none in the environment. Set the variable {_EWXPWSDB_URL_VAR}")
     
-    if "sqlite" in db_url:
-        db_connect_args = {'check_same_thread':False}
-
+    if "postgres" not in  db_url:
+        raise ValueError("not a postgresql connection string, this system requires postgresql")
+        
+    if not  check_db_url(db_url):
+        raise ValueError("not a valid connection string, can't connect to the database")
+    
+    db_connect_args = {"options": "-c timezone=utc"}
+    
     engine = create_engine(url = db_url, 
                            echo=echo, 
                            connect_args=db_connect_args)        
 
     return engine
-    
-# create global engine var for this app.  override this variable. 
-engine = get_engine()
+
 
 def db_name_from_url(db_url:str)->str:
     """extract the just the name of the database from a SQLAlchemy connection URL
@@ -103,11 +128,11 @@ def db_name_from_url(db_url:str)->str:
         Warning('not a valid URL, cannot get the database name')
         return ''
 
-    return engine.url.database
+    return str(engine.url.database)
 
 
 
-def list_pg_tables(engine=engine)->list[str]:
+def list_pg_tables(engine)->list[str]:
     """get list of tables in database engine, that are data, no catalog or schema tables
 
     Args:
@@ -141,7 +166,7 @@ def table_classes()->list[str]:
     return table_names
 
 
-def check_db_table_list(engine=engine)->bool:
+def check_db_table_list(engine)->bool:
     """check that database at engine is present and has tables in it.  
     This does not check if the fields are create 
     
@@ -158,17 +183,16 @@ def check_db_table_list(engine=engine)->bool:
     return set(tables_in_db) == set(tables_defined)
     
     
-##### NEED A LIST OF THE TABLES IN THIS DATABASE THAT ARE NOT JUST CATALOG TABLES
-
-
-def init_db(engine=engine, station_tsv_file=None):
+def init_db(engine, station_tsv_file=None):
     """create new blank tables etc for the db URLin the engine. 
     This requires that the database in the URL already exists on the server in the URL."""
 
     #TODO add error handling logic here
-    # check if we are using sqlite
-    # check if the database already exists and if so procede to try importing
+    # check if the database already exists and if so proceed to try importing
     # check if the database 'server' (postgresql) has a database available
+
+    if not check_engine(engine):    
+        raise ValueError(f"could connect to database {engine.url.database}")
 
     try:
         SQLModel.metadata.create_all(engine)
@@ -188,30 +212,13 @@ def init_db(engine=engine, station_tsv_file=None):
             raise ValueError(f"could not import data, station tsv file for import not found: {station_tsv_file}")
             #TODO this leaves database in partial state, tables with no stations
     
-    
 
-def get_session(engine = engine):
+def get_session(engine):
     """ session generator"""
 
     with Session(engine) as session:
         yield session
-
-
-def rm_sqlite_file(db_url):
-    import re
-    sqlite_prefix = 'sqlite:///'
-    if (re.match(sqlite_prefix, db_url)):
-        sqlite_file = db_url.replace(sqlite_prefix, '')
-        try:
-            os.remove(sqlite_file)
-        except Exception as e:
-            print(f"error deleting {sqlite_file}: {e}")
-            return False        
-    else:
-        print(f"not a sqlite url {db_url}, not deleting")
-        return False
-
-    return True
+        
 
 def list_pg_databases(admin_db_url)->list[str]|None:
     """get list of tables from pg tables, includes tables from all schema.  assumes the database is accessible without a password 

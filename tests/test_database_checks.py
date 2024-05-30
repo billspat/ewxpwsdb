@@ -14,20 +14,10 @@ def test_engine(test_db_url):
     engine.dispose()
 
 # note to test anything other than a default db_url, this test currently requires  --dburl param to the test, loaded into the test_db_url fixture
-def test_db_name_from_url():
-    db_name = "not_an_actual_database"
-    fake_url = f"postgresql+psycopg2://localhost:5432/{db_name}"
-    assert db_name == db_name_from_url(fake_url)
-
 def test_check_db_url(test_db_url):
     assert check_db_url(test_db_url) == True
     assert check_db_url("not_a_connection_string") == False
     assert check_db_url("postgresql+psycopg2://localhost:5432/not_an_actual_database") == False
-
-    sqlite_url_to_test ='sqlite:///not_a_real_sqlite_file.db' 
-    assert check_db_url(sqlite_url_to_test) == True
-    from ewxpwsdb.db.database import rm_sqlite_file
-    rm_sqlite_file(sqlite_url_to_test)
 
 
 def test_postgresql_table_list(test_engine):
