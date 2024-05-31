@@ -242,11 +242,39 @@ def list_pg_databases(admin_db_url)->list[str]|None:
     return(tablelist)
 
 
-def temp_pg_engine(name_prefix:str='ewxpws_testdb', host:str='localhost')->Engine:
+def replace_url_database(db_url:str, new_db_name:str)->str:
+    """this is a hack to replace the database portion of a SQLalchemy connection string. 
+    This is useful if the same user id/pw/host combo can be used to connect to a different db.  
+    This is use by the system that creates a new temporary database for testing from a URL.  A valid connection string 
+    does not need to have a database in it, so we must check for that.  
+
+    Args:
+        db_url (str): _description_
+
+    Returns:
+        str: _description_
+    """
+
+    try:
+        temp_engine = create_engine(db_url)
+    except Exception as e:
+        return ""
+    
+    if temp_engine.url.database:
+        url_parts = db_url.split('/')
+        url_parts[-1] = new_db_name
+        new_db_url = '/'.join(url_parts)
+    else:
+        new_db_url = f"{db_url}/{new_db_name}"
+    
+    return new_db_url
+
+
+def create_temp_pg_engine(admin_db_url:str, name_prefix:str='' )->Engine:
     """generate a random database name, and create an empty database with that name
 
     Args:
-        name_prefix (str, optional): a human name prefix identifying the purpose of this db when the db is inspected. Defaults to 'ewxpws_testdb'.  
+        name_prefix (str, optional): a human name prefix identifying the purpose of this db when the db is inspected. Defaults to empty string  
         host (str, optional): the host where the postgresql server is running . Defaults to 'localhost'.
 
     Returns:
@@ -259,55 +287,31 @@ def temp_pg_engine(name_prefix:str='ewxpws_testdb', host:str='localhost')->Engin
 
     temp_db_name:str = (f"{name_prefix}_{random_suffix}").lower()
     
-    # create an empty postgresql database
-    # this URL works with postgres.app on MacOS which does not require passwords   Need to test on Postgresql linux, windows or some other install on mac
-    admin_db_url = f"postgresql+psycopg2://postgres@{host}:5432/postgres"
+    try:
+        check_engine(create_engine(admin_db_url))
+    except Exception as e:
+        raise ValueError("can't connect to database url")
 
-    with create_engine(admin_db_url,
-        isolation_level='AUTOCOMMIT').connect() as connection:
+    with create_engine(admin_db_url, isolation_level='AUTOCOMMIT').connect() as connection:  #ignore typing
             connection.execute(text(f"CREATE DATABASE {temp_db_name}"))
 
-    temp_db_url:str = f"postgresql+psycopg2://{host}:5432/{temp_db_name}"
-    
-    # use our local function for connecting to the db, which may set options
+
+    from ewxpwsdb.db.database import replace_url_database
+    temp_db_url = replace_url_database(admin_db_url, temp_db_name)
+
+    # use our local function for connecting to the db, which may set other options
     engine = get_engine(db_url= temp_db_url, echo = False)
+
     return(engine)
 
 
-def drop_temp_pg_engine(engine, host='localhost'):
-    """ given an engine, drop the postgresql temp database """
-    # all sessions must be closed
-
-    # get the db name from the engine
-    temp_db_url = engine.url
-    if 'postgresql' not in temp_db_url.drivername:
-        warn('engine is not for Postgresql, cancelling')
-        return False
-
-    # format "postgresql+psycopg2://{host}:5432/{test_db_name}"
-    temp_db_name = engine.url.database
-    engine.dispose()
-    result = drop_temp_pg_db(temp_db_name, host=host)
-
-    return(result)
-
-    # TODO check that it's gone 
-
-def drop_temp_pg_db(temp_db_name, host='localhost'):
-    
-    if temp_db_name not in list_pg_databases(host):
-        warn(f"database {temp_db_name} not found in postgresql on {host}, can't delete")
-        return False
-    
-    admin_db_url = f"postgresql+psycopg2://postgres@{host}:5432/postgres"
-
+def drop_pg_db(db_name_to_delete:str, admin_db_url:str)->bool:    
     try:
         with create_engine(admin_db_url,
             isolation_level='AUTOCOMMIT').connect() as connection:
-                connection.execute(text(f"DROP DATABASE {temp_db_name}"))
+                connection.execute(text(f"DROP DATABASE {db_name_to_delete}"))
     except Exception as e:
-        warn(f"could not drop database {temp_db_name}: {e}")
+        warn(f"could not drop database {db_name_to_delete}: {e}")
         return False
     
     return True
-

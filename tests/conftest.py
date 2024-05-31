@@ -2,8 +2,8 @@ import pytest, os
 import logging
 from sqlmodel import Session
 from sqlalchemy import Engine
-from ewxpwsdb.db.importdata import import_station_file, read_station_table
-from ewxpwsdb.db.database import init_db, create_engine
+from ewxpwsdb.db.importdata import read_station_table
+from ewxpwsdb.db.database import init_db, get_db_url, drop_pg_db, create_temp_pg_engine
 
 
 logging.basicConfig(
@@ -14,7 +14,7 @@ def pytest_addoption(parser):
 
     parser.addoption('--dburl',
                      action='store',
-                     default='sqlite:///test-ewxpws.db',
+                     default='',
                      help='sqlalchemy db url for test.  If sqlite, is created and then deleted on completion')
 
     parser.addoption('--file',
@@ -64,31 +64,32 @@ def test_host(scope = 'session'):
     
 @pytest.fixture(scope = 'session')
 def test_db_url(request: pytest.FixtureRequest)->str:
-    return request.config.getoption("--dburl")
+    db_url_param = request.config.getoption("--dburl") 
+    db_url = get_db_url(db_url_param) # if dburl param is empty, this fn looks to the environment for a string
+
+    return db_url
+
+
 
 # this is a generator function so does not have a return type
 @pytest.fixture(scope = 'module')
 def db_engine(request: pytest.FixtureRequest, test_db_url: str):
-    # if request.config.getoption("--echo"):
-    #     echo_option = True
-    # else:
-    #     echo_option = False
 
-    # engine = create_engine(url = test_db_url, echo=echo_option)
-
-    from ewxpwsdb.db.database import temp_pg_engine, drop_temp_pg_engine
+    tmp_db_engine = create_temp_pg_engine(admin_db_url=test_db_url, name_prefix='ewxpws_testdb')
     
-    test_host = 'localhost'
-    engine = temp_pg_engine(host = test_host)
-    # create the test database
-    init_db(engine)
+    # create tables and initial data in the test database.  If one exists, it may insert new values like stations
+    init_db(tmp_db_engine)
 
-    yield engine
+    yield tmp_db_engine
     
-    engine.dispose()
-    result = drop_temp_pg_engine(engine)
-    if not result:
-        print(f"unable to delete db {engine.url.database} on {test_host}")
+    temp_db_name = tmp_db_engine.url.database
+    temp_db_host = tmp_db_engine.url.host
+    tmp_db_engine.dispose()
+
+    db_deleted = drop_pg_db(db_name_to_delete=temp_db_name, admin_db_url=test_db_url)
+    
+    if not db_deleted:
+        print(f"unable to delete db {temp_db_name} on test db host {temp_db_host}")
     
 
 @pytest.fixture(scope = 'session')
