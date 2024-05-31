@@ -57,18 +57,14 @@ from the top folder of the project, run tests from the command line with
 
 `pytest tests`
 
-This will currently run agains the 'Spectrum' brand weather station.   The tests create a temporary SQLite database for running tests and deletes that file when they are done.  
+Since the system is designed for Postgresql (due to requiring datetimes with timezones), testing requires access to a Postgresql Server.   This tests currently assume you are running a server
+on localhost that does not require a password (e.g. [Postgres.app](https://postgresapp.com )).   If that is running, the tests create a temporary SQLite database for running tests and deletes that file when they are done.  
 
-There are other options: 
 
-Custom options:
+By default the tests only run for one station type, **SPECTRUM**.  To test against other station types, use the option 
 
--  `--dburl=DBURL`         sqlalchemy db url for test.  If sqlite, is created and then deleted on completion
--  `--file=FILE`           full path to a tsv file to use for test stations data and login credentials
--  `--no-import`           use this to skip importing data (assumes test db already has data)
--  `--station_type=STATION_TYPE`
-                        station type in all capsTo run against other types use the following syntax
-
+`--station_type=STATION_TYPE`
+                    
 for example 
 
 `pytest --station_type=ZENTRA tests`
@@ -76,6 +72,14 @@ for example
 To run one test
 
 `pytest --station_type=ZENTRA tests/test_collector.py`
+
+
+Custom options:
+
+-  `--dburl=DBURL`         sqlalchemy postgresql db url for test.  This is required for the files `test_db_checks.py` but currently not properly used
+-  `--file=FILE`           full path to a tsv file to use for test stations data and login credentials
+-  `--no-import`           use this to skip importing data (assumes test db already has data)
+- `--station_type=STATION_TYPE` mentioned above; station type in all capsTo run against other types use the following syntax
 
 
 ### ABOUT ZENTRA API

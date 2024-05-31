@@ -37,22 +37,6 @@ def pytest_addoption(parser):
     
 
 
-def rm_sqlite_file(db_url):
-    import re
-    sqlite_prefix = 'sqlite:///'
-    if (re.match(sqlite_prefix, db_url)):
-        sqlite_file = db_url.replace(sqlite_prefix, '')
-        try:
-            os.remove(sqlite_file)
-        except Exception as e:
-            print(f"error deleting {sqlite_file}: {e}")
-            return False        
-    else:
-        print(f"not a sqlite url {db_url}, not deleting")
-        return False
-
-    return True
-
 @pytest.fixture(scope = 'session')
 def station_file(request: pytest.FixtureRequest):
     file_path = request.config.getoption("--file")
@@ -85,17 +69,6 @@ def test_db_url(request: pytest.FixtureRequest)->str:
 # this is a generator function so does not have a return type
 @pytest.fixture(scope = 'module')
 def db_engine(request: pytest.FixtureRequest, test_db_url: str):
-    
-    ## PREVIOUS SQLITE-ORIENTED CODE COMMENTED OUT
-    # # remove existing file if it's here
-    # rm_sqlite_file(test_db_url)
-
-    # #This fixes all errors except one
-    # #test_db_url = "sqlite:///:memory:"
-
-    # # need to create new test-only db, 
-    # # would like to use a database.py module method rather than sqlmodel code here explicitly 
-    
     # if request.config.getoption("--echo"):
     #     echo_option = True
     # else:
@@ -117,8 +90,6 @@ def db_engine(request: pytest.FixtureRequest, test_db_url: str):
     if not result:
         print(f"unable to delete db {engine.url.database} on {test_host}")
     
-    # rm_sqlite_file(test_db_url)
-
 
 @pytest.fixture(scope = 'session')
 def db_session(db_engine: Engine):
