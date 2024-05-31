@@ -10,7 +10,7 @@ from sqlalchemy.exc import SQLAlchemyError
 
 from typing import Sequence
 
-from ewxpwsdb.db.database import Session, engine
+from ewxpwsdb.db.database import Session, get_engine
 from ewxpwsdb.db.models import WeatherStation, APIResponse, Reading
 from ewxpwsdb.weather_apis import API_CLASS_TYPES
 from ewxpwsdb.time_intervals import one_day_interval, UTCInterval, is_utc, previous_fourteen_minute_interval, fifteen_minute_mark
@@ -25,7 +25,7 @@ class Collector():
     current_api_response: APIResponse|None = None
 
     @classmethod
-    def from_station_code(cls, station_code:str, engine:Engine = engine):
+    def from_station_code(cls, station_code:str, engine:Engine):
         """Create collector object from a valid station_code
 
         Args:
@@ -48,12 +48,12 @@ class Collector():
 
             if len(records) == 1:
                 station:WeatherStation = records[0]
-                return cls(station = station, engine=engine)
+                return cls(station=station, engine=engine)
             else:
                 raise ValueError(f"collector class value error: no station record with station_code {station_code} found")
             
     @classmethod
-    def from_station_id(cls, station_id:int, engine:Engine = engine):
+    def from_station_id(cls, station_id:int, engine:Engine):
         """Create collector object from a valid database id for the station table
 
         Args:
@@ -69,11 +69,11 @@ class Collector():
         with Session(engine) as session:
             station = session.get(WeatherStation, station_id)
             if station:
-                return cls(station, engine)
+                return cls(station=station, engine=engine)
             else:
                 raise ValueError(f"collector class value error: no station record with id {station_id} found")
 
-    def __init__(self, station:WeatherStation, engine:Engine = engine):
+    def __init__(self, station:WeatherStation, engine:Engine):
         """create a collector object for pulling for an API specific to a station type.  
         This creates a database session open for the life of this object.   Use collector.close() when operations are complete.  
 
