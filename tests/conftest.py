@@ -91,7 +91,7 @@ def db_engine(request: pytest.FixtureRequest, test_db_url: str):
     if not db_deleted:
         print(f"unable to delete db {temp_db_name} on test db host {temp_db_host}")
     
-
+    
 @pytest.fixture(scope = 'session')
 def db_session(db_engine: Engine):
 
