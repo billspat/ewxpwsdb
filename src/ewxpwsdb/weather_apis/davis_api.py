@@ -83,7 +83,9 @@ class DavisAPI(WeatherAPI):
     _station_type = 'DAVIS'
     _sampling_interval = interval_min = 15
     supported_variables = ['atmp', 'atmp_min', 'atmp_max', 'dwpt', 'lws', 'pcpn', 'relh', 'srad', 'smst', 'stmp','wdir', 'wspd', 'wspd_max']
-
+    lws_threshold = 0.5
+    # this is a Davis-only value to make it obvious which of the several wetness variables we are using for LWS threshold
+    lws_variable = 'wetness_hi'
     
     def __init__(self, weather_station:WeatherStation):
         self.apisig  = ""
@@ -196,7 +198,15 @@ class DavisAPI(WeatherAPI):
                             return True
         
         return False
-        
+    
+    def _lws_convert(self, lws_value:float)->float:
+        """ convert leaf wetness value to EWX standard wet/not wet.
+        params lws_value : mVolt value as storedd in the API
+        output : integer 0 or 1
+        """
+        # this is here mostly to be explicit and document where this conversion happens
+        return 1.0 if lws_value > self.lws_threshold else 0.0
+    
     def _transform(self, response_data)->list:
         """
         Transforms data into a standardized format and returns it as a WeatherStationReadings object.
@@ -264,7 +274,7 @@ class DavisAPI(WeatherAPI):
                     if record_datetime not in readings_by_datetime:
                         readings_by_datetime[record_datetime] = {'data_datetime': record_datetime}
                     # TODO confirm leaf wetness transform
-                    lws:int =  1 if record['wetness_hi'] >= 0.5 else 0
+                    lws:int =  self._lws_convert(record[self.lws_variable])
                     wetness_sensor_data = {'lws':lws  }
                     
                     readings_by_datetime[record_datetime].update(wetness_sensor_data)
