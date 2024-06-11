@@ -75,12 +75,18 @@ def show_weather(db_url:str, station_code:str, start:str|None = None, end:str|No
     
     weather_api_output:dict[str, Any] = {}
 
-    # parse datetimes using dateutil, not guaranteed and must have a timezone that is UTC
-    start_datetime = parse(start) if start else None # type: ignore
-    end_datetime = parse(end) if end else None       # type: ignore
+    # parse datetimes using dateutil, not guaranteed and must have a timezone that is
+    try:
+        start_datetime = parse(start) if start else None # type: ignore
+        end_datetime = parse(end) if end else None       # type: ignore
+    except Exception as e:
+        return f"error with start={start} or end={end}: {e}"
 
     # note if start/end are None, then "get_readings()" gets current weather    
-    api_responses = collector.weather_api.get_readings(start_datetime=start_datetime, end_datetime=end_datetime)
+    try:
+        api_responses = collector.weather_api.get_readings(start_datetime=start_datetime, end_datetime=end_datetime)
+    except Exception as e:
+        return f"error getting weather from {station_code} with params start={start}, end = {end}: {e}"
     
     if show_response:
         responses_text = [ json.loads(resp.response_text) for resp in api_responses]
