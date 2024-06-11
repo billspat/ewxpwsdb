@@ -9,10 +9,8 @@ from ewxpwsdb.collector import Collector
 from ewxpwsdb.db import database # import engine, get_engine
 from ewxpwsdb.db.models import WeatherStation
 from pprint import pprint, pformat
-
+from typing import Any
 from dateutil.parser import parse # type: ignore
-
-from datetime import datetime
 
 def get_station(engine, station_code:str):
     
@@ -68,37 +66,34 @@ def show_weather(db_url:str, station_code:str, start:str|None = None, end:str|No
     try:
         engine = database.get_engine(db_url)
     except Exception as e:
-        print(f"error connecting to database: {e}")
-
+        return f"error connecting to database: {e}"
         
     try:
         collector = Collector.from_station_code(station_code, engine = engine)
     except Exception as e:
-        print(f"could not work with station code {station_code}: error {e}")
-        return ""
+        return f"could not work with station code {station_code}: error {e}"        
     
-    output = []
+    weather_api_output:dict[str, Any] = {}
 
+    # parse datetimes using dateutil, not guaranteed and must have a timezone that is UTC
     start_datetime = parse(start) if start else None # type: ignore
     end_datetime = parse(end) if end else None       # type: ignore
 
-    # note if start/end are None, then gets current weather    
+    # note if start/end are None, then "get_readings()" gets current weather    
     api_responses = collector.weather_api.get_readings(start_datetime=start_datetime, end_datetime=end_datetime)
     
     if show_response:
-        for resp in api_responses:
-            json_response = json.loads(resp.response_text)
-            output.append(pformat(json_response))
+        responses_text = [ json.loads(resp.response_text) for resp in api_responses]
+        weather_api_output['response'] = responses_text
 
-    weather_data = collector.weather_api.transform(api_responses,database = False)
-    if not weather_data:
-        output.append(f"no data for {station_code}")
+    readings = collector.weather_api.transform(api_responses,database = False)
+    if not readings:
+       time_params_as_str = f"for {start} to {end}" if (start or end) else "for current time"
+       return(f"no readings for {station_code} {time_params_as_str} ")
 
-    for reading in weather_data:
-        reading_dict = reading.model_dump()
-        output.append(json.dumps(reading_dict, indent = 4,sort_keys=True, default=str))
+    weather_api_output['readings'] = [reading.model_dump() for reading in readings]
 
-    return ",\n".join(output)
+    return(json.dumps(weather_api_output, indent = 4, sort_keys=True, default=str)) 
 
 
 def main()->int:
