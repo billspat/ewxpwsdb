@@ -2,22 +2,17 @@
 
 # ewxpwsdb.py: CLI for the ewxpwsdb package
 
-from prettytable import PrettyTable
-
 import argparse
-import sys, os, logging, json
+import sys, json
 from sqlmodel import select
 from ewxpwsdb.collector import Collector
 from ewxpwsdb.db import database # import engine, get_engine
 from ewxpwsdb.db.models import WeatherStation
 from pprint import pprint, pformat
 
-from dateutil.parser import parse
-from dateutil import tz
+from dateutil.parser import parse # type: ignore
 
 from datetime import datetime
-
-
 
 def get_station(engine, station_code:str):
     
@@ -68,7 +63,7 @@ def catchup_weather(db_url, station_code):
     return(f"this will insert records to catch up station {station_code}")
 
 
-def show_weather(db_url, station_code, start = None, end = None, show_response=False)->str:
+def show_weather(db_url:str, station_code:str, start:str = None, end:str = None, show_response:bool=False)->str:
     
     try:
         engine = database.get_engine(db_url)
@@ -84,8 +79,8 @@ def show_weather(db_url, station_code, start = None, end = None, show_response=F
     
     output = []
 
-    start_datetime = parse(start) if start else None
-    end_datetime = parse(end) if end else None
+    start_datetime = parse(start) if start else None # type: ignore
+    end_datetime = parse(end) if end else None       # type: ignore
 
     # note if start/end are None, then gets current weather    
     api_responses = collector.weather_api.get_readings(start_datetime=start_datetime, end_datetime=end_datetime)

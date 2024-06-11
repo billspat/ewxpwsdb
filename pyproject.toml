@@ -30,4 +30,4 @@ requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry.scripts]
-pws = "ewxpwsdb.ewxpwsdb:main"
+ewxpws = "ewxpwsdb.api.cli:main"
