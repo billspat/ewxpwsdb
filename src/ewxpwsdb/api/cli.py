@@ -63,7 +63,7 @@ def catchup_weather(db_url, station_code):
     return(f"this will insert records to catch up station {station_code}")
 
 
-def show_weather(db_url:str, station_code:str, start:str = None, end:str = None, show_response:bool=False)->str:
+def show_weather(db_url:str, station_code:str, start:str|None = None, end:str|None = None, show_response:bool=False)->str:
     
     try:
         engine = database.get_engine(db_url)
