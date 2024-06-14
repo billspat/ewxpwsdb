@@ -77,7 +77,7 @@ def station(db_url:str, station_code:str)->str:
             return(f"Error getting station '{station_code}' from db")
 
         
-        station_dict = station.model_dump(exclude='api_config')
+        station_dict = station.model_dump(exclude={'api_config'})
         output = json.dumps(station_dict, indent = 4,sort_keys=True, default=str)
     
     return(output)
