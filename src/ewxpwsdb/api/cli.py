@@ -6,14 +6,22 @@ import argparse
 import sys, json
 from sqlmodel import select
 from ewxpwsdb.collector import Collector
-from ewxpwsdb.db import database # import engine, get_engine
+from ewxpwsdb.db import database
 from ewxpwsdb.db.models import WeatherStation
 from pprint import pprint, pformat
 from typing import Any
 from dateutil.parser import parse # type: ignore
 
-def get_station(engine, station_code:str):
-    
+def get_station(engine, station_code:str)->WeatherStation:
+    """get a record from WeatherStation table
+
+    Args:
+        engine (Engine): sqlalchemy engine attatch to valid EWXPWS database
+        station_code (str): unique code to retrieve station by station_code
+
+    Returns:
+        WeatherStation: WeatherStation record
+    """
     with database.Session(engine) as session:            
         stmt = select(WeatherStation).where(WeatherStation.station_code == station_code)
         station_record = session.exec(stmt).one()
@@ -21,7 +29,15 @@ def get_station(engine, station_code:str):
     return(station_record)
 
 
-def get_station_codes(engine):
+def get_station_codes(engine)->list[str]:
+    """get all station codes from database
+
+    Args:
+        engine (Engine): engine with valid connection to EWXPWS database
+
+    Returns:
+        list[str]: list of station codes for all records in db
+    """
     with database.Session(engine) as session:            
         stmt = select(WeatherStation)
         stations = session.exec(stmt).fetchall()
@@ -67,7 +83,7 @@ def station(db_url:str, station_code:str)->str:
     return(output)
 
 
-def collect(db_url, station_code, start = None, end = None, show_response=False):
+def collect(db_url:str, station_code:str, start: str|None = None, end: str|None = None, show_response: bool=False)->str:
     """this will insert weather for station {station_code} for start, end dates or just current weather"""    
 
     engine = database.get_engine(db_url)
