@@ -5,11 +5,11 @@
 # check that the data is in the db like we think it should
 
 import pytest
-from sqlmodel import select, Session
+from sqlmodel import Session
 from datetime import datetime, timedelta, timezone
 
 # from ewxpwsdb.db.database import Session
-from ewxpwsdb.db.models import WeatherStation, APIResponse, Reading
+from ewxpwsdb.db.models import APIResponse, Reading
 from ewxpwsdb.collector import Collector
 # from ewxpwsdb.db.models import WeatherStationStation
 from ewxpwsdb.weather_apis.weather_api import WeatherAPI
@@ -21,17 +21,6 @@ def sample_interval():
     interval = UTCInterval.previous_interval(delta_mins=70)
     return interval
 
-
-#TODO start with a literal list of types, but copy the technique from ewx_pws package to loop through all types
-@pytest.fixture(scope='module')
-def station(station_type, db_with_data):
-    with Session(db_with_data) as session:
-        statement = select(WeatherStation).where(WeatherStation.station_type == station_type)
-        results = session.exec(statement)
-        weather_station = results.first()
-        session.close()
-
-    return(weather_station)
 
 @pytest.fixture(scope='module')
 def viable_interval(station_type):
@@ -48,20 +37,20 @@ def viable_interval(station_type):
     
     return(interval)
 
-def test_collector_class(station, db_with_data):
+def test_collector_class(weather_station, db_with_data):
     """can we instantiate a collector object given a station table id?
 
     assumes station param is object is from the db  
     """
     # we are using a station instead of just an id so we can test the Collector class can get a station
 
-    station_id = station.id
+    station_id = weather_station.id
     collector = Collector.from_station_id(station_id=station_id, engine=db_with_data)
     
     # can we instantiate the class?
     assert isinstance(collector, Collector)
     # is the station we sent the same one the collector pulled from the db
-    assert collector.station.station_code == station.station_code
+    assert collector.station.station_code == weather_station.station_code
 
     assert isinstance(collector.weather_api, WeatherAPI)    
     assert collector.current_api_response_record_ids == []
@@ -69,18 +58,17 @@ def test_collector_class(station, db_with_data):
     assert isinstance(collector.id, int)
     collector.close()
 
-def test_collector_class_from_station_code(station, db_with_data):
+def test_collector_class_from_station_code(test_station_code, db_with_data):
     """can we instantiate a collector object given a station code?
     
     assumes station param is object is from the db
     """
-    station_code = station.station_code
-    collector = Collector.from_station_code(station_code=station_code, engine=db_with_data)
+    collector = Collector.from_station_code(station_code=test_station_code, engine=db_with_data)
     
     # did we instantiate the class?
     assert isinstance(collector, Collector)
     # is the station we sent the same one the collector pulled from the db
-    assert collector.station.station_code == station.station_code
+    assert collector.station.station_code == test_station_code
 
     assert isinstance(collector.weather_api, WeatherAPI)    
     assert collector.current_api_response_record_ids == []
@@ -90,17 +78,17 @@ def test_collector_class_from_station_code(station, db_with_data):
     
 
 @pytest.fixture(scope='module')
-def station_collector(station, db_with_data):
-    collector = Collector.from_station_id(station_id=station.id, engine=db_with_data)
+def station_collector(test_station_code, db_with_data):
+    collector = Collector.from_station_code(station_code = test_station_code, engine=db_with_data)
     yield(collector)
     collector.close()
 
-def test_collect_request(station,db_with_data, station_collector):
+def test_collect_request(weather_station,db_with_data, station_collector):
     
     collector = station_collector
 
     # temporary adjustment for this down station, use 
-    if station.station_type == 'RAINWISE':
+    if weather_station.station_type == 'RAINWISE':
         # rainwise goes down, so set the period for when the station was up and there is data
         from datetime import datetime, UTC
         datetime_rainwise_was_working = datetime(year=2024, month=2, day=19, hour=12, minute=0, second=0, tzinfo=UTC)

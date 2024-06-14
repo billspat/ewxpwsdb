@@ -7,51 +7,55 @@ import sys, json
 from sqlmodel import select
 from ewxpwsdb.collector import Collector
 from ewxpwsdb.db import database
-from ewxpwsdb.db.models import WeatherStation
-from pprint import pprint, pformat
 from typing import Any
 from dateutil.parser import parse # type: ignore
+from datetime import timedelta
 
-def get_station(engine, station_code:str)->WeatherStation:
-    """get a record from WeatherStation table
+from ewxpwsdb.time_intervals import UTCInterval
+from ewxpwsdb.station_readings import StationReadings
+from ewxpwsdb.station import Station
 
-    Args:
-        engine (Engine): sqlalchemy engine attatch to valid EWXPWS database
-        station_code (str): unique code to retrieve station by station_code
 
-    Returns:
-        WeatherStation: WeatherStation record
+def create_interval(start:str|None, end:str|None)->UTCInterval:
+    """parse params into datetimes and create UTC interval. Strings must have timezone.
+     
+    When start, end, or both are missing, create a 60 minute interval to work with
+    using what was sent 
     """
-    with database.Session(engine) as session:            
-        stmt = select(WeatherStation).where(WeatherStation.station_code == station_code)
-        station_record = session.exec(stmt).one()
+
+    try:
+        start_datetime = parse(start) if start else None # type: ignore
+        end_datetime = parse(end) if end else None       # type: ignore
+    except Exception as e:
+        raise ValueError(f"error parsing start={start} or end={end}: {e}")
     
-    return(station_record)
+    if start_datetime is None and end_datetime is None:
+        # no times: create interval of previous 60 minutes
+        interval =  UTCInterval.previous_interval(delta_mins=60)
 
+    elif start_datetime is None:
+        # no start: create 60 minute interval that ends at end time sent
+        interval =  UTCInterval.previous_interval(dtm = end_datetime - timedelta(minutes=60), delta_mins=60)
 
-def get_station_codes(engine)->list[str]:
-    """get all station codes from database
+    elif end_datetime is None:
+        # no end: create 60 minute interval that starts at start time sent
+        interval =  UTCInterval.previous_interval(dtm = start_datetime, delta_mins=60)
 
-    Args:
-        engine (Engine): engine with valid connection to EWXPWS database
+    else:
+        try:
+            interval = UTCInterval(start = start_datetime, end = end_datetime)
+        except Exception as e:
+            raise ValueError(f"error creating time interval from start={start} to end={end}: {e}")
 
-    Returns:
-        list[str]: list of station codes for all records in db
-    """
-    with database.Session(engine) as session:            
-        stmt = select(WeatherStation)
-        stations = session.exec(stmt).fetchall()
-    
-    # using select for only some fields in SQLAlchemy is dumb so get all fields and filter them out here
-    station_codes =  [station.station_code for station in stations]
-    return station_codes
+    return interval
 
 
 def station(db_url:str, station_code:str)->str:
     """pull a station record and output to JSON for a station code, excluding 
     the API connection info which may contain secrets. 
-    If string is "list" sent, then return all stations
-
+    If string is "list" sent, then return all stations as a column of station codes, 
+    which may be used in a zsh or bash shell loop 
+    for station in `ewxpws station list`; do ewxpws station $station; done
 
     Args:
         db_url (str): connection string for database
@@ -59,27 +63,24 @@ def station(db_url:str, station_code:str)->str:
             
 
     Returns:
-        str: JSON formatted array or single dict of station records
+        str: JSON formatted station data or column of station codes for use in shell loop
     """
-
     engine = database.get_engine(db_url)
+    
     if station_code.upper() == 'LIST':
         try:
-            stations = get_station_codes(engine)
-            output = "\n".join(stations)
+            station_codes = Station.all_station_codes(engine)
+            output = "\n".join(station_codes)
         except Exception as e:
-            return("Error getting stations from db")
+            return("Error getting stations from db: {e}")
     else:
         try:
-            station = get_station(engine, station_code)
-            
+            station_obj = Station.from_station_code(station_code, engine)
         except Exception as e:
-            return(f"Error getting station '{station_code}' from db")
-
+            return(f"Error getting station with code '{station_code}' from db")
         
-        station_dict = station.model_dump(exclude={'api_config'})
-        output = json.dumps(station_dict, indent = 4,sort_keys=True, default=str)
-    
+        output = station_obj.as_json()
+
     return(output)
 
 
@@ -93,19 +94,7 @@ def collect(db_url:str, station_code:str, start: str|None = None, end: str|None 
     except Exception as e:
         return f"error creating a colllector for station {station_code}: {e}"
 
-    from ewxpwsdb.time_intervals import UTCInterval
-
-    # parse datetimes using dateutil, not guaranteed and must have a timezone that is
-    try:
-        start_datetime = parse(start) if start else None # type: ignore
-        end_datetime = parse(end) if end else None       # type: ignore
-    except Exception as e:
-        return f"error with start={start} or end={end}: {e}"
-    
-    try:
-        interval = UTCInterval(start = start_datetime, end = end_datetime)
-    except Exception as e:
-        return f"error creating time interval from start={start} to end={end}: {e}"
+    interval = create_interval(start, end)
 
     try:
         response_ids = collector.request_and_store_weather_data_utc(interval = interval)
@@ -113,9 +102,7 @@ def collect(db_url:str, station_code:str, start: str|None = None, end: str|None 
         return f"stored {n_readings} readings for {station_code}"
     except Exception as e:
         return(f"error collecting weather from {station_code}:{e}")
-    
 
-    
 
 def catchup(db_url:str, station_code:str)->str:
     """this will insert records to catch up station by station_code"""
@@ -180,6 +167,16 @@ def weather(db_url:str, station_code:str, start:str|None = None, end:str|None = 
     return(json.dumps(weather_api_output, indent = 4, sort_keys=True, default=str)) 
 
 
+def readings(db_url:str, station_code:str, start:str|None = None, end:str|None = None):
+    """ pull readings from the database"""
+    engine = database.get_engine(db_url)
+    station_readings = StationReadings.from_station_code(station_code, engine)
+    interval = create_interval(start, end)
+    readings = station_readings.readings_by_interval_utc(interval)
+    readings_dict = [reading.model_dump() for reading in readings]
+    return(json.dumps(readings_dict, indent = 4, sort_keys=True, default=str)) 
+
+
 def main()->int:
     """Console script for ewx_pws."""
     parser = argparse.ArgumentParser(prog='ewxpwsdb')
@@ -211,7 +208,11 @@ def main()->int:
     catchup_parser = subparsers.add_parser("catchup", parents=[common_args], help="get all data from last record to current time and save to database")
     # catchup_parser.set_defaults(command=catchup_weather)
 
-    
+    readings_parser = subparsers.add_parser("readings", parents=[common_args], help="retrieve weather data from database, if it's there")
+    readings_parser.add_argument('-s', '--start', default=None, help="start time UTC in format ")
+    readings_parser.add_argument('-e', '--end', default=None, help="end time UTC in format ")
+
+
     args = parser.parse_args()
     clifunc = eval(args.command)
     params = vars(args)
@@ -221,8 +222,6 @@ def main()->int:
         print(output)
 
     return 0
-
-
 
 
 if __name__ == "__main__":

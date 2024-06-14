@@ -1,9 +1,11 @@
 import pytest, os
 import logging
-from sqlmodel import Session
+from sqlmodel import select, Session
 from sqlalchemy import Engine
+
 from ewxpwsdb.db.importdata import read_station_table
 from ewxpwsdb.db.database import init_db, get_db_url, drop_pg_db, create_temp_pg_engine
+from ewxpwsdb.db.models import WeatherStation
 
 
 logging.basicConfig(
@@ -61,7 +63,8 @@ def station_file(request: pytest.FixtureRequest):
 def test_host(scope = 'session'):
     # override to test remote hosts
     return 'localhost'
-    
+
+
 @pytest.fixture(scope = 'session')
 def test_db_url(request: pytest.FixtureRequest)->str:
     db_url_param = request.config.getoption("--dburl") 
@@ -69,6 +72,10 @@ def test_db_url(request: pytest.FixtureRequest)->str:
 
     return db_url
 
+
+@pytest.fixture(scope='session')
+def station_type(request: pytest.FixtureRequest)->str:
+    return ( request.config.getoption("--station_type").upper() )
 
 
 # this is a generator function so does not have a return type
@@ -117,6 +124,17 @@ def test_station_data(request: pytest.FixtureRequest):
     return stations
 
 
+@pytest.fixture(scope="module")
+def test_station_code(station_type, test_station_data)->str:
+    """get the first station code of the station type we are testing
+       from the test station tsv file used to create our test database, 
+       without hitting the database to reduce imports
+    """
+
+    test_station_code:str =  [station['station_code'] for station in test_station_data if station['station_type']==station_type][0]
+    return test_station_code
+
+
 @pytest.fixture(scope = 'module')
 def db_with_data(db_engine: Engine, request: pytest.FixtureRequest, test_station_data):
 
@@ -129,6 +147,17 @@ def db_with_data(db_engine: Engine, request: pytest.FixtureRequest, test_station
     
     yield db_engine
 
+#TODO start with a literal list of types, but copy the technique from ewx_pws package to loop through all types
+@pytest.fixture(scope='module')
+def weather_station(station_type, db_with_data):
+    with Session(db_with_data) as session:
+        statement = select(WeatherStation).where(WeatherStation.station_type == station_type)
+        results = session.exec(statement)
+        weather_station = results.first()
+        session.close()
+
+    return(weather_station)
+
 @pytest.fixture(scope = 'function')
 def db_with_data_session(db_with_data: Engine):
 
@@ -137,6 +166,4 @@ def db_with_data_session(db_with_data: Engine):
         session.close()
     
 
-@pytest.fixture(scope='session')
-def station_type(request: pytest.FixtureRequest)->str:
-    return ( request.config.getoption("--station_type").upper() )
+
