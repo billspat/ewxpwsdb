@@ -28,3 +28,6 @@ types-requests = "^2.31.0.20240125"
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.scripts]
+ewxpws = "ewxpwsdb.api.cli:main"

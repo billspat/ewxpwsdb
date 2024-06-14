@@ -7,17 +7,21 @@ python bin/pws_collect.py EWXDAVIS01
 This requires a python environment with all requirements installed """
 import argparse
 import sys, os, logging
+from sqlmodel import select
 from ewxpwsdb.collector import Collector
 from ewxpwsdb.db import database # import engine, get_engine
+from ewxpwsdb.db.models import WeatherStation
+
+from pprint import pprint, pformat
 
 def main()->int:
     """Console script for ewx_pws."""
     parser = argparse.ArgumentParser()
-    parser.add_argument('station_code', help="station code that matches a record in the STATION table in the database")
+    parser.add_argument('station_code', nargs='?', help="station code that matches a record in the STATION table in the database.  If not given all stations codes are output")
     parser.add_argument('-d','--dburl', help="optional valid sqlaclchemy URL for connecting to Postgresql, eg. postgresql+psycopg2://localhost:5432/ewxpws.  if none given, reads from .env")
+    parser.add_argument('--show_response', action="store_true", help="optional flag to also show the raw API  response data")
     
     # possible future arguments, for now just getting current weather data and displaying it
-    # parser.add_argument('command', help="optional command, defaults to getting recent weather from last 15 minutes ")
     # parser.add_argument('-s', '--start', help="start time UTC in format ")
     # parser.add_argument('-e', '--end',help="end time UTC in format ")
     # parser.add_argument('-c', '--catchup', help="get the latest weather data from station")
@@ -29,7 +33,7 @@ def main()->int:
     if args.dburl:
         engine = database.get_engine(args.dburl)
     else:
-        engine = database.engine
+        engine = database.get_engine()
 
     # try db connection
     try:
@@ -38,23 +42,53 @@ def main()->int:
         print(f"could not connect engine to db url sent as param, EWXPWSDB_URL, or from local file .env: {e} ")
         return 1
     
-
-    # create collector object which reads station info from database
-    # just get a weather API object
-    try:
-        collector = Collector.from_station_code(args.station_code)
-    except ValueError as e:
-        print("could not work with station code {station_code}: error {e}")
+    if not args.station_code:
+        print("list of station ids:")
+        print("\n".join(get_stations(engine)))
+        return 0
+    
+    output = print_weather(station_code = args.station_code, engine = engine, show_response = args.show_response)
+    if output:
+        print(output)
+        return 0
+    else:
         return 1
+
+def get_stations(engine):
+    
+    with database.Session(engine) as session:            
+        stmt = select(WeatherStation)
+        stations = session.exec(stmt).fetchall()
+    
+    # using select for only some fields in SQLAlchemy is dumb so get all fields and filter them out here
+    station_codes =  [station.station_code for station in stations]
+    return station_codes
+
+def print_weather(station_code, engine, show_response=False)->str:
+    import json
+    from pprint import pformat
+    try:
+        collector = Collector.from_station_code(station_code, engine = engine)
+    except ValueError as e:
+        print(f"could not work with station code {station_code}: error {e}")
+        return ""
     
     # get  most recent data and print it (for now) 
+    output = ""
+    api_responses = collector.weather_api.get_readings()
+    if show_response:
+        for resp in api_responses:
+            json_response = json.loads(resp.response_text)
+            output += pformat(json_response)
 
-    api_response = collector.weather_api.get_readings()
-    weather_data = collector.weather_api.transform(api_response,database = False)
+    weather_data = collector.weather_api.transform(api_responses,database = False)
     for reading in weather_data:
-        print(reading)
+        output += pformat(reading)
 
-    return 0
+    return output
+
+
+
 
 
 if __name__ == "__main__":

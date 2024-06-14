@@ -2,6 +2,7 @@
 
 from datetime import datetime, timezone, timedelta, date, UTC, time
 
+from dateutil import tz
 from pydantic import BaseModel, model_validator, field_validator # validator
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 from typing import Literal, Annotated
@@ -41,10 +42,15 @@ def is_utc(dt:datetime)->bool:
     if not is_tz_aware(dt):
         return False
     
-    if not dt.tzinfo == timezone.utc:
-        return False
+    # detect dateutil's timezone format
+    if dt.tzinfo == tz.tzutc():
+        return True
+        
+    # detect python standard lib timezone format
+    if dt.tzinfo == timezone.utc:
+        return True
     
-    return True
+    return False
 
 
 class datetimeUTC(BaseModel):
