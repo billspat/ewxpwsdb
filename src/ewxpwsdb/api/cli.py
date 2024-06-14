@@ -91,14 +91,36 @@ def collect(db_url, station_code, start = None, end = None, show_response=False)
     except Exception as e:
         return f"error creating time interval from start={start} to end={end}: {e}"
 
-    results = collector.request_and_store_weather_data_utc(interval = interval)
-
-    return (json.dumps(results))
+    try:
+        response_ids = collector.request_and_store_weather_data_utc(interval = interval)
+        n_readings = len(collector.current_reading_ids)
+        return f"stored {n_readings} readings for {station_code}"
+    except Exception as e:
+        return(f"error collecting weather from {station_code}:{e}")
+    
 
     
 
-def catchup(db_url, station_code):
-    return(f"this will insert records to catch up station {station_code}")
+def catchup(db_url:str, station_code:str)->str:
+    """this will insert records to catch up station by station_code"""
+
+    engine = database.get_engine(db_url)
+
+    try:
+        collector = Collector.from_station_code(station_code, engine)
+    except Exception as e:
+        return f"error creating a colllector for station {station_code}: {e}"
+    
+    try:
+        response_ids = collector.catch_up()
+        n_readings = len(collector.current_reading_ids)
+        return f"store {n_readings} readings for {station_code}"
+    except Exception as e:
+        return f"error on catch-up process for station {station_code}: {e}"
+    
+    
+
+
 
 
 def weather(db_url:str, station_code:str, start:str|None = None, end:str|None = None, show_response:bool=False)->str:
