@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-# ewxpwsdb.py: CLI for the ewxpwsdb package
+# cli.py: CLI for the ewxpwsdb package.  See readme for how to use
 
 import argparse
 import sys, json
@@ -31,9 +31,23 @@ def get_station_codes(engine):
     return station_codes
 
 
-def show_stations(db_url, station_code=None):
+def station(db_url:str, station_code:str)->str:
+    """pull a station record and output to JSON for a station code, excluding 
+    the API connection info which may contain secrets. 
+    If string is "list" sent, then return all stations
+
+
+    Args:
+        db_url (str): connection string for database
+        station_code (str): unique station code for a station record, or 'list'  
+            
+
+    Returns:
+        str: JSON formatted array or single dict of station records
+    """
+
     engine = database.get_engine(db_url)
-    if not station_code or station_code.upper() == 'LIST':
+    if station_code.upper() == 'LIST':
         try:
             stations = get_station_codes(engine)
             output = "\n".join(stations)
@@ -53,15 +67,41 @@ def show_stations(db_url, station_code=None):
     return(output)
 
 
-def collect_weather(db_url, station_code, start = None, end = None, show_response=False):
-    return(f"this will insert weather for station {station_code} for start, end dates or just current weather")
+def collect(db_url, station_code, start = None, end = None, show_response=False):
+    """this will insert weather for station {station_code} for start, end dates or just current weather"""    
 
+    engine = database.get_engine(db_url)
 
-def catchup_weather(db_url, station_code):
+    try:
+        collector = Collector.from_station_code(station_code, engine)
+    except Exception as e:
+        return f"error creating a colllector for station {station_code}: {e}"
+
+    from ewxpwsdb.time_intervals import UTCInterval
+
+    # parse datetimes using dateutil, not guaranteed and must have a timezone that is
+    try:
+        start_datetime = parse(start) if start else None # type: ignore
+        end_datetime = parse(end) if end else None       # type: ignore
+    except Exception as e:
+        return f"error with start={start} or end={end}: {e}"
+    
+    try:
+        interval = UTCInterval(start = start_datetime, end = end_datetime)
+    except Exception as e:
+        return f"error creating time interval from start={start} to end={end}: {e}"
+
+    results = collector.request_and_store_weather_data_utc(interval = interval)
+
+    return (json.dumps(results))
+
+    
+
+def catchup(db_url, station_code):
     return(f"this will insert records to catch up station {station_code}")
 
 
-def show_weather(db_url:str, station_code:str, start:str|None = None, end:str|None = None, show_response:bool=False)->str:
+def weather(db_url:str, station_code:str, start:str|None = None, end:str|None = None, show_response:bool=False)->str:
     
     try:
         engine = database.get_engine(db_url)
@@ -105,7 +145,8 @@ def show_weather(db_url:str, station_code:str, start:str|None = None, end:str|No
 def main()->int:
     """Console script for ewx_pws."""
     parser = argparse.ArgumentParser(prog='ewxpwsdb')
-    subparsers = parser.add_subparsers(title="subcommands", help="Personal weather stations database operations")
+
+    subparsers = parser.add_subparsers(dest='command', required=True, help="Personal weather stations database operations")
 
     # all commands require a station code and a database connection to work
     common_args = argparse.ArgumentParser(add_help=False)
@@ -114,29 +155,29 @@ def main()->int:
 
 
     station_parser = subparsers.add_parser("station", parents=[common_args], help="list station info for station code. Send station code 'list' to list all stations")
-    station_parser.set_defaults(func=show_stations)
+    # station_parser.set_defaults(command=show_stations)
 
 
     weather_parser = subparsers.add_parser("weather", parents=[common_args], help="show weather conditions for specified station and times")
     weather_parser.add_argument('--show_response', action="store_true", help="optional flag to also show the raw API  response data")
     weather_parser.add_argument('-s', '--start', default=None, help="start time UTC in format ")
     weather_parser.add_argument('-e', '--end', default=None, help="end time UTC in format ")
-    weather_parser.set_defaults(func=show_weather)
+    # weather_parser.set_defaults(command=show_weather)
 
 
     store_parser = subparsers.add_parser("collect", parents=[common_args], help="get data and save to database for time internval, or current time ")
     store_parser.add_argument('-s', '--start', nargs='?', help="optional start time, UTC timezone in format TBD, if omitted uses near current time")
     store_parser.add_argument('-e', '--end',nargs='?', help="optional end time, UTC timezone in format TBD, if omitted uses near current time")
-    store_parser.set_defaults(func=collect_weather)
+    # store_parser.set_defaults(command=collect_weather)
 
     catchup_parser = subparsers.add_parser("catchup", parents=[common_args], help="get all data from last record to current time and save to database")
-    catchup_parser.set_defaults(func=catchup_weather)
+    # catchup_parser.set_defaults(command=catchup_weather)
 
     
     args = parser.parse_args()
-    clifunc = args.func
+    clifunc = eval(args.command)
     params = vars(args)
-    del params['func']
+    del params['command']
     output = clifunc(**params)
     if output:
         print(output)
