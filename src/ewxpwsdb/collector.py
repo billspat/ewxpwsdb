@@ -15,6 +15,7 @@ from ewxpwsdb.db.models import WeatherStation, APIResponse, Reading
 from ewxpwsdb.weather_apis import API_CLASS_TYPES
 from ewxpwsdb.time_intervals import one_day_interval, UTCInterval, is_utc, previous_fourteen_minute_interval, fifteen_minute_mark
 
+from ewxpwsdb.station import Station
 
 class Collector():
     """class to enable collecting data from station apis and store in a database.  
@@ -39,19 +40,13 @@ class Collector():
             Collector: collector object for the station with that station code 
         """
 
-        with Session(engine) as session:
-            stmt = select(WeatherStation).where(WeatherStation.station_code == station_code)
-            records = session.exec(stmt).fetchall()
+        try:
+            station_obj = Station.from_station_code(station_code=station_code, engine=engine)
+            return cls(station=station_obj.weather_station, engine=engine)
+        except Exception as e:
+             raise RuntimeError(f"collector class: error getting station with station_code {station_code} from database: {e}")
 
-            if len(records) > 1:
-                raise ValueError(f"collector.from_station_code value error: station_code {station_code} returned multiple records")
 
-            if len(records) == 1:
-                station:WeatherStation = records[0]
-                return cls(station=station, engine=engine)
-            else:
-                raise ValueError(f"collector class value error: no station record with station_code {station_code} found")
-            
     @classmethod
     def from_station_id(cls, station_id:int, engine:Engine):
         """Create collector object from a valid database id for the station table
@@ -61,17 +56,17 @@ class Collector():
             engine (Engine, optional):   Defaults to engine created from imported database module
 
         Raises:
-            ValueError: if not station is found with id
+            RuntimeError: if not station is found with id
 
         Returns:
             Collector: collector object for the station with id = stationid
         """
-        with Session(engine) as session:
-            station = session.get(WeatherStation, station_id)
-            if station:
-                return cls(station=station, engine=engine)
-            else:
-                raise ValueError(f"collector class value error: no station record with id {station_id} found")
+        try:
+            station_obj = Station.from_station_id(station_id=station_id, engine=engine)
+            return cls(station=station_obj.weather_station, engine=engine)
+        except Exception as e:
+            raise RuntimeError(f"collector class error: can not load station with id {station_id}: {e}")
+        
 
     def __init__(self, station:WeatherStation, engine:Engine):
         """create a collector object for pulling for an API specific to a station type.  
