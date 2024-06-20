@@ -15,51 +15,100 @@ The package uses Python 'poetry' rather than standard setup tools.  Poetry sugge
 
 ### Using with Poetry
 
-Instructions TBD.  Requires installing pipx as recommend by https://python-poetry.org  which may or may not work on Windows
+Poetry is a great package-development system  for adding/removing dependencies, dev/test, running commands and building multiple architectures targets.  
+this project has chosen Poetry as the development system, and most of the insructions below assume you have it installed.  
+
+To use poetry it must be available system-wide (e.g. run on your computer without starting a new environment) but it's extremely important that you use environments for 
+this and other python projects on your computer.  
+
+A recommend way is to install with `pipx`, which won't affect the python your system uses and sometimes requires (MacOS, Linux).  See https://python-poetry.org  
+
+However this may mean installing an Operating system package manager - yet another install!   On MacOS , Homebrew is highly recommended and that works well with poetry. 
+
+Command Line instructions:
+
+1. install the OS package manager:  MacOS:  homebrew; Windows: [scoop](https://scoop.sh/), Linux: none needed
+2. install pipx: see https://pipx.pypa.io/stable/
+3. install poetry: `pipx install poetry`  https://python-poetry.org/docs/
+
+#### Alternative Install of Poetry: 
+
+ see https://python-poetry.org/docs/#installing-with-the-official-installer : but on windows requires using the [WSL](https://learn.microsoft.com/en-us/windows/wsl/install) 
 
 
 ### Developing with PIP/setup tools
 
-There is a requirements.txt file that could work to develop with this package.   
-This method worked for me on MacOS using terminal 
+~~There is a requirements.txt file that could work to develop with this package.~~
+~~This method worked for me on MacOS using terminal~~ 
 
-change into the top directory of this project.  (e.g. `cd /path/to/ewxpwsdb`)
+~~change into the top directory of this project.  (e.g. `cd /path/to/ewxpwsdb`)~~
 
-Create a virtual environment.  For using virtualenv, use 
+~~Create a virtual environment.  For using virtualenv, use ~~
 
-`virtualenv -p 3.11 .venv` or similar.  Could also use Conda environments. the method doesn't matter.   However Poetry and pipx have their own way of using environments. 
+~~`virtualenv -p 3.11 .venv` or similar.  Could also use Conda environments. the method doesn't matter. However Poetry and pipx have their own way of using environments. ~~
 
-activate the environment. With virtualenv, use `.venv/bin/activate`
+~~activate the environment. With virtualenv, use `.venv/bin/activate`~~
 
-install using pip
+~~install using pip~~
 
-`pip install -r requirements.txt`
+~~`pip install -r requirements.txt`~~
 
-install this package (it may be that the above it not needed when installing the package)
+~~install this package (it may be that the above it not needed when installing the package)~~
 
-`pip install .`
+~~`pip install .`~~
+
+### Install dependencies
+
+- cd to the folder with this project `cd path/to/ewxpwsdb` if you aren't in the top directory already 
+- `poetry install`
+
+### Install Postgresql
+
+Because not all databases allow the use of timezones, and this system requires timezones, we have opted to use Postgresql.   
+You must have a Postgresql db server with a database in it for which you have the priv. of creating databases for the tests to work.  
+
+On Mac, [Postgres.app](https://postgres.app) is a super easy way to install.   Once you start the db and create a database, say, `ewxpws` for the 
+database name, your database URL is EWXPWSDB_URL=postgresql+psycopg2://localhost:5432/ewxpws
+
+On Windows etc you can isntall using the default postgresql installer.   Create  user, password and new database, maybe named `ewxpws` 
+
+### Setting the environment
+
+You can use a file to set the database URL so you don't type passwords on the command line.   
+
+create a new file named `.env` in the top directory of this project.  Python will look for and read this file for environment variables.   
+
+see the file `example-dot-env` for what should go in into it.   Currently the default environment variable uses is set in the module 
+`ewxpwsdb.database._EWXPWSDB_URL_VAR, currently "EWXPWSDB_URL" but most functions
+and cli will take a `db_url` parameters will override that  (e.g. for a test URL or a dev URL)
+
+## Testing
 
 ### Getting test data
 
-There is a test bed of weather stations for which you can access the API with passwords/creentials.   It is not stored in this repository. 
+There is a test bed of weather stations for which you can access the API with passwords/creentials.   It is not stored in this repository since it contains
+passwords and secrets to access the stations' APIs.  
 
 Current the tests etc assume the file is `data/test_stations.tsv` and must be in Tab-separated values format due to a bug in python 3.11 `dictreader()`
 
 Get a copy of this file and place it in that location as above.    You can override this location from most tests and programs.  
 
-### running tests
+There is a function in `init_db()` in `database.py` that will create a new blank databas and load the test stations into it.  
 
-once the package and dependencies are instasll with either poetry or pip...
+## running tests
 
-When using poetry, enter the poetry 'shell' (bash environment that loads the virtual environment) with `poetry shell`
+once the package and dependencies, database and files are all in place, you can now run tests.   
 
-from the top folder of the project, run tests from the command line with 
+`poetry run pytest tests`
+
+When using poetry, you can also enter the poetry 'shell' (bash environment that loads the virtual environment) with `poetry shell`, 
+akin to activating an environment.   If you do that, from the top folder of the project, run tests from the command line with 
 
 `pytest tests`
 
-Since the system is designed for Postgresql (due to requiring datetimes with timezones), testing requires access to a Postgresql Server.   This tests currently assume you are running a server
+Note that these tests, by default, will use the Postgresql URL to access the database server, but then will create a new, temporary database
+on that server and fill with test data.   When the tests complete the test database is deleted. 
 on localhost that does not require a password (e.g. [Postgres.app](https://postgresapp.com )).   If that is running, the tests create a temporary SQLite database for running tests and deletes that file when they are done.  
-
 
 By default the tests only run for one station type, **SPECTRUM**.  To test against other station types, use the option 
 
@@ -76,20 +125,67 @@ To run one test
 
 Custom options:
 
--  `--dburl=DBURL`         sqlalchemy postgresql db url for test.  This is required for the files `test_db_checks.py` but currently not properly used
+-  `--dburl=DBURL`         sqlalchemy postgresql db url for test.  If you send a URL like this, it will not create a temporary database 
 -  `--file=FILE`           full path to a tsv file to use for test stations data and login credentials
 -  `--no-import`           use this to skip importing data (assumes test db already has data)
-- `--station_type=STATION_TYPE` mentioned above; station type in all capsTo run against other types use the following syntax
+- `--station_type=STATION_TYPE` mentioned above; station type in all caps.  If there is more than one station of that type in the db, picks the first one. 
 
 
-### ABOUT ZENTRA API
+### About API Throttling
 
 You will notice the terminal seems like it's frozen when working with Zentra API, e.g. when running tests.  This is annoying but expected. 
 
 the API from the company "Meter Group" that works with the Zentra weather stations has a speed limit on the api and only allows requests once every 60s.  
 That means when testing, if you want to get another reading for aonther test, you have to wait until 60s is up.  The output from the API has the number 
-of seconds you have to wait, and this code has a feature to extract that and wait until it's ready.  
+of seconds you have to wait, and this code has a feature to extract that and wait until it's ready. 
 
+The DAVIS api is also a little slow and will only allow getting data for 24 at a time
+
+## Using the CLI
+
+There is a command line interface for working with the database and APIs using the terminal/command.exe.    
+
+Until the package is actually installable via PIP, you have to use `poetry` to use the cli.   For all the following examples, you must be in
+the top directory of this project (e.g. first `cd path/to/ewxpws` if you aren't already).  
+
+The cli command is `ewxpws` 
+
+- get help/information about the arguments:   `poetry run ewxpws -h`
+- get details about a sub command `poetry run ewxpws station -h`
+- list all stations `poetry run ewxpws station list`
+- get current weather details, directly from API `poetry run ewxpws weather {station code}`
+- get recent hourly weather summary from database `poetry run ewxpws hourly {station code}`
+
+For many of these commands there are options for `--start` and `--stop` to get a range of data. For hourly data these are dates in form Y-M-D `2024-04-30`
+
+## Starting the API
+
+There is a Web API (not necessarily REST but read-only) as well. 
+
+To start the API server on your local computer 
+
+`poetry run python -m ewxpwsdb.api.http_api`  which runs on host address http://0.0.0.0:8000 by default and uses the database URL in `.env`
+
+To see which other command line options for running this API server, including a database URL, run `poetry run python -m ewxpwsdb.api.http_api -h`
+
+If the database is running and you use the default parameters for the API server, browse to http://0.0.0.0:8000/docs for documentation about the api.  
+
+For example `http://0.0.0.0:8000/stations` is a list of station codes.   
+
+To run with a different database for example on a different server, add the URL to the environment (different for Mac/Windows). 
+For example if you set the environment variable `EWXPWSDB_AWS_URL` to the URL for a database on AWS, to use that databas, run 
+
+`poetry run python -m ewxpwsdb.api.http_api -d $EWXPWSDB_AWS_URL`
+
+
+## Docker
+
+TBD
+
+
+# Weather Station record fields and format
+
+To be written... 
 
 
 

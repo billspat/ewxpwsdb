@@ -1,20 +1,22 @@
 """Station and StationReadings class for pulling data from the database"""
 
-import json
-from datetime import datetime
-from sqlmodel import select, Session
+from datetime import datetime, date
+from sqlmodel import select, Session, text
 from typing import Self, Sequence
 
 from ewxpwsdb.db.models import Reading, WeatherStation
-from ewxpwsdb.db.database import Engine, check_engine
+from ewxpwsdb.db.summary_models import HourlySummary
+from ewxpwsdb.db.database import Engine
 from ewxpwsdb.time_intervals import UTCInterval
 from ewxpwsdb.station import Station
 
+
 class StationReadings():
-    """Methods for interacting (read/write) with reading table for a specific weather station
+    """Methods for interacting (read/write) with reading table for a specific 
+    weather station
     """
 
-    def __init__(self, station:WeatherStation, engine:Engine):    
+    def __init__(self, station : WeatherStation, engine:Engine):    
         """create StationReadings object given station and db engine
 
         Args:
@@ -29,6 +31,10 @@ class StationReadings():
         
         self.station = station
         self._engine = engine
+
+        #TODO find or write converter from Python timezone to PG timezones 
+        # until that's done, put the timezone for all of our stations here
+        self.postgtres_friendly_timezone = 'est'
 
     @classmethod
     def from_station_id(cls, station_id:int, engine:Engine) -> Self:
@@ -56,25 +62,12 @@ class StationReadings():
         station:Station = Station.from_station_code(station_code, engine)
         return cls(station = station.weather_station, engine = engine)
 
-    def _exec(self, stmt):
-        """convenience function to exec a statement on the db engine.   """
-        # try
-        with Session(self._engine) as session:
-            result = session.exec(stmt)
-
-        return result
-    
-
-    def _select(self,stmt)->Sequence:
-        result = self._exec(stmt)
-        records:Sequence = result.fetchall()
-        return(records)
 
     def recent_readings(self, n:int=1)->Sequence[Reading]:
         """get some readings from the DB for this station
         
         Args:
-            n: int number of records to pull, defaults to 1
+            n (int): number of records to pull, defaults to 1
 
         Returns:
             list of Reading objects 
@@ -92,7 +85,7 @@ class StationReadings():
         """Check if there are readings for this station in the database currently, or none
 
         Args:
-            station_id:int valid id of a station in the database, e.g. station.id
+            station_id (int): valid id of a station in the database, e.g. station.id
 
         Returns:
             bool: True if any readings in table with this stations id.  
@@ -109,7 +102,7 @@ class StationReadings():
         
         return reading
             
-    
+
     def first_reading_date(self)->datetime|None:
         """convenience function to return the date of the first reading in the db for this station, mostly to get the date pull one reading ordered by date
         
@@ -121,7 +114,7 @@ class StationReadings():
         return ( reading.data_datetime if reading else None )
 
         
-    def readings_by_interval_utc(self, interval:UTCInterval, order_by:str='desc')->Sequence:
+    def readings_by_interval_utc(self, interval:UTCInterval, order_by:str='desc')->list[Reading|None]:
         """get some readings from the DB for this station
         
         Args:
@@ -135,9 +128,73 @@ class StationReadings():
 
         with Session(self._engine) as session:
             readings = session.exec(stmt).fetchall()
-        
-        return readings
     
+        if readings:
+            return [reading for reading in readings]
+        else:
+            return []
+        
+    from ewxpwsdb.time_intervals import DateInterval
+    
+    def readings_by_date_interval_local(self, dates: DateInterval)->list[Reading|None]:    
+        """get some readings from the DB for this station during the times that occur within the dates (local time)
+        
+        Args:
+            dates (DateInterval): object with start and end dates in local time, start > end
+            
+            order Optional[str] default desc for descending but must desc or asc to match python sqlalchemy order by clauses
 
+        Returns:
+            list[Reading]: list of reading records that occur on or after the start date (date 00:00 ) up to be not including end date (e.g. day before, 23:59),
+                for the timezone of the station
+        """
+        
+        
+        # just in case, let's fix the timezone to be the timezone for the station
+        
+        #  convert to a UTC interval
+        interval = dates.to_utc_datetime_interval(local_timezone_str=self.station.timezone)
+        
+        # get all data same as for UTCInterval
+        stmt = select(Reading).where(Reading.weatherstation_id == self.station.id).where(Reading.data_datetime >= interval.start).where(Reading.data_datetime <= interval.end).order_by(Reading.data_datetime) #type:ignore       
 
+        with Session(self._engine) as session:
+            readings = session.exec(stmt).fetchall()
+    
+        if readings:
+            return [reading for reading in readings]
+        else:
+            return []
+        
+        
+    def hourly_summary(self, local_start_date:date, local_end_date:date)->list[HourlySummary]:
+        """submits SQL to calculate hourly summaries of readings for this station, for whole days in the date interval, local time. 
+        Will eventually use the timezone of the station, but needs to convert from Python timezone strings to postgresql timezone strings
+        so this version uses just one timezone: est since that is what is used.  Not sure what will happen when it's EDT 
 
+        Args:
+            local_date_interval (DateInterval): a date interval (start < end ), not times but whole days, for local time
+
+        Raises:
+            RuntimeError: the station of this object must  have a database record (inserted and saved in the db)
+
+        Returns:
+            list[HourlySummary]: list of summaries of weather reading values, 1 per hour, with the hour number in station local times.  See HourlySummary class for details. 
+        """
+        
+        if self.station.id is None:
+            raise RuntimeError("this station must be in the database and have an ID")
+        else:
+            station_id:int = self.station.id
+         
+        if local_start_date > local_end_date:
+            raise ValueError("end date must come after start date")
+        
+        sql_str = HourlySummary.sql_str(station_id=station_id, local_start_date= local_start_date, 
+                                        local_end_date = local_end_date)
+                
+        with Session(self._engine) as session: 
+            result = session.exec(text(sql_str))   #type: ignore
+            hourly_summaries:list[HourlySummary] =  [HourlySummary(**r._asdict()) for r in result.all()]
+
+        return hourly_summaries

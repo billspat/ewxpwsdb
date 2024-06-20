@@ -174,6 +174,37 @@ def test_previous_fourteen_minute_interval():
 
 
 
+from ewxpwsdb.time_intervals import str_to_interval, parse_and_validate, is_tz_aware
+
+def test_parse_and_validate():
+    
+    dt_str = '2024-05-01T06:00+00:00'
+    
+    try:
+        dt = parse_and_validate(dt_str)
+        assert isinstance(dt, datetime)
+    except Exception as e:
+        pytest.fail(f"could not parse test {dt_str}: {e}")
+
+    assert is_tz_aware(dt)
+    assert is_utc(dt)
+
+
+def test_str_to_interval():
+    # shoudl work with no times sent
+    assert isinstance(str_to_interval(), UTCInterval)
+    
+    start_dt_str = '2024-05-01T06:00+00:00'
+    end_dt_str = '2024-05-01T10:00+00:00'
+    
+    try:
+        assert isinstance(str_to_interval(start = start_dt_str), UTCInterval)
+        assert isinstance(str_to_interval(end = end_dt_str), UTCInterval)
+        assert isinstance(str_to_interval(start = start_dt_str, end = end_dt_str), UTCInterval)
+    except Exception as e:
+        pytest.fail(f"could not parse test strings: {e}")
+    
+
 
 
 

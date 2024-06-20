@@ -53,14 +53,23 @@ class Station():
 
 
     @classmethod
-    def all_station_codes(cls,engine:Engine):
+    def all_station_codes(cls,engine:Engine)->list[str]:
         with Session(engine) as session:            
             station_codes = session.exec(select(WeatherStation.station_code)).fetchall()
         # make it a list for real
-        # station_codes =  [station.station_code for station in stations]
+        station_codes =  [station_code for station_code in station_codes]
         return station_codes
 
-
+    @classmethod
+    def valid_station_code(cls, station_code:str, engine:Engine)->bool:
+        try:
+            s = cls.from_station_code(station_code, engine)
+            if s:
+                return True
+            else:
+                return False
+        except Exception as e:
+            return False
 
 
     def as_dict(self):

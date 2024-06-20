@@ -1,12 +1,14 @@
 """utils for editing time stamps"""
 
-from datetime import datetime, timezone, timedelta, date, UTC, time
+from datetime import datetime, timedelta, date, UTC, time, tzinfo, timezone 
 
 from dateutil import tz
+from dateutil.parser import parse # type: ignore
 from pydantic import BaseModel, model_validator, field_validator # validator
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 from typing import Literal, Annotated
-from pydantic import WrapValidator
+from pydantic import WrapValidator, ConfigDict, Field
+from typing import Self
 
 
 def is_valid_timezone(tz:str) -> bool:
@@ -51,6 +53,72 @@ def is_utc(dt:datetime)->bool:
         return True
     
     return False
+
+
+class DateInterval(BaseModel):
+    """ ordered dates and the time zone that does with them.   Time Zone is required to convert to UTC.  
+    
+    usage example: 
+        from zoneinfo import ZoneInfo
+        from datetime import date
+        di = DateInterval(start = date(2024, 6, 10), end = date(2024, 6, 11) )
+    
+    """
+
+    model_config = ConfigDict(arbitrary_types_allowed=True) 
+
+    start: date = Field(description="first day in range, in YYYY-MM-DD format")
+    end: date = Field(description="day past end of range ( not inclusive), in YYYY-MM-DD format")
+
+    @model_validator(mode='after')
+    def validate_date_interval(self):
+        """ensure that start is before end"""
+
+        if self.start <= self.end:
+            return self
+        
+        raise ValueError('end date must be equal to or come after start date')
+    
+    @classmethod
+    def from_string(cls, start:str, end:str)->Self: 
+        if not start or not end:
+            raise ValueError(f"invalid arguments for start={start} and end={end}, can't create a data interval")
+        
+        
+        start_date:date = parse(start).date()
+        end_date:date = parse(end).date()
+        
+        return(cls(start = start_date, end = end_date))
+        
+    def str_to_timezone(self,timezone_str:str):
+        if is_valid_timezone(timezone_str):
+            local_timezone = ZoneInfo(timezone_str)
+            return(local_timezone)
+        else:
+            raise ValueError(f"could not set timezone - invalide timezone {timezone_str}")
+
+        
+    def start_date_to_utc_datetime(self, local_timezone_str:str):
+        """convert the local time start date to a UTC start time, given the start of the sttart day is midnight"""
+        local_timezone = self.str_to_timezone(local_timezone_str)
+        start_dt_local = datetime(year = self.start.year, month = self.start.month, day = self.start.day, 
+                                  hour = 0, minute=0, second=0, tzinfo=local_timezone)
+        return start_dt_local.astimezone(UTC)   
+                            
+    def end_date_to_utc_datetime(self,local_timezone_str:str):  
+        """convert the local time end date to a UTC end time, given the end time  of the end day is 23:59""" 
+        local_timezone = self.str_to_timezone(local_timezone_str)
+        end_dt_local = datetime(year = self.end.year, month = self.end.month, day = self.end.day, 
+                                hour = 23, minute=59, second=59, tzinfo=local_timezone)
+        return end_dt_local.astimezone(UTC)
+    
+    def to_utc_datetime_interval(self,local_timezone_str:str ):
+        """convert this date interval in local time to UTC time interval given the hour offset.  For example for eastern time, 
+        starting January 1, 2020 EST is December 31, 2019 19:00:00 UTC
+        """
+        
+        return UTCInterval(start = self.start_date_to_utc_datetime(local_timezone_str),
+                           end = self.end_date_to_utc_datetime(local_timezone_str))
 
 
 class datetimeUTC(BaseModel):
@@ -209,7 +277,10 @@ def today_utc()->date:
     """
     return(datetime.now(UTC).date())
 
-
+def yesterday_str(timezone)->str:
+    return datetime.now(tz=UTC).astimezone(ZoneInfo(timezone)).date()   
+    
+    
 def one_day_interval(d:date = datetime.now(timezone.utc).date() )->UTCInterval:
     """Create a time interval for the date in question, in UTC
 
@@ -252,6 +323,60 @@ def previous_fourteen_minute_interval(dtm:datetime=datetime.now(timezone.utc))->
     """
     dti = UTCInterval.previous_interval(dtm, delta_mins=14)
     return(dti)
+
+
+def parse_and_validate(dt:str)->datetime:
+    """given a timestamp string, attempt to parse and ensure it has a timezone
+
+    Args:
+        dt (str): string representation of datetime with timezone   
+
+    Raises:
+        ValueError: if can't be parse or does not have a timezone
+        
+    Returns:
+        datetime: datetime (timestamp) in UTC timezone
+    """
+    try:
+        a_datetime:datetime = parse(dt)
+    except Exception as e:
+        raise ValueError(f"error parsing start={dt}: {e}")
+    if not is_tz_aware(a_datetime):
+        raise ValueError(f"{dt} string must have a timezone")
+    
+    return(a_datetime.astimezone(UTC))
+
+
+def str_to_interval(start:str|None=None, end:str|None=None)->UTCInterval:
+    """parse params into datetimes and create UTC interval. Strings must have timezone.
+     
+    When start, end, or both are missing, create a 60 minute interval to work with
+    using what was sent 
+    """
+        
+    if start is None and end is None:
+        # no times: create interval of previous 60 minutes
+        interval =  UTCInterval.previous_interval(delta_mins=60)
+
+    elif start is None:
+        # no start: create 60 minute interval that ends at end time sent
+        end_datetime = parse_and_validate(end)
+        interval =  UTCInterval.previous_interval(dtm = end_datetime - timedelta(minutes=60), delta_mins=60)
+
+    elif end is None:
+        # no end: create 60 minute interval that starts at start time sent
+        start_datetime = parse_and_validate(start)
+        interval =  UTCInterval.previous_interval(dtm = start_datetime, delta_mins=60)
+
+    else:
+        end_datetime = parse_and_validate(end)
+        start_datetime = parse_and_validate(start)
+        try:            
+            interval = UTCInterval(start = start_datetime, end = end_datetime)
+        except Exception as e:
+            raise ValueError(f"error creating time interval from start={start} to end={end}: {e}")
+
+    return interval
 
 
 
