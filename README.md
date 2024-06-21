@@ -180,7 +180,35 @@ For example if you set the environment variable `EWXPWSDB_AWS_URL` to the URL fo
 
 ## Docker
 
-TBD
+This includes a simplistic `Dockerfile` to run the API server for giving out the data.  It 
+copies all files (including `/data` which is not needed except to init the db).  
+
+The dockerfile does run but currently the server ("uvicorn") has a 
+logging error and does not log properly (6/2024)
+
+To build a new image (which has the architecture of the CPU on your computer, e.g. Intel for windows and ARM aka aarch for Mac), use
+
+`TAG=v0; docker buildx build -t ewxpwsdb:$TAG .`
+
+to run the api server using this new container: 
+
+`source .env; TAG=v0; docker run -d -e EWXPWSDB_URL=$EWXPWSDB_URL -p 80:80 ewxpwsdb:$TAG`
+
+then in your browser open http://localhost/docs to see the API docs.  
+
+If you would like to use a different URL than the database usd for dev/test, add it to the .env file, for example
+
+*example .env contents:*
+
+```shell
+EWXPWSDB_LOCAL_URL=postgresql+psycopg2://localhost:5432/ewxpws
+EWXPWSDB_AWS_URL=postgresql+psycopg2://ewxuser:****nTgoX****@ewxpwsdev-db.etc.us-east-1.rds.amazonaws.com:5432/ewxpws
+EWXPWSDB_URL=$EWXPWSDB_LOCAL_URL
+```
+
+Then in the docker run command above, set the db url inside the docker command like  `docker run ... -e EWXPWSDB_URL=$EWXPWSDB_AWS_URL ... ` 
+
+
 
 
 # Weather Station record fields and format
