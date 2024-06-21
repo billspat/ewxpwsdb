@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "ewxpwsdb"
-version = "0.1.0"
+version = "0.1"
 description = "package for collecting and harmonizing weather data from diverse models of weather stations into a database"
 authors = ["Pat Bills <billspat@msu.edu>"]
 readme = "README.md"
@@ -12,7 +12,6 @@ python = "^3.11"
 SQLAlchemy = ">=2.0.0,<2.1.0"
 pydantic = "^2"
 alembic = "~1.12"
-pandas  = "~2.1"
 psycopg2-binary = "~2.9"
 sqlmodel = "^0.0.14"
 python-dotenv = "^1.0.0"
