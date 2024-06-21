@@ -196,12 +196,12 @@ def main()->int:
     parser = argparse.ArgumentParser(prog='ewxpws')
 
     subparsers = parser.add_subparsers(dest='command', required=True, help="Personal weather stations database operations")
-
-    # all commands require a station code and a database connection to work
+    
     common_args = argparse.ArgumentParser(add_help=False)
     common_args.add_argument('station_code', help="station code that matches a record in the STATION table in the database.  For station command, send 'list' to list all stations")
     common_args.add_argument('-d','--db_url', help="optional sqlaclchemy URL for connecting to Postgresql, eg. postgresql+psycopg2://localhost:5432/ewxpws.  if none given, reads env var $EWXPWSDB_URL")
 
+    # To add a new command, create a function above with the command name, then add new subparser with first argument being that function name
 
     initdb_parser = subparsers.add_parser("initdb", help="initialize an empty database provided with the db_url")
     initdb_parser.add_argument('-d','--db_url', help="optional sqlaclchemy URL for connecting to Postgresql, eg. postgresql+psycopg2://localhost:5432/ewxpws." )
@@ -213,16 +213,13 @@ def main()->int:
     weather_parser.add_argument('--showresponse', action="store_true", help="optional flag to also show the raw API  response data")
     weather_parser.add_argument('-s', '--start', default=None, help="start time UTC in format ")
     weather_parser.add_argument('-e', '--end', default=None, help="end time UTC in format ")
-    # weather_parser.set_defaults(command=show_weather)
 
 
     store_parser = subparsers.add_parser("collect", parents=[common_args], help="get data and save to database for time internval, or current time ")
     store_parser.add_argument('-s', '--start', nargs='?', help="optional start time, UTC timezone in format TBD, if omitted uses near current time")
     store_parser.add_argument('-e', '--end',nargs='?', help="optional end time, UTC timezone in format TBD, if omitted uses near current time")
-    # store_parser.set_defaults(command=collect_weather)
 
     catchup_parser = subparsers.add_parser("catchup", parents=[common_args], help="get all data from last record to current time and save to database")
-    # catchup_parser.set_defaults(command=catchup_weather)
 
     readings_parser = subparsers.add_parser("readings", parents=[common_args], help="retrieve weather data from database, if it's there")
     readings_parser.add_argument('-s', '--start', default=None, help="start time UTC in format ")
