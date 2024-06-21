@@ -12,13 +12,20 @@ from sqlalchemy import Engine,create_engine, text, inspect
 
 from ewxpwsdb.db.importdata import import_station_types, import_station_file
 
+load_dotenv()
+
 _EWXPWSDB_URL_VAR = "EWXPWSDB_URL"
 
-def get_db_url(fallback_url:str = '')-> str:
+def default_db_env_var_name():
+    return _EWXPWSDB_URL_VAR
+    
+def get_db_url(db_url:str = '')-> str:
     """get the database connection URL from the environment, or use a parameter if one is sent
     
+    Side effect: this sets the environment variable for the database url, if one is sent as a parameter that gets overridden
+    
     Args:
-        fallback_url: str, default empty string.  if a URL is here, use that.  otherwise check the environment 
+        db_url: str, default empty string.  if a URL is here, use that.  otherwise check the environment 
     
     Returns:
         str: string for connecting to db.  This is not checked for validity and may be blank if no url is sent and nothing in the environment
@@ -26,14 +33,14 @@ def get_db_url(fallback_url:str = '')-> str:
 
     # consider using local host postgresql
     # fallback_url:str = "postgresql+psycopg2://postgres@localhost:5432/postgres"
-    ewxpwsdb_url = fallback_url
     
-    if not fallback_url:
-        load_dotenv()
+    if not db_url:
         # if env var is not set, this returns 'None' but we want to return empty string
-        ewxpwsdb_url = ( os.environ.get(_EWXPWSDB_URL_VAR) or '')
+        db_url = ( os.environ.get(_EWXPWSDB_URL_VAR) or '')
+    else:
+        os.environ[_EWXPWSDB_URL_VAR]=db_url
     
-    return(ewxpwsdb_url)
+    return(db_url)
     
 
 def check_db_url(db_url:str, echo=False)->bool:

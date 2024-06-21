@@ -57,10 +57,12 @@ Command Line instructions:
 
 ~~`pip install .`~~
 
-### Install dependencies
+### Install dependencies for dev
 
 - cd to the folder with this project `cd path/to/ewxpwsdb` if you aren't in the top directory already 
 - `poetry install`
+
+
 
 ### Install Postgresql
 
@@ -95,7 +97,7 @@ Get a copy of this file and place it in that location as above.    You can overr
 
 There is a function in `init_db()` in `database.py` that will create a new blank databas and load the test stations into it.  
 
-## running tests
+### running tests
 
 once the package and dependencies, database and files are all in place, you can now run tests.   
 
@@ -141,6 +143,17 @@ of seconds you have to wait, and this code has a feature to extract that and wai
 
 The DAVIS api is also a little slow and will only allow getting data for 24 at a time
 
+## Installing a test package
+
+If you would to test how this package would install using pip, you can do the following
+
+from the top directory: 
+
+1. poetry build
+2. pip install -e .
+
+Then the CLI described below can be used on your system without starting Poetry first
+
 ## Using the CLI
 
 There is a command line interface for working with the database and APIs using the terminal/command.exe.    
@@ -158,24 +171,44 @@ The cli command is `ewxpws`
 
 For many of these commands there are options for `--start` and `--stop` to get a range of data. For hourly data these are dates in form Y-M-D `2024-04-30`
 
-## Starting the API
+## API
 
 There is a Web API (not necessarily REST but read-only) as well. 
 
-To start the API server on your local computer 
+## Starting
 
-`poetry run python -m ewxpwsdb.api.http_api`  which runs on host address http://0.0.0.0:8000 by default and uses the database URL in `.env`
+To start the API server on your local computer you can use the command line script
 
-To see which other command line options for running this API server, including a database URL, run `poetry run python -m ewxpwsdb.api.http_api -h`
+`poetry run ewxpws startapi -d <database_url>`
 
-If the database is running and you use the default parameters for the API server, browse to http://0.0.0.0:8000/docs for documentation about the api.  
+which runs on host address http://0.0.0.0:8000 but the host IP and the port address can be overrided.  See `ewxpws startapi -h` for help
 
-For example `http://0.0.0.0:8000/stations` is a list of station codes.   
+This does not run as a dev server with reload, see below for that. 
+
+If you have set up the .env file as described above, you don't need the `-d` parameter but may use it to override .env settings
+
+### Starting a dev api server
+
+Those used to developing with FastAPI can start a FastAPI dev server, set the database variable in .env, and run
+
+`poetry run fastapi dev src/ewxpwsdb/api/http_api.py`  
+
+this will auto-reload as code changes.  
 
 To run with a different database for example on a different server, add the URL to the environment (different for Mac/Windows). 
 For example if you set the environment variable `EWXPWSDB_AWS_URL` to the URL for a database on AWS, to use that databas, run 
 
-`poetry run python -m ewxpwsdb.api.http_api -d $EWXPWSDB_AWS_URL`
+```shell
+source .env
+EWXPWSDB_URL=$EWXPWSDB_AWS_URL; poetry run fastapi dev src/ewxpwsdb/api/http_api.py
+```
+
+### Using the API
+
+Once the server is running, the default local parameters for the API server host and port, browse to http://0.0.0.0:8000/docs for documentation about the api.  
+
+There are several other routes available.  For example `http://0.0.0.0:8000/stations` is a list of station codes.  All data is output in JSON format.  
+
 
 
 ## Docker
@@ -201,12 +234,12 @@ If you would like to use a different URL than the database usd for dev/test, add
 *example .env contents:*
 
 ```shell
+EWXPWSDB_URL=postgresql+psycopg2://localhost:5432/ewxpws
 EWXPWSDB_LOCAL_URL=postgresql+psycopg2://localhost:5432/ewxpws
 EWXPWSDB_AWS_URL=postgresql+psycopg2://ewxuser:****nTgoX****@ewxpwsdev-db.etc.us-east-1.rds.amazonaws.com:5432/ewxpws
-EWXPWSDB_URL=$EWXPWSDB_LOCAL_URL
 ```
 
-Then in the docker run command above, set the db url inside the docker command like  `docker run ... -e EWXPWSDB_URL=$EWXPWSDB_AWS_URL ... ` 
+When starting docker from the command line, ff you then `source .env` first, then in the docker run command above, set the db url inside the docker command like  `docker run ... -e EWXPWSDB_URL=$EWXPWSDB_AWS_URL ... ` 
 
 
 

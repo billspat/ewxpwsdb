@@ -7,6 +7,7 @@ import sys, json
 from sqlmodel import select
 from ewxpwsdb.collector import Collector
 from ewxpwsdb.db import database
+
 from typing import Any
 from dateutil.parser import parse # type: ignore
 from datetime import timedelta
@@ -18,6 +19,7 @@ from ewxpwsdb.station import Station
 
 import os.path
 from dotenv import load_dotenv
+load_dotenv()
 
 def initdb(db_url:str, station_file:str|None=None):
     """run the init_db method, which includes importing station files, on the databas at the url. 
@@ -190,6 +192,32 @@ def hourly(db_url:str, station_code:str, start_date:str|None = None, end_date:st
         readings_dict = [reading.model_dump() for reading in readings if reading is not None]
         return(json.dumps(readings_dict, indent = 4, sort_keys=False, default=str)) 
         
+def startapi(db_url:str, host:str = '0.0.0.0', port:str = '8080'):
+    # this test will set the OS Environ with the value db_url if one is set
+    # we run this here to be able to set the URL from the command line. 
+    # otherwise the import server_api below will automatically attempt to create an engine and fail if there is no .env
+    db_url = database.get_db_url(db_url)
+    if not db_url:
+        print(f"No database: You must either send database url with '--db_url', set the variable {database.default_db_env_var_name()}, or create a '.env' file (see readme)")
+    else:
+        try:
+            engine = database.get_engine(db_url)
+        except Exception as e:
+            print(f"error connecting to database: {e}")
+            
+    if not database.check_engine(engine):
+        raise RuntimeError(f"invalid database connection for engine {engine}")
+
+    if not isinstance(port, int):
+        port_number = int(port)
+    else:
+        port_number = port
+        
+    import uvicorn
+    uvicorn.run("ewxpwsdb.api.http_api:app", host=host, port=port_number)
+
+        # serve_api(db_url, host, port)
+    
     
 def main()->int:
     """Console script for ewx_pws."""
@@ -229,6 +257,12 @@ def main()->int:
     readings_parser.add_argument('-s', '--start_date', default=None, help="start date, local time ")
     readings_parser.add_argument('-e', '--end_date', default=None, help="end date, localtime ")
 
+    api_parser = subparsers.add_parser("startapi", help="start the API server")
+    api_parser.add_argument('--port', default=8000, help="server port")
+    api_parser.add_argument('--host', default='0.0.0.0', help="server host")
+    api_parser.add_argument('-d','--db_url', default=None, help=f"sqlaclchemy URL for connecting to Postgresql, if none given, reads env var ${database.default_db_env_var_name()}")
+
+    
 
     args = parser.parse_args()
     clifunc = eval(args.command)

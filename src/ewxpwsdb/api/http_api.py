@@ -17,18 +17,23 @@ from ewxpwsdb.db.summary_models import HourlySummary
 from ewxpwsdb.station_readings import StationReadings
 from ewxpwsdb.station import Station
 from ewxpwsdb.collector import Collector
-
-from ewxpwsdb.db.database import get_engine, check_engine
+from ewxpwsdb.db.database import get_engine, check_engine,default_db_env_var_name, get_db_url
 from ewxpwsdb.time_intervals import str_to_interval, UTCInterval, DateInterval
+
 
 
 _version = 0.1
 
 # set the db url in environment when not running with main, see db.database.py for details
 # this is overwritten by args -- see below
-engine = get_engine()
 
-app = FastAPI()
+global engine
+engine = get_engine(get_db_url())
+if not check_engine(engine):
+    raise RuntimeError(f"invalid database connection for engine {engine}")
+
+app = FastAPI(title="EWX PWS DB", description="Read-only access to Enviroweather Personal Weather Station data", version='0.1')
+
 
 def version():
     return(_version)
@@ -184,29 +189,21 @@ def station_hourly_weather(station_code:str,
     else:
         return hourly_summaries
     
-    
-if __name__ == "__main__":
-    
-    # used in the help strings
-    from ewxpwsdb.db.database import _EWXPWSDB_URL_VAR as default_db_env_var_name
-    
-    """starts the recommended http server with arguments """
-    import argparse
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--port', default=8000, help="server port")
-    parser.add_argument('--host', default='0.0.0.0', help="server host")
-    parser.add_argument('-d','--db_url', default=None, help=f"sqlaclchemy URL for connecting to Postgresql, if none given, reads env var ${default_db_env_var_name}")
 
-    args = parser.parse_args()
+# def serve_api(db_url=None, host='0.0.0.0', port= 8000):
+#     """start the Uvicorn server, used when this file is run from the command line, or called by the cli.py file"""
+#     if not db_url:
+#         db_url = get_db_url()
+        
+#     engine = get_engine(db_url)
+#     if not check_engine(engine):
+#         raise RuntimeError(f"invalid database connection for engine {engine}")
 
-    engine = get_engine(db_url=args.db_url)
-    if not check_engine(engine):
-        raise RuntimeError(f"invalid database connection for engine {engine}")
+#     uvicorn.run(app, host=host,port=port)
+   
     
-    uvicorn.run(app, 
-                host=(args.host or '0.0.0.0'), 
-                port=(args.port or 8000)
-                )
+
+
 
 
 
