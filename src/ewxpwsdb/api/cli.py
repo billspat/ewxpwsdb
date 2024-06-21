@@ -16,6 +16,31 @@ from ewxpwsdb.time_intervals import UTCInterval, str_to_interval
 from ewxpwsdb.station_readings import StationReadings
 from ewxpwsdb.station import Station
 
+import os.path
+from dotenv import load_dotenv
+
+def initdb(db_url:str, station_file:str|None=None):
+    """run the init_db method, which includes importing station files, on the databas at the url. 
+    Requires a databas to exist.   See the documentation for init_db() for details.
+
+    Args:
+        db_url (str): sqlalchemy database URL 
+        station_file (str | None, optional): path to a file containing station info.  See . Defaults to None.
+
+    Raises:
+        FileExistsError: if station file is given but doesn't exist
+    """
+    
+    engine = database.get_engine(db_url)
+    if station_file and not os.path.exists(station_file):
+        raise FileExistsError(f"can't find station file {station_file}")
+    
+    try:
+        database.init_db(engine, station_tsv_file=station_file)
+        return("database initialized")
+    except Exception as e:
+        return(f"error when initializing database: {e}")
+
 
 def station(db_url:str, station_code:str)->str:
     """pull a station record and output to JSON for a station code, excluding 
@@ -174,16 +199,18 @@ def main()->int:
 
     # all commands require a station code and a database connection to work
     common_args = argparse.ArgumentParser(add_help=False)
-    common_args.add_argument('station_code', help="station code that matches a record in the STATION table in the database.  If not given all stations codes are output")
+    common_args.add_argument('station_code', help="station code that matches a record in the STATION table in the database.  For station command, send 'list' to list all stations")
     common_args.add_argument('-d','--db_url', help="optional sqlaclchemy URL for connecting to Postgresql, eg. postgresql+psycopg2://localhost:5432/ewxpws.  if none given, reads env var $EWXPWSDB_URL")
 
 
+    initdb_parser = subparsers.add_parser("initdb", help="initialize an empty database provided with the db_url")
+    initdb_parser.add_argument('-d','--db_url', help="optional sqlaclchemy URL for connecting to Postgresql, eg. postgresql+psycopg2://localhost:5432/ewxpws." )
+    initdb_parser.add_argument('-f', '--station-file', default=None, help="path to a station file to import, tsv format")
+    
     station_parser = subparsers.add_parser("station", parents=[common_args], help="list station info for station code. Send station code 'list' to list all stations")
-    # station_parser.set_defaults(command=show_stations)
-
 
     weather_parser = subparsers.add_parser("weather", parents=[common_args], help="show weather conditions for specified station and times")
-    weather_parser.add_argument('--show_response', action="store_true", help="optional flag to also show the raw API  response data")
+    weather_parser.add_argument('--showresponse', action="store_true", help="optional flag to also show the raw API  response data")
     weather_parser.add_argument('-s', '--start', default=None, help="start time UTC in format ")
     weather_parser.add_argument('-e', '--end', default=None, help="end time UTC in format ")
     # weather_parser.set_defaults(command=show_weather)
