@@ -20,19 +20,18 @@ from ewxpwsdb.collector import Collector
 from ewxpwsdb.db.database import get_engine, check_engine,default_db_env_var_name, get_db_url
 from ewxpwsdb.time_intervals import str_to_interval, UTCInterval, DateInterval
 
-
-
-_version = 0.1
-
 # set the db url in environment when not running with main, see db.database.py for details
 # this is overwritten by args -- see below
 
+_version = 0.1
 global engine
 engine = get_engine(get_db_url())
 if not check_engine(engine):
     raise RuntimeError(f"invalid database connection for engine {engine}")
 
 app = FastAPI(title="EWX PWS DB", description="Read-only access to Enviroweather Personal Weather Station data", version='0.1')
+
+from .ewxpws_ssl import *
 
 
 def version():
@@ -190,17 +189,53 @@ def station_hourly_weather(station_code:str,
         return hourly_summaries
     
 
-# def serve_api(db_url=None, host='0.0.0.0', port= 8000):
-#     """start the Uvicorn server, used when this file is run from the command line, or called by the cli.py file"""
-#     if not db_url:
-#         db_url = get_db_url()
-        
-#     engine = get_engine(db_url)
-#     if not check_engine(engine):
-#         raise RuntimeError(f"invalid database connection for engine {engine}")
+def start_server(db_url:str, host:str|None = '0.0.0.0', port:int|str|None = '8080'):
+    """Run a uvicorn server to host the FastAPI on host:port.  Attempts to get the files for https (see ewxpws_ssl.py) and 
+    if there is a problem, run http (non-secure) version only.
 
-#     uvicorn.run(app, host=host,port=port)
-   
+    Args:
+        db_url (str): SQLAlchemy URL to access database, passed from 
+        host (str, optional): _description_. Defaults to '0.0.0.0'.
+        port (str, optional): _description_. Defaults to '8080'.
+
+    Raises:
+        RuntimeError: _description_
+    """
+    # this test will set the OS Environ with the value db_url if one is set
+    # we run this here to be able to set the URL from the command line. 
+    # otherwise the import server_api below will automatically attempt to create an engine and fail if there is no .env
+    db_url = get_db_url(db_url)
+    
+    if not db_url:
+        print(f"No database: You must either send database url with '--db_url', set the variable {database.default_db_env_var_name()}, or create a '.env' file (see readme)")
+    else:
+        try:
+            engine = get_engine(db_url)
+        except Exception as e:
+            print(f"error connecting to database: {e}")
+            
+    if not check_engine(engine):
+        raise RuntimeError(f"invalid database connection for engine {engine}")
+
+    if not port:
+        port_number = 8000
+    elif isinstance(port, str):
+        port_number:int = int(port)  
+    else:
+        port_number:int = port
+        
+    if host is None:
+        host:str = '0.0.0.0'
+        
+    import uvicorn
+    from .ewxpws_ssl import get_ssl_files
+    try:
+        (cert_file_path, key_file_path) = get_ssl_files()
+        uvicorn.run(app="ewxpwsdb.api.http_api:app", host=host, port=port_number, ssl_keyfile=key_file_path, ssl_certfile=cert_file_path)
+    except Exception as e:
+        Warning("SSL files not available, running without SSL:{e}")
+        uvicorn.run("ewxpwsdb.api.http_api:app", host=host, port=port_number)
+
     
 
 

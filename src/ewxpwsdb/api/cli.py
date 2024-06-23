@@ -191,34 +191,24 @@ def hourly(db_url:str, station_code:str, start_date:str|None = None, end_date:st
     if readings:
         readings_dict = [reading.model_dump() for reading in readings if reading is not None]
         return(json.dumps(readings_dict, indent = 4, sort_keys=False, default=str)) 
-        
-def startapi(db_url:str, host:str = '0.0.0.0', port:str = '8080'):
-    # this test will set the OS Environ with the value db_url if one is set
-    # we run this here to be able to set the URL from the command line. 
-    # otherwise the import server_api below will automatically attempt to create an engine and fail if there is no .env
-    db_url = database.get_db_url(db_url)
-    if not db_url:
-        print(f"No database: You must either send database url with '--db_url', set the variable {database.default_db_env_var_name()}, or create a '.env' file (see readme)")
-    else:
-        try:
-            engine = database.get_engine(db_url)
-        except Exception as e:
-            print(f"error connecting to database: {e}")
-            
-    if not database.check_engine(engine):
-        raise RuntimeError(f"invalid database connection for engine {engine}")
 
-    if not isinstance(port, int):
-        port_number = int(port)
-    else:
-        port_number = port
         
-    import uvicorn
-    uvicorn.run("ewxpwsdb.api.http_api:app", host=host, port=port_number)
+def startapi(db_url, host:str|None=None, port:str|None=None):
+    """Run a uvicorn server to host the FastAPI on host:port.  Attempts to get the files for https (see ewxpws_ssl.py) and 
+    if there is a problem, run http (non-secure) version only.  
 
-        # serve_api(db_url, host, port)
+    Args:
+        db_url (str): SQLAlchemy URL to access database
+        host (str, optional): Host IP Address passed from CLI args defaults to None which uses defaults set in start_server
+        port (str, optional): port number passed from CLI args, defaults to None which uses defaults set in start_server
+
+    """
     
-    
+    from .http_api import start_server
+    start_server(db_url, host, port)
+    return None
+
+
 def main()->int:
     """Console script for ewx_pws."""
     parser = argparse.ArgumentParser(prog='ewxpws')

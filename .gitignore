@@ -154,3 +154,4 @@ dmypy.json
 # dev databases
 *.db
 *.sqlite3
+*.pem
