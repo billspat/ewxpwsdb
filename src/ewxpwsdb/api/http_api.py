@@ -189,7 +189,7 @@ def station_hourly_weather(station_code:str,
         return hourly_summaries
     
 
-def start_server(db_url:str, host:str|None = '0.0.0.0', port:int|str|None = '8080'):
+def start_server(db_url:str, host:str|None = '0.0.0.0', port:int|str|None = '8080', use_ssl=False):
     """Run a uvicorn server to host the FastAPI on host:port.  Attempts to get the files for https (see ewxpws_ssl.py) and 
     if there is a problem, run http (non-secure) version only.
 
@@ -229,12 +229,18 @@ def start_server(db_url:str, host:str|None = '0.0.0.0', port:int|str|None = '808
         
     import uvicorn
     from .ewxpws_ssl import get_ssl_files
-    try:
-        (cert_file_path, key_file_path) = get_ssl_files()
-        uvicorn.run(app="ewxpwsdb.api.http_api:app", host=host, port=port_number, ssl_keyfile=key_file_path, ssl_certfile=cert_file_path)
-    except Exception as e:
-        Warning("SSL files not available, running without SSL:{e}")
-        uvicorn.run("ewxpwsdb.api.http_api:app", host=host, port=port_number)
+    
+    if use_ssl:
+        try:
+            (cert_file_path, key_file_path) = get_ssl_files()
+            uvicorn.run(app="ewxpwsdb.api.http_api:app", host=host, port=port_number, ssl_keyfile=key_file_path, ssl_certfile=cert_file_path)
+            return True
+        except Exception as e:
+            from warnings import warn
+            warn(f"SSL files not available, running without SSL:{e}")
+    
+    uvicorn.run("ewxpwsdb.api.http_api:app", host=host, port=port_number)
+    return True
 
     
 

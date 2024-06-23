@@ -193,7 +193,7 @@ def hourly(db_url:str, station_code:str, start_date:str|None = None, end_date:st
         return(json.dumps(readings_dict, indent = 4, sort_keys=False, default=str)) 
 
         
-def startapi(db_url, host:str|None=None, port:str|None=None):
+def startapi(db_url, host:str|None=None, port:str|None=None, ssl=False):
     """Run a uvicorn server to host the FastAPI on host:port.  Attempts to get the files for https (see ewxpws_ssl.py) and 
     if there is a problem, run http (non-secure) version only.  
 
@@ -205,7 +205,7 @@ def startapi(db_url, host:str|None=None, port:str|None=None):
     """
     
     from .http_api import start_server
-    start_server(db_url, host, port)
+    start_server(db_url, host, port, use_ssl=ssl)
     return None
 
 
@@ -250,9 +250,9 @@ def main()->int:
     api_parser = subparsers.add_parser("startapi", help="start the API server")
     api_parser.add_argument('--port', default=8000, help="server port")
     api_parser.add_argument('--host', default='0.0.0.0', help="server host")
+    api_parser.add_argument('--ssl', action=argparse.BooleanOptionalAction, default=False, help="attempt to start server with ssl, will fall back to http if SSL not configured")
     api_parser.add_argument('-d','--db_url', default=None, help=f"sqlaclchemy URL for connecting to Postgresql, if none given, reads env var ${database.default_db_env_var_name()}")
 
-    
 
     args = parser.parse_args()
     clifunc = eval(args.command)
