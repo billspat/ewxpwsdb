@@ -1,3 +1,8 @@
+# url to access the Postgresql database
+# example: postgresql+psycopg2://user:password@host:port/dbname[?key=value&key=value...]
 EWXPWSDB_URL=postgresql://localhost:5432/ewxpws
-# postgresql+psycopg2://user:password@host:port/dbname[?key=value&key=value...]
+
+# configurationfor ssl: paths to ssl files created on this machine for the server to use https
+EWXPWSDB_SSLCERT=cert.pem 
+EWXPWSDB_SSLKEY=key.pem
 
