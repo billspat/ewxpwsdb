@@ -70,6 +70,11 @@ def station(db_url:str, station_code:str)->str:
             output = "\n".join( station_codes )
         except Exception as e:
             return(f"Error getting stations from db: {e}")
+        
+    elif station_code.upper() in ['TYPE', 'TYPES']:
+        from ewxpwsdb.weather_apis import STATION_TYPE_LIST as station_types
+        return('\n'.join(station_types))
+            
     else:
         try:
             station = Station.from_station_code(station_code, engine)
@@ -241,7 +246,7 @@ def main()->int:
     subparsers = parser.add_subparsers(dest='command', required=True, help="Personal weather stations database operations")
     
     common_args = argparse.ArgumentParser(add_help=False)
-    common_args.add_argument('station_code', help="station code that matches a record in the STATION table in the database.  For station command, send 'list' to list all stations")
+    common_args.add_argument('station_code', help="station code in the database STATION table. ('station list' lists stations, 'station types' list types)")
     common_args.add_argument('-d','--db_url', help="optional sqlaclchemy URL for connecting to Postgresql, eg. postgresql+psycopg2://localhost:5432/ewxpws.  if none given, reads env var $EWXPWSDB_URL")
 
     # To add a new command, create a function above with the command name, then add new subparser with first argument being that function name
@@ -250,7 +255,7 @@ def main()->int:
     initdb_parser.add_argument('-d','--db_url', help="optional sqlaclchemy URL for connecting to Postgresql, eg. postgresql+psycopg2://localhost:5432/ewxpws." )
     initdb_parser.add_argument('-f', '--station-file', default=None, help="path to a station file to import, tsv format")
     
-    station_parser = subparsers.add_parser("station", parents=[common_args], help="list station info for station code. Send station code 'list' to list all stations")
+    station_parser = subparsers.add_parser("station", parents=[common_args], help="lookup station by code.  'station list' lists stations, 'station types' list types")
 
     weather_parser = subparsers.add_parser("weather", parents=[common_args], help="show weather conditions for specified station and times")
     weather_parser.add_argument('--showresponse', action="store_true", help="optional flag to also show the raw API  response data")
