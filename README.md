@@ -120,12 +120,23 @@ for example
 
 `pytest --station_type=ZENTRA tests`
 
-To run one test
+To run one test:
 
 `pytest --station_type=ZENTRA tests/test_collector.py`
 
+To run all tests for all station types, use the CLI (see below):
 
-Custom options:
+```
+poetry shell
+for TYPE in `ewxpws station types`; do 
+   pytest tests --station_type=$TYPE
+done
+```
+
+
+#### Test options.  
+
+Run  `pytest tests -h` and see the **Custom options** section in for lastest options and details. 
 
 -  `--dburl=DBURL`         sqlalchemy postgresql db url for test.  If you send a URL like this, it will not create a temporary database 
 -  `--file=FILE`           full path to a tsv file to use for test stations data and login credentials
@@ -181,7 +192,11 @@ To start the API server on your local computer you can use the command line scri
 
 `poetry run ewxpws startapi -d <database_url>`
 
-which runs on host address http://0.0.0.0:8000 but the host IP and the port address can be overrided.  See `ewxpws startapi -h` for help
+which runs on host address http://0.0.0.0:8000 but the host IP and the port address can be overrided.  
+The server can be run using ssl using local cert and key files,  with `--ssl` option (off by default). 
+
+To use `https` SSL, you must create cert and key file, place them on disk where the server has access, and add the files paths 
+to the `.env` file.  See the `example_dot_env` file at the top of this repository for the names of the variables.   If you use self-signed   
 
 This does not run as a dev server with reload, see below for that. 
 
