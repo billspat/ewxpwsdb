@@ -9,7 +9,7 @@
 
 import uvicorn
 from fastapi import FastAPI, HTTPException, Query, Depends
-from datetime import date, datetime
+from datetime import date, timedelta
 from typing import Annotated, Any
 
 from ewxpwsdb.db.models import Reading
@@ -121,12 +121,18 @@ def station_api_weather(station_code:str,
 # TODO: input param formats and requirements of UTCInterval are incompatible  date -> datetime w/timezone.  
 @app.get("/weather/{station_code}/readings")
 def station_db_weather(station_code:str, 
-                        start : Annotated[date, 
-                                Query(
-                                description="first day in range, in YYYY-MM-DD format")], 
+                       start : Annotated[date, 
+                                         Query(
+                                            title=" Beginning date to include",
+                                            description="first day to include, local time, in YYYY-MM-DD format",
+                                            examples=['2024-06-01'])
+                                        ]  = (date.today() - timedelta(days = 1)), 
                          end : Annotated[date, 
-                                Query(
-                                description="end of range day past end of range ( not inclusive), in YYYY-MM-DD format")], 
+                                         Query(                                            
+                                            title="Stop date",
+                                            description="last day in range (and it's not included), local time.  For 1 day of readings, send start + 1 in YYYY-MM-DD format",
+                                            examples=['2024-06-02'])
+                                         ] = date.today(),
                        ) -> list[Reading|None]:
     """Get weather readings (unsummarized) for this station from the PWS database during the date range specified.  The time returned is UTC timezone.
     """
@@ -138,15 +144,20 @@ def station_db_weather(station_code:str,
     except Exception as e:
         raise HTTPException(status_code=503, detail="error with connection {e}".format(e = e))
 
-    # convert string input into a date interval
+
+    # from zoneinfo import ZoneInfo
+    # station_tz = station_readings.station.timezone
+    # local_tz = ZoneInfo()
     try:
-        date_interval:DateInterval = DateInterval(start = start, end = end)
-        #(s) start, end)
+        local_date_interval:DateInterval = DateInterval(start = start, end = end)
+        # utc_interval = UTCInterval(start = local_date_interval.start_date_to_utc_datetime( str(station_readings.station.timezone)), 
+        #                            end = local_date_interval.end_date_to_utc_datetime( str(station_readings.station.timezone))
+        #                         )
     except ValueError as e: 
         raise HTTPException(status_code=400, detail = "incorrectly formatted start or end parameters: {e}".format(e=e))
     
     try:
-        readings = station_readings.readings_by_date_interval_local(dates = date_interval)  
+        readings = station_readings.readings_by_date_interval_local(dates = local_date_interval)  
     except Exception as e:
         raise HTTPException(status_code=503, detail="couldn't get readings from {station_code} for {start}-{end}.format(station_code = station_code, start=start,end=end)")
     
@@ -161,11 +172,15 @@ def station_hourly_weather(station_code:str,
                        start : Annotated[date, 
                                          Query(
                                             title=" Beginning date to include",
-                                            description="first day in range, local time, in YYYY-MM-DD format")] = None, 
+                                            description="first day in range, local time, in YYYY-MM-DD format",
+                                            examples=['2024-06-01'])
+                                        ]  = (date.today() - timedelta(days = 1)), 
                          end : Annotated[date, 
                                          Query(                                            
                                             title="Stop date",
-                                            description="last day in range (and it's not included), local time.  For 1 day of readings, send start + 1 in YYYY-MM-DD format")] = None, 
+                                            description="last day in range (and it's not included), local time.  For 1 day of readings, send start + 1 in YYYY-MM-DD format",
+                                            examples=['2024-06-02'])
+                                         ] = date.today(), 
                        ) -> list[HourlySummary]:
 
     """Results of the 'Hourly Summary' query of the database for the station and days provided.  In the output, the date is for the timezone of the station,
@@ -186,14 +201,12 @@ def station_hourly_weather(station_code:str,
     try:
         hourly_summaries = station_readings.hourly_summary(local_start_date=date_interval.start, local_end_date=date_interval.end)        
     except Exception as e:
-        raise HTTPException(status_code=503, detail="couldn't get summary from {station_code} for {start}-{end}.format(station_code = station_code, start=start,end=end)")
+        raise HTTPException(status_code=503, detail="couldn't get summary from {station_code} for {start}-{end}:{e}".format(station_code = station_code, start=start,end=end,e=e))
     
     if not hourly_summaries:
         raise HTTPException(status_code=400, detail="no readings available for those dates")
     else:
         return hourly_summaries
-
-from datetime import date, timedelta
 
 date.today() 
 @app.get("/weather/{station_code}/daily")
