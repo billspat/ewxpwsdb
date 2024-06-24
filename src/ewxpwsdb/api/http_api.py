@@ -12,13 +12,14 @@ from fastapi import FastAPI, HTTPException, Query, Depends
 from datetime import date, datetime
 from typing import Annotated, Any
 
-from ewxpwsdb.db.models import WeatherStation, Reading
-from ewxpwsdb.db.summary_models import HourlySummary
+from ewxpwsdb.db.models import Reading
+from ewxpwsdb.db.summary_models import HourlySummary, DailySummary
 from ewxpwsdb.station_readings import StationReadings
-from ewxpwsdb.station import Station
+from ewxpwsdb.station import Station, WeatherStationDetail
 from ewxpwsdb.collector import Collector
 from ewxpwsdb.db.database import get_engine, check_engine,default_db_env_var_name, get_db_url
 from ewxpwsdb.time_intervals import str_to_interval, UTCInterval, DateInterval
+
 
 # set the db url in environment when not running with main, see db.database.py for details
 # this is overwritten by args -- see below
@@ -32,8 +33,7 @@ if not check_engine(engine):
 app = FastAPI(title="EWX PWS DB", description="Read-only access to Enviroweather Personal Weather Station data", version='0.1')
 
 from .ewxpws_ssl import *
-
-
+    
 def version():
     return(_version)
 
@@ -55,15 +55,20 @@ def station_list():
 
 
 @app.get("/stations/{station_code}")
-def station_info(station_code:str)->WeatherStation:
+def station_info(station_code:str)->WeatherStationDetail:
     try:
-        station_obj = Station.from_station_code(station_code, engine)
+        station = Station.from_station_code(station_code, engine)
+        if station:
+            station_dict_with_detail = station.station_dict_with_detail(engine)
+        else:
+            raise HTTPException(status_code=404, detail="station_code not found")   
+        
     except ValueError as e:
         raise HTTPException(status_code=404, detail="station_code not found")
     except Exception as e:
         raise HTTPException(status_code=503, detail="error with connection {e}")
     
-    return(station_obj.as_dict())
+    return WeatherStationDetail(**station_dict_with_detail)
 
 
 # TODO: do not require timezones, and add the timezone for the station, and then convert to UTC
@@ -187,7 +192,46 @@ def station_hourly_weather(station_code:str,
         raise HTTPException(status_code=400, detail="no readings available for those dates")
     else:
         return hourly_summaries
+
+from datetime import date, timedelta
+
+date.today() 
+@app.get("/weather/{station_code}/daily")
+def station_daily_weather(station_code:str, 
+                       start : Annotated[date, 
+                                         Query(
+                                            title=" Beginning date to include",
+                                            description="first day in range, local time, in YYYY-MM-DD format",
+                                            examples=['2024-06-01'])] = (date.today() - timedelta(days = 1)), 
+                         end : Annotated[date, 
+                                         Query(                                            
+                                            title="Stop date",
+                                            description="last day in range (and it's not included), local time.  For 1 day of readings, send start + 1 in YYYY-MM-DD format",
+                                            examplles = ['2024-06-02'])] = date.today() , 
+                       ) -> list[DailySummary]:
+
+    try:
+        station_readings = StationReadings.from_station_code(station_code, engine)
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail="station_code not found")
+    except Exception as e:
+        raise HTTPException(status_code=503, detail="error with connection {e}".format(e=e))
+
+    try:
+        date_interval = DateInterval(start = start, end = end)
+    except ValueError as e: 
+        raise HTTPException(status_code=400, detail = "incorrectly formatted start or end parameters: {e}".format(e=e))
     
+    try:
+        hourly_summaries = station_readings.daily_summary(local_start_date=date_interval.start, local_end_date=date_interval.end)        
+    except Exception as e:
+        raise HTTPException(status_code=503, detail="couldn't get summary from {station_code} for {start}-{end}:{e}".format(station_code = station_code, start=start,end=end, e = e))
+    
+    if not hourly_summaries:
+        raise HTTPException(status_code=400, detail="no readings available for those dates")
+    else:
+        return hourly_summaries
+
 
 def start_server(db_url:str, host:str|None = '0.0.0.0', port:int|str|None = '8080', use_ssl=False):
     """Run a uvicorn server to host the FastAPI on host:port.  Attempts to get the files for https (see ewxpws_ssl.py) and 
@@ -207,7 +251,7 @@ def start_server(db_url:str, host:str|None = '0.0.0.0', port:int|str|None = '808
     db_url = get_db_url(db_url)
     
     if not db_url:
-        print(f"No database: You must either send database url with '--db_url', set the variable {database.default_db_env_var_name()}, or create a '.env' file (see readme)")
+        print(f"No database: You must either send database url with '--db_url', set the variable {default_db_env_var_name()}, or create a '.env' file (see readme)")
     else:
         try:
             engine = get_engine(db_url)

@@ -17,6 +17,7 @@ from ewxpwsdb.time_intervals import UTCInterval, str_to_interval
 from ewxpwsdb.station_readings import StationReadings
 from ewxpwsdb.station import Station
 
+
 import os.path
 from dotenv import load_dotenv
 load_dotenv()
@@ -71,11 +72,11 @@ def station(db_url:str, station_code:str)->str:
             return(f"Error getting stations from db: {e}")
     else:
         try:
-            station_obj = Station.from_station_code(station_code, engine)
+            station = Station.from_station_code(station_code, engine)
+            station_with_detail = station.station_dict_with_detail(engine)
+            output = json.dumps(station_with_detail, indent=4, default=str)
         except Exception as e:
-            return(f"Error getting station with code '{station_code}' from db")
-        
-        output = station_obj.as_json()
+            return(f"Error getting station with code '{station_code}' from db: {e}")
 
     return(output)
 
@@ -169,7 +170,7 @@ def readings(db_url:str, station_code:str, start:str|None = None, end:str|None =
         return(json.dumps(readings_dict, indent = 4, sort_keys=True, default=str)) 
 
 
-def hourly(db_url:str, station_code:str, start_date:str|None = None, end_date:str|None = None):
+def hourly(db_url:str, station_code:str, start_date:str|None, end_date:str|None):
     """pull hourly summary readings by date. 
        Example usage: 
        ewxpws hourly -s 2024-06-10 -e 2024-06-11 EWXSPECTRUM01
@@ -192,7 +193,31 @@ def hourly(db_url:str, station_code:str, start_date:str|None = None, end_date:st
         readings_dict = [reading.model_dump() for reading in readings if reading is not None]
         return(json.dumps(readings_dict, indent = 4, sort_keys=False, default=str)) 
 
-        
+
+def daily(db_url:str, station_code:str, start_date:str, end_date:str):
+    """pull hourly summary readings by date. 
+       Example usage: 
+       ewxpws hourly -s 2024-06-10 -e 2024-06-11 EWXSPECTRUM01
+    """
+    
+    from datetime import date
+    from ewxpwsdb.time_intervals import DateInterval
+    
+    engine = database.get_engine(db_url)
+    station_readings = StationReadings.from_station_code(station_code, engine)
+    if start_date is None and end_date is None:  
+        date_interval= DateInterval(start = date.today()- timedelta(days =1), end = date.today())
+    else:
+        date_interval= DateInterval.from_string(start = start_date, end = end_date)  
+    
+    readings = station_readings.daily_summary(local_start_date=date_interval.start, 
+                                                local_end_date =date_interval.end)
+    
+    if readings:
+        readings_dict = [reading.model_dump() for reading in readings if reading is not None]
+        return(json.dumps(readings_dict, indent = 4, sort_keys=False, default=str))  
+    
+           
 def startapi(db_url, host:str|None=None, port:str|None=None, ssl=False):
     """Run a uvicorn server to host the FastAPI on host:port.  Attempts to get the files for https (see ewxpws_ssl.py) and 
     if there is a problem, run http (non-secure) version only.  
@@ -243,10 +268,14 @@ def main()->int:
     readings_parser.add_argument('-s', '--start', default=None, help="start time UTC in format ")
     readings_parser.add_argument('-e', '--end', default=None, help="end time UTC in format ")
     
-    readings_parser = subparsers.add_parser("hourly", parents=[common_args], help="retriev hourly summaries from from database")
-    readings_parser.add_argument('-s', '--start_date', default=None, help="start date, local time ")
-    readings_parser.add_argument('-e', '--end_date', default=None, help="end date, localtime ")
+    hourly_parser = subparsers.add_parser("hourly", parents=[common_args], help="retriev hourly summaries from from database")
+    hourly_parser.add_argument('-s', '--start_date', default=None, help="start date, local time ")
+    hourly_parser.add_argument('-e', '--end_date', default=None, help="end date, localtime ")
 
+    daily_parser = subparsers.add_parser("daily", parents=[common_args], help="retriev hourly summaries from from database")
+    daily_parser.add_argument('-s', '--start_date', default=None, help="start date, local time ")
+    daily_parser.add_argument('-e', '--end_date', default=None, help="end date, localtime ")
+    
     api_parser = subparsers.add_parser("startapi", help="start the API server")
     api_parser.add_argument('--port', default=8000, help="server port")
     api_parser.add_argument('--host', default='0.0.0.0', help="server host")

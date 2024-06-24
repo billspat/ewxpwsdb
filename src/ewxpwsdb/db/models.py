@@ -3,7 +3,8 @@ from datetime import datetime, date
 from sqlmodel import SQLModel, Field, UniqueConstraint, Column, DateTime
 from uuid import uuid4
 from sqlalchemy import DateTime
-from pydantic import AwareDatetime
+from pydantic import AwareDatetime, field_serializer
+import json
 
 
 from ewxpwsdb import __version__
@@ -26,6 +27,23 @@ class WeatherStation(SQLModel, table=True):
     location_description: Optional[str] = None
     background_place: str
     api_config: str = Field(default = "{}", description="JSON holding configuration to access the vendor cloud api")
+    
+    @field_serializer('api_config')
+    def serialize_api_config(self, api_config:str, _info)->str:
+        return "**api login hidden**"
+    
+    def model_dump_secure(self):
+        """ dump model but do not include the config that may contain api secrets"""
+        station_dict = self.model_dump(exclude={'api_config'})  # typing note: 'exclude' param requires a 'set' type
+        return station_dict
+
+
+    def model_dump_secure_json(self):
+        """json serialize but without config that may contain api secrets"""
+        station_dict = self.as_dict()
+        station_str = json.dumps(station_dict, indent = 4,sort_keys=True, default=str)
+        return station_str
+
 
 class APIResponse(SQLModel, table=True):
     """log of request events made from the various vendor APIs for the station, including metadata of request and the response data exactly as received prior to transform
