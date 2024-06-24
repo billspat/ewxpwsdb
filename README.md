@@ -231,18 +231,24 @@ There are several other routes available.  For example `http://0.0.0.0:8000/stat
 This includes a simplistic `Dockerfile` to run the API server for giving out the data.  It 
 copies all files (including `/data` which is not needed except to init the db).  
 
-The dockerfile does run but currently the server ("uvicorn") has a 
-logging error and does not log properly (6/2024)
+### Building
 
 To build a new image (which has the architecture of the CPU on your computer, e.g. Intel for windows and ARM aka aarch for Mac), use
 
 `TAG=v0; docker buildx build -t ewxpwsdb:$TAG .`
 
-to run the api server using this new container: 
+see the command below to run the api server using the container.  You can't use a db url with 'localhost' since that's not local to docke.   And change the TAG (v0) to the tag used to build the container
 
-`source .env; TAG=v0; docker run -d -e EWXPWSDB_URL=$EWXPWSDB_URL -p 80:80 ewxpwsdb:$TAG`
+### Running Docker
 
-then in your browser open http://localhost/docs to see the API docs.  
+The dockerfile does run but currently the server ("uvicorn") has a logging error and does not log properly (6/2024) 
+One the server, or locally, create a new .env file to support docker with an exteral db url and cert locations, for example docker.env 
+
+`docker run -d --env-file=docker.env -p 80:80 ewxpwsdb:v0`
+
+The command attempts to use ssl.  If you've create .pem files for SSL and included them into the docker build, then open 
+then in your browser open https://localhost/docs to see the API docs, otherwise use `http`
+
 
 If you would like to use a different URL than the database usd for dev/test, add it to the .env file, for example
 
@@ -250,12 +256,14 @@ If you would like to use a different URL than the database usd for dev/test, add
 
 ```shell
 EWXPWSDB_URL=postgresql+psycopg2://localhost:5432/ewxpws
-EWXPWSDB_LOCAL_URL=postgresql+psycopg2://localhost:5432/ewxpws
-EWXPWSDB_AWS_URL=postgresql+psycopg2://ewxuser:****nTgoX****@ewxpwsdev-db.etc.us-east-1.rds.amazonaws.com:5432/ewxpws
+EWXPWSDB_DOCKER_URL=postgresql+psycopg2://ewxuser:****nTgoX****@ewxpwsdev-db.etc.us-east-1.rds.amazonaws.com:5432/ewxpws
 ```
 
-When starting docker from the command line, ff you then `source .env` first, then in the docker run command above, set the db url inside the docker command like  `docker run ... -e EWXPWSDB_URL=$EWXPWSDB_AWS_URL ... ` 
+With a local .env file like this, could use this from the command line: 
 
+```shell
+source .env; docker run -d --env-file=docker.env  -e EWXPWSDB_URL=$EWXPWSDB_DOCKER_URL  -p 80:80 ewxpwsdb:v0
+```
 
 
 
