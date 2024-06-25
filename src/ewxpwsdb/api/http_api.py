@@ -130,9 +130,9 @@ def station_db_weather(station_code:str,
                          end : Annotated[date, 
                                          Query(                                            
                                             title="Stop date",
-                                            description="last day in range (and it's not included), local time.  For 1 day of readings, send start + 1 in YYYY-MM-DD format",
+                                            description="last day to include (inclusive), local time, in YYYY-MM-DD format. For 1 day of readings, send the same date twice",
                                             examples=['2024-06-02'])
-                                         ] = date.today(),
+                                         ] = (date.today() - timedelta(days = 1)),
                        ) -> list[Reading|None]:
     """Get weather readings (unsummarized) for this station from the PWS database during the date range specified.  The time returned is UTC timezone.
     """
@@ -171,21 +171,22 @@ def station_db_weather(station_code:str,
 def station_hourly_weather(station_code:str, 
                        start : Annotated[date, 
                                          Query(
-                                            title=" Beginning date to include",
+                                            title="Beginning date to include",
                                             description="first day in range, local time, in YYYY-MM-DD format",
                                             examples=['2024-06-01'])
                                         ]  = (date.today() - timedelta(days = 1)), 
                          end : Annotated[date, 
                                          Query(                                            
                                             title="Stop date",
-                                            description="last day in range (and it's not included), local time.  For 1 day of readings, send start + 1 in YYYY-MM-DD format",
+                                            description="last day in range (inclusive), local time, in YYYY-MM-DD format. For 1 day of readings, send the same date twice",
                                             examples=['2024-06-02'])
-                                         ] = date.today(), 
+                                         ] = (date.today() - timedelta(days = 1)), 
                        ) -> list[HourlySummary]:
-
+    
     """Results of the 'Hourly Summary' query of the database for the station and days provided.  In the output, the date is for the timezone of the station,
     and hour number is a cardinal number, e.g. hour 1 is summary of time 00:00 to 00:59 for that date"""
     
+    from datetime import datetime
     try:
         station_readings = StationReadings.from_station_code(station_code, engine)
     except ValueError as e:
@@ -219,7 +220,7 @@ def station_daily_weather(station_code:str,
                          end : Annotated[date, 
                                          Query(                                            
                                             title="Stop date",
-                                            description="last day in range (and it's not included), local time.  For 1 day of readings, send start + 1 in YYYY-MM-DD format",
+                                            description="last day in range (inclusive), local time, in YYYY-MM-DD format. For 1 day of readings, send the same date twice",
                                             examplles = ['2024-06-02'])] = date.today() , 
                        ) -> list[DailySummary]:
 

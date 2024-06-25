@@ -10,6 +10,7 @@ from ewxpwsdb.db.database import Engine
 from ewxpwsdb.time_intervals import UTCInterval
 from ewxpwsdb.station import Station
 
+from zoneinfo import ZoneInfo
 
 class StationReadings():
     """Methods for interacting (read/write) with reading table for a specific 
@@ -62,7 +63,12 @@ class StationReadings():
         station:Station = Station.from_station_code(station_code, engine)
         return cls(station = station.weather_station, engine = engine)
 
-
+    
+    @property
+    def zone_info(self):
+        return(ZoneInfo(self.station.timezone))
+    
+            
     def recent_readings(self, n:int=1)->Sequence[Reading]:
         """get some readings from the DB for this station
         
@@ -101,7 +107,17 @@ class StationReadings():
             reading:Reading|None = session.exec(stmt).first()
         
         return reading
-            
+
+    def first_reading_datetime_local(self)->datetime|None:
+        """convenience function to return the date of the first reading in the db for this station, mostly to get the date pull one reading ordered by date
+        
+        Returns:
+            datetime of the first reading in the db, which was inserted as UTC but does not have a timezone component
+        """
+
+        reading = self.latest_reading()
+        return ( reading.data_datetime.astimezone(self.zone_info) if reading else None )
+                
 
     def first_reading_date(self)->datetime|None:
         """convenience function to return the date of the first reading in the db for this station, mostly to get the date pull one reading ordered by date
