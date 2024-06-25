@@ -14,7 +14,7 @@ def test_date_interval():
     start = date(2024, 6, 10)
     end =   date(2024, 6, 11)
 
-    di = DateInterval(start = start, end = end ) 
+    di = DateInterval(start = start, end = end)
     assert isinstance(di, DateInterval)
 
     assert isinstance(di.start, date)
@@ -27,11 +27,11 @@ def test_date_interval_conversion(test_tz_str):
     end =   date(2024, 6, 11)
 
     di = DateInterval(start = start, end = end )
-    assert is_utc(di.start_date_to_utc_datetime(local_timezone_str=test_tz_str))
-    assert is_utc(di.end_date_to_utc_datetime(local_timezone_str=test_tz_str))
+    assert is_utc(di.start_date_to_utc_datetime(local_timezone=test_tz_str))
+    assert is_utc(di.end_date_to_utc_datetime(local_timezone=test_tz_str))
 
     try:
-        utc_interval =  di.to_utc_datetime_interval(local_timezone_str=test_tz_str)
+        utc_interval =  di.to_utc_datetime_interval(local_timezone=test_tz_str)
     except ValidationError as e:
         pytest.fail(f"raised exception  {e}")
 

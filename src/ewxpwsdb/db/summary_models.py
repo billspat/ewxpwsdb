@@ -5,6 +5,12 @@ from datetime import date
 from sqlmodel import Session   
 from typing import Self
 
+from datetime import tzinfo
+from zoneinfo import ZoneInfo
+from ewxpwsdb.time_intervals import DateInterval
+
+
+
 class HourlySummary(BaseModel):
     """data model for the hourly summary statistics from EWX PWS database, 
     and the sql that can create this data from the database. 
@@ -31,7 +37,7 @@ class HourlySummary(BaseModel):
 
 
     @classmethod
-    def sql_str(cls, station_id:int, local_start_date:date, local_end_date:date, pg_timezone:str = 'est')->str:
+    def sql_str(cls, station_id:int, local_start_date:date, local_end_date:date, station_timezone:str = 'America/Detroit')->str:
         """create the postgresql-compatible SQL for summarizing data in the database.   
         This method exists as it was easier to write as SQLModel documentation is lacking
         and SQLAlchemy is hard to learn and debug. 
@@ -52,12 +58,10 @@ class HourlySummary(BaseModel):
         Returns:
             str: valid SQL for the schema created from the tables in this system, with ids and dates inserted, with timezone adjustments for UTC data
         """
-        
+              
         start_date_str = local_start_date.strftime("%Y-%m-%d")
         end_date_str = local_end_date.strftime("%Y-%m-%d")
 
-
-        #TODO cast counts and hour number as ::int
 
         sql_str = f"""
             SELECT 
@@ -77,8 +81,8 @@ class HourlySummary(BaseModel):
                 COUNT(*) as record_count
             FROM (
                 SELECT
-                    date_trunc('day', reading.data_datetime at time zone '{pg_timezone}')::date as local_date,
-                    EXTRACT(HOUR FROM reading.data_datetime at time zone '{pg_timezone}') as local_hour,
+                    date_trunc('day', reading.data_datetime at time zone '{station_timezone}')::date as local_date,
+                    EXTRACT(HOUR FROM reading.data_datetime at time zone '{station_timezone}') as local_hour,
                     reading.*,
                     weatherstation.station_code as station_code
 
@@ -86,8 +90,9 @@ class HourlySummary(BaseModel):
                     ON reading.weatherstation_id = weatherstation.id
                 
                 WHERE reading.weatherstation_id = {station_id} and
-                    reading.data_datetime >= timestamp '{start_date_str}' at time zone '{pg_timezone}' and
-                    reading.data_datetime < timestamp '{end_date_str}' at time zone '{pg_timezone}'
+                    (reading.data_datetime at time zone '{station_timezone}')::date >= '{start_date_str}'  and
+                    (reading.data_datetime at time zone '{station_timezone}')::date <= '{end_date_str}' 
+                
                 ORDER BY reading.weatherstation_id, local_date, local_hour, reading.data_datetime
                 )
                 AS readings_local_time
@@ -136,7 +141,7 @@ class DailySummary(BaseModel):
 
 
     @classmethod
-    def sql_str(cls, station_id:int, local_start_date:date, local_end_date:date, pg_timezone:str = 'est')->str:
+    def sql_str(cls, station_id:int, local_start_date:date, local_end_date:date, station_timezone:str = 'America/Detroit')->str:
         """create the postgresql-compatible SQL for summarizing data in the database.   
         This method exists as it was easier to write as SQLModel documentation is lacking
         and SQLAlchemy is hard to learn and debug. 
@@ -157,7 +162,7 @@ class DailySummary(BaseModel):
         Returns:
             str: valid SQL for the schema created from the tables in this system, with ids and dates inserted, with timezone adjustments for UTC data
         """
-        
+    
         start_date_str = local_start_date.strftime("%Y-%m-%d")
         end_date_str = local_end_date.strftime("%Y-%m-%d")
 
@@ -181,7 +186,7 @@ class DailySummary(BaseModel):
                 COUNT(*) as record_count
             FROM (
                 SELECT
-                    (reading.data_datetime at time zone '{pg_timezone}')::date as local_date,
+                    (reading.data_datetime at time zone '{station_timezone}')::date as local_date,
                     reading.*,
                     weatherstation.station_code as station_code
 
@@ -189,8 +194,8 @@ class DailySummary(BaseModel):
                     ON reading.weatherstation_id = weatherstation.id
                 
                 WHERE reading.weatherstation_id = {station_id} and
-                    reading.data_datetime >= timestamp '{start_date_str}' at time zone '{pg_timezone}' and
-                    reading.data_datetime < timestamp '{end_date_str}' at time zone '{pg_timezone}'
+                    (reading.data_datetime at time zone '{station_timezone}')::date >= '{start_date_str}'  and
+                    (reading.data_datetime at time zone '{station_timezone}')::date <= '{end_date_str}' 
                 ORDER BY reading.weatherstation_id, local_date, reading.data_datetime
                 )
                 AS readings_local_time
@@ -201,8 +206,3 @@ class DailySummary(BaseModel):
         #date_trunc('day', reading.data_datetime at time zone '{pg_timezone}')::date as local_date,
 
         return sql_str
-    
-
-        
-        
-

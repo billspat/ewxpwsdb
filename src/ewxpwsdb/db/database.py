@@ -207,7 +207,12 @@ def init_db(engine, station_tsv_file=None):
         logging.error(f"error creating new database: {e}")
         raise(e)
 
-    
+
+    # for this db, set the timezone to UTC to be sure
+    set_tz_sql = f"ALTER DATABASE {engine.url.database} SET timezone TO 'UTC'"
+    with Session(engine) as session:
+        session.exec(text(set_tz_sql))
+
     # check if there are tables and if so then proceed with import
     # TODO in the function below, check if the station types have already been imported, if so skip
     import_station_types(engine)

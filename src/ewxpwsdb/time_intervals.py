@@ -54,71 +54,45 @@ def is_utc(dt:datetime)->bool:
     
     return False
 
+        
+def str_to_timezone(timezone_str:str):
+    if is_valid_timezone(timezone_str):
+        local_timezone = ZoneInfo(timezone_str)
+        return(local_timezone)
+    else:
+        raise ValueError(f"could not set timezone - invalide timezone {timezone_str}")
 
-class DateInterval(BaseModel):
-    """ ordered dates and the time zone that does with them.   Time Zone is required to convert to UTC.  
+
+def local_date_to_utc_datetime(local_date:date, boundary:str,  local_timezone:tzinfo|str = ZoneInfo('America/Detroit'))->datetime:
+    """convert the local time start date to a UTC start time, given the start of the sttart day is midnight"""
     
-    usage example: 
-        from zoneinfo import ZoneInfo
-        from datetime import date
-        di = DateInterval(start = date(2024, 6, 10), end = date(2024, 6, 11) )
+    if boundary.upper() not in ['START', 'END']:
+        raise ValueError(f"boundary param must be 'start' or 'end', got {boundary}")
     
-    """
+    if not isinstance(local_timezone, timezone):
+        local_tzinfo:tzinfo = str_to_timezone(timezone_str = str(local_timezone))
+    else:
+        local_tzinfo = local_timezone
 
-    model_config = ConfigDict(arbitrary_types_allowed=True) 
-
-    start: date = Field(description="first day in range, in YYYY-MM-DD format")
-    end: date = Field(description="day past end of range ( not inclusive), in YYYY-MM-DD format")
-
-    @model_validator(mode='after')
-    def validate_date_interval(self):
-        """ensure that start is before end"""
-
-        if self.start <= self.end:
-            return self
+    datetime_parts:dict = {
+                        'year'  : local_date.year, 
+                        'month' : local_date.month, 
+                        'day'   : local_date.day, 
+                        'tzinfo': local_tzinfo
+                       }                    
+                        
+    if boundary.upper() == 'START':        
+        datetime_parts.update({'hour': 0, 'minute': 0, 'second':0 })
         
-        raise ValueError('end date must be equal to or come after start date')
+    elif boundary.upper() == 'END':        
+        datetime_parts.update({'hour':23, 'minute':59, 'second':59 })
+        
+    else:
+        raise ValueError(f"boundary param must be 'start' or 'end', got {boundary}")
     
-    @classmethod
-    def from_string(cls, start:str, end:str)->Self: 
-        if not start or not end:
-            raise ValueError(f"invalid arguments for start={start} and end={end}, can't create a data interval")
-        
-        
-        start_date:date = parse(start).date()
-        end_date:date = parse(end).date()
-        
-        return(cls(start = start_date, end = end_date))
-        
-    def str_to_timezone(self,timezone_str:str):
-        if is_valid_timezone(timezone_str):
-            local_timezone = ZoneInfo(timezone_str)
-            return(local_timezone)
-        else:
-            raise ValueError(f"could not set timezone - invalide timezone {timezone_str}")
-
-        
-    def start_date_to_utc_datetime(self, local_timezone_str:str):
-        """convert the local time start date to a UTC start time, given the start of the sttart day is midnight"""
-        local_timezone = self.str_to_timezone(local_timezone_str)
-        start_dt_local = datetime(year = self.start.year, month = self.start.month, day = self.start.day, 
-                                  hour = 0, minute=0, second=0, tzinfo=local_timezone)
-        return start_dt_local.astimezone(UTC)   
-                            
-    def end_date_to_utc_datetime(self,local_timezone_str:str):  
-        """convert the local time end date to a UTC end time, given the end time  of the end day is 23:59""" 
-        local_timezone = self.str_to_timezone(local_timezone_str)
-        end_dt_local = datetime(year = self.end.year, month = self.end.month, day = self.end.day, 
-                                hour = 23, minute=59, second=59, tzinfo=local_timezone)
-        return end_dt_local.astimezone(UTC)
+    dt_local = datetime(**datetime_parts)
     
-    def to_utc_datetime_interval(self,local_timezone_str:str ):
-        """convert this date interval in local time to UTC time interval given the hour offset.  For example for eastern time, 
-        starting January 1, 2020 EST is December 31, 2019 19:00:00 UTC
-        """
-        
-        return UTCInterval(start = self.start_date_to_utc_datetime(local_timezone_str),
-                           end = self.end_date_to_utc_datetime(local_timezone_str))
+    return dt_local.astimezone(UTC)
 
 
 class datetimeUTC(BaseModel):
@@ -128,7 +102,8 @@ class datetimeUTC(BaseModel):
     def check_datetime_utc(cls, value):
         assert is_utc(value)
         return value
-    
+ 
+   
 class UTCInterval(BaseModel):
     """ datetime interval that requires user to supply UTC datetimes.  
     Useful for passing start and end times into functions"""
@@ -220,6 +195,71 @@ class UTCInterval(BaseModel):
         return(self.end-self.start)
     
 
+class DateInterval(BaseModel):
+    """ ordered dates and the time zone that does with them.   Time Zone is required to convert to UTC.  
+    
+    usage example: 
+        from zoneinfo import ZoneInfo
+        from datetime import date
+        di = DateInterval(start = date(2024, 6, 10), end = date(2024, 6, 11) )
+        di
+    
+    """
+
+    model_config = ConfigDict(arbitrary_types_allowed=True) 
+
+    start: date = Field(description="first day in range, in YYYY-MM-DD format")
+    end: date = Field(description="day past end of range ( not inclusive), in YYYY-MM-DD format")
+
+    @model_validator(mode='after')
+    def validate_date_interval(self):
+        """ensure that start is before end"""
+
+        if self.start <= self.end:
+            return self
+        
+        raise ValueError('end date must be equal to or come after start date')
+    
+    @classmethod
+    def from_string(cls, start:str, end:str)->Self: 
+        if not start or not end:
+            raise ValueError(f"invalid arguments for start={start} and end={end}, can't create a data interval")
+
+        start_date:date = parse(start).date()
+        end_date:date = parse(end).date()
+        
+        return(cls(start = start_date, end = end_date))
+    
+    
+    def date_to_utc_datetime(self, local_timezone:tzinfo|str)->datetime:
+        """convert the local time start date to a UTC start time, given the start of the sttart day is 00:00"""
+
+        return local_date_to_utc_datetime(self.start, 'start', local_timezone)
+            
+    
+    def start_date_to_utc_datetime(self, local_timezone:tzinfo|str)->datetime:
+        """convert the local time start date to a UTC start time, given the start of the sttart day is 00:00"""
+        
+        return local_date_to_utc_datetime(self.start, 'start', local_timezone)
+
+                            
+    def end_date_to_utc_datetime(self,local_timezone:tzinfo|str)->datetime:  
+        """convert the local time end date to a UTC end time, given the end time  of the end day is 23:59""" 
+        return local_date_to_utc_datetime(self.end, 'end', local_timezone)
+    
+
+
+    def to_utc_datetime_interval(self,local_timezone:tzinfo|str )->UTCInterval:
+        """convert this date interval in local time to UTC time interval given the hour offset.  For example for eastern time, 
+        starting January 1, 2020 EST is December 31, 2019 19:00:00 UTC
+        """
+        
+        return UTCInterval(
+                start = self.start_date_to_utc_datetime(local_timezone),
+                end = self.end_date_to_utc_datetime(local_timezone)
+                           )
+
+
 def fifteen_minute_mark(dtm:datetime=datetime.now(timezone.utc))->datetime:
     """return the nearest previous 15 minute mark.  e.g. 10:49 -> 10:45, preserves timezone if any. 
     parameter dtm = optional datetime, default is 'now' using utc timezone """
@@ -277,9 +317,14 @@ def today_utc()->date:
     """
     return(datetime.now(UTC).date())
 
-def yesterday_str(timezone)->str:
-    return datetime.now(tz=UTC).astimezone(ZoneInfo(timezone)).date()   
     
+def one_day_interval_utc(local_date, local_timezone)-> UTCInterval:
+    
+    return UTCInterval(
+        start = local_date_to_utc_datetime(local_date, boundary='start', local_timezone=local_timezone),
+        end =   local_date_to_utc_datetime(local_date, boundary = 'end', local_timezone=local_timezone)
+    )
+        
     
 def one_day_interval(d:date = datetime.now(timezone.utc).date() )->UTCInterval:
     """Create a time interval for the date in question, in UTC
