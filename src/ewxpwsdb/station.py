@@ -4,6 +4,7 @@ from typing import Self
 from datetime import datetime, date
 from pydantic import BaseModel, SecretStr, AwareDatetime
 from sqlalchemy.sql import text
+from sqlalchemy.exc import NoResultFound
 
 
 from ewxpwsdb.db.models import WeatherStation, Reading
@@ -94,7 +95,9 @@ class Station():
         try:
             with Session(engine) as session:            
                 stmt = select(WeatherStation).where(WeatherStation.station_code == station_code)
-                station_record:WeatherStation= session.exec(stmt).one()                
+                station_record:WeatherStation= session.exec(stmt).one()
+        except NoResultFound as e:
+            raise NoResultFound()
         except Exception as e:
             raise RuntimeError(f"could not get station {station_code} from database engine {engine}")
         
