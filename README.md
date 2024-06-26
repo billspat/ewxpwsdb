@@ -136,12 +136,28 @@ done
 
 #### Test options.  
 
-Run  `pytest tests -h` and see the **Custom options** section in for lastest options and details. 
+Run  `pytest tests -h` and see the **Custom options** section in the output for lastest options and details. 
 
 -  `--dburl=DBURL`         sqlalchemy postgresql db url for test.  If you send a URL like this, it will not create a temporary database 
 -  `--file=FILE`           full path to a tsv file to use for test stations data and login credentials
 -  `--no-import`           use this to skip importing data (assumes test db already has data)
 - `--station_type=STATION_TYPE` mentioned above; station type in all caps.  If there is more than one station of that type in the db, picks the first one. 
+
+
+#### Problems reading environment (Windows) 
+
+There are times when the test system (and the CLI) are not reading the .env file or the environment and the tests will not run with a database not found problem. 
+
+As a work around, use the command line above to specify a database and an admin user  (does not have to be 'postgres' ). 
+In addition, you may have to use poetry shell to run them.  When using a dbURL it will use the database you suggest 
+
+1. create a new database on your db host (e.g. local host) and record the admin user id and password 
+2. optionally create a new database to use for testing, for example ewxpwstest May or may not have data in it.  
+
+example run: 
+
+poetry run pytest tests --dburl="postgresql+psycopg2://adminuser:adminpassword@localhost/ewxpwstest
+
 
 
 ### About API Throttling
