@@ -63,7 +63,8 @@ class HourlySummary(BaseModel):
     pcpn_total_hourly:  float | None
 
     lws_count: int
-    lws_hourly:  float | None
+    lws_wet_hourly: int | None
+    lws_pwet_hourly: float | None
     
     wspd_avg_hourly: float | None
     wspd_max_hourly: float | None
@@ -102,6 +103,7 @@ class HourlySummary(BaseModel):
                 ' ' as rpt_time,
                 local_date, 
                 local_hour,
+                
                 SUM(CASE when atmp is not null then 1 else 0 end) as atmp_count,
                 ROUND(AVG(atmp)::NUMERIC,2) as atmp_avg_hourly,
                 MAX(atmp) as atmp_max_hourly,
@@ -113,10 +115,14 @@ class HourlySummary(BaseModel):
                 
                 SUM(CASE when pcpn is not null then 1 else 0 end) as pcpn_count,
                 SUM(pcpn) as pcpn_total_hourly,
+                
                 SUM(CASE when lws is not null then 1 else 0 end) as lws_count,
-                SUM(lws)/SUM(CASE when lws is not null then 1 else 0 end) as lws_hourly,
+                SUM(CASE when lws is not null then ( CASE when lws > 0 then 1 else 0 end) else null end) as lws_wet_hourly,
+                ROUND( (SUM(lws)/SUM(CASE when lws is not null then 1 else 0 end )) ::NUMERIC,2) as lws_pwet_hourly,            
+        
                 ROUND(AVG(wspd)::numeric,2) as wspd_avg_hourly, 
                 ROUND(MAX(wspd_max)::numeric, 2) as wspd_max_hourly,
+                
                 COUNT(*) as record_count
             FROM (
                 SELECT
