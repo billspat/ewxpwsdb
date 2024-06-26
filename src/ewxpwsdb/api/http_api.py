@@ -59,7 +59,7 @@ def station_info(station_code:str)->WeatherStationDetail:
     try:
         station = Station.from_station_code(station_code, engine)
         if station:
-            station_dict_with_detail = station.station_dict_with_detail(engine)
+            weather_station_detail:WeatherStationDetail = station.station_with_detail(engine)
         else:
             raise HTTPException(status_code=404, detail="station_code not found")   
         
@@ -68,7 +68,7 @@ def station_info(station_code:str)->WeatherStationDetail:
     except Exception as e:
         raise HTTPException(status_code=503, detail="error with connection {e}")
     
-    return WeatherStationDetail(**station_dict_with_detail)
+    return weather_station_detail
 
 
 # TODO: do not require timezones, and add the timezone for the station, and then convert to UTC

@@ -15,7 +15,7 @@ from zoneinfo import ZoneInfo
 
 from ewxpwsdb.time_intervals import UTCInterval, str_to_interval
 from ewxpwsdb.station_readings import StationReadings
-from ewxpwsdb.station import Station
+from ewxpwsdb.station import Station, WeatherStationDetail
 
 
 import os.path
@@ -77,9 +77,9 @@ def station(db_url:str, station_code:str)->str:
             
     else:
         try:
-            station = Station.from_station_code(station_code, engine)
-            station_with_detail = station.station_dict_with_detail(engine)
-            output = json.dumps(station_with_detail, indent=4, default=str)
+            weather_station_detail:WeatherStationDetail = WeatherStationDetail.with_detail(station_code, engine)            
+            # weather_station_detail:WeatherStationDetail = station.station_with_detail(engine)
+            output = weather_station_detail.model_dump_json(indent=4)
         except Exception as e:
             return(f"Error getting station with code '{station_code}' from db: {e}")
 
@@ -258,7 +258,7 @@ def main()->int:
     station_parser = subparsers.add_parser("station", parents=[common_args], help="lookup station by code.  'station list' lists stations, 'station types' list types")
 
     weather_parser = subparsers.add_parser("weather", parents=[common_args], help="show weather conditions for specified station and times")
-    weather_parser.add_argument('--showresponse', action="store_true", help="optional flag to also show the raw API  response data")
+    weather_parser.add_argument('--show_response', action="store_true", help="optional flag to also show the raw API  response data")
     weather_parser.add_argument('-s', '--start', default=None, help="start time UTC in format ")
     weather_parser.add_argument('-e', '--end', default=None, help="end time UTC in format ")
 
