@@ -9,35 +9,6 @@ from datetime import tzinfo
 from zoneinfo import ZoneInfo
 from ewxpwsdb.time_intervals import DateInterval
 
-### EWX Hourly tables:
-
-# 'year' INTEGER NOT NULL,
-# 'day' INTEGER NOT NULL,
-# 'hour' INTEGER NOT NULL,
-# rpt_time INTEGER NOT NULL,
-# 'date' DATE NOT NULL,
-# 'time' TIME WITHOUT TIME ZONE NOT NULL,
-# atmp REAL,
-# relh REAL,
-# soil0 REAL,
-# soil1 REAL,
-# mstr0 REAL,
-# mstr1 REAL,
-# srad REAL,
-# wdir REAL,
-# wspd REAL,
-# wstdv REAL,
-# wspd_max REAL,
-# wspd_maxt INTEGER,
-# pcpn REAL,
-# lws0_pwet REAL,
-# lws1_pwet REAL,
-# rpet REAL,
-# volt REAL,
-# id BIGINT NOT NULL
-
-
-
 class HourlySummary(BaseModel):
     """data model for the hourly summary statistics from EWX PWS database, 
     and the sql that can create this data from the database. 
@@ -46,8 +17,8 @@ class HourlySummary(BaseModel):
     station_code:str
     year:int
     day:int|str|None|date
-    local_date:date  #TODO represented_date: date
-    local_hour:int   #TODO represented_hour: int
+    represented_date:date  #TODO represented_date: date
+    represented_hour:int   #TODO represented_hour: int
     record_count: int
 
     atmp_count: int
@@ -105,9 +76,8 @@ class HourlySummary(BaseModel):
                 EXTRACT(YEAR FROM local_date)::integer as "year",
                 EXTRACT(DOY FROM local_date) as "day",
                 ' ' as rpt_time,
-                local_date, 
-                local_hour,
-                
+                local_date as represented_date, 
+                local_hour represented_hour,
                 SUM(CASE when atmp is not null then 1 else 0 end) as atmp_count,
                 ROUND(AVG(atmp)::NUMERIC,2) as atmp_avg_hourly,
                 MAX(atmp) as atmp_max_hourly,
@@ -179,7 +149,7 @@ class DailySummary(BaseModel):
     """
 
     station_code:str
-    local_date:date
+    represented_date:date
     
     record_count: int
     
@@ -229,7 +199,7 @@ class DailySummary(BaseModel):
         sql_str = f"""
             SELECT 
                 station_code,
-                local_date, 
+                local_date as represented_date, 
                 SUM(CASE when atmp is not null then 1 else 0 end) as atmp_count,
                 ROUND(AVG(atmp)::NUMERIC,2) as atmp_avg_daily,
                 MAX(atmp) as atmp_max_daily,
