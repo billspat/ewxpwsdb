@@ -1,6 +1,6 @@
 
 """data models for hourly and daily statistics generated from the EWX PWS database.   Models classes include the sql to generate the statistics"""
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from datetime import date    
 from sqlmodel import Session   
 from typing import Self
@@ -17,8 +17,8 @@ class HourlySummary(BaseModel):
     station_code:str
     year:int
     day:int|str|None|date
-    represented_date:date  #TODO represented_date: date
-    represented_hour:int   #TODO represented_hour: int
+    represented_date:date = Field(examples = ['2024-06-25'], description = "date of the reading for the station's timezone")
+    represented_hour:int
     record_count: int
 
     atmp_count: int
