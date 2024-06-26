@@ -169,7 +169,7 @@ class StationReadings():
         # just in case, let's fix the timezone to be the timezone for the station
         
         #  convert to a UTC interval
-        interval = dates.to_utc_datetime_interval(local_timezone_str=self.station.timezone)
+        interval = dates.to_utc_datetime_interval(local_timezone=self.station.timezone)
         
         # get all data same as for UTCInterval
         stmt = select(Reading).where(Reading.weatherstation_id == self.station.id).where(Reading.data_datetime >= interval.start).where(Reading.data_datetime <= interval.end).order_by(Reading.data_datetime) #type:ignore       
