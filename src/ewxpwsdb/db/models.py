@@ -26,6 +26,7 @@ class WeatherStation(SQLModel, table=True):
     lon: float
     location_description: Optional[str] = None
     background_place: str
+    active: bool = Field(default = True, description="active = means the station commissioned by may not be available.  deactive means the station is archived and no longer used" )
     api_config: str = Field(default = "{}", description="JSON holding configuration to access the vendor cloud api")
     
     @field_serializer('api_config')

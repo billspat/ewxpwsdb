@@ -26,6 +26,7 @@ class WeatherStationDetail(BaseModel):
     lon: float
     location_description: str
     background_place: str
+    active: bool
     api_config: SecretStr
     
     sampling_interval: int
