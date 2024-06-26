@@ -266,10 +266,9 @@ source .env; docker run -d --env-file=docker.env  -e EWXPWSDB_URL=$EWXPWSDB_DOCK
 ```
 
 
-
 # Weather Station record fields and format
 
-To be written... 
+See [# Enviroweather Personal Weather Station API output variable definitions](./doc/ewx_pws_api_variables.md)
 
 
 
