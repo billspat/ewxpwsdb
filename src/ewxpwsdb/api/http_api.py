@@ -12,6 +12,7 @@ from fastapi import FastAPI, HTTPException, Query, Depends
 from datetime import date, timedelta
 from typing import Annotated, Any
 
+from sqlalchemy.exc import NoResultFound
 from ewxpwsdb.db.models import Reading
 from ewxpwsdb.db.summary_models import HourlySummary, DailySummary
 from ewxpwsdb.station_readings import StationReadings
@@ -51,7 +52,7 @@ def station_list():
         station_codes = Station.all_station_codes(engine)
         return({'station_codes': station_codes})
     except Exception as e:
-        raise HTTPException(status_code = 503, detail = f"connection error {e}")
+        raise HTTPException(status_code = 503, detail = f"503: connection error {e}")
 
 
 @app.get("/stations/{station_code}")
@@ -61,12 +62,14 @@ def station_info(station_code:str)->WeatherStationDetail:
         if station:
             weather_station_detail:WeatherStationDetail = station.station_with_detail(engine)
         else:
-            raise HTTPException(status_code=404, detail="station_code not found")   
+            raise HTTPException(status_code=404, detail=f"404: {station_code} not found")   
         
+    except NoResultFound as e:
+        raise HTTPException(status_code=404, detail=f"404: station '{station_code}' not found")
     except ValueError as e:
-        raise HTTPException(status_code=404, detail="station_code not found")
+        raise HTTPException(status_code=404, detail=f"404: station '{station_code}' not found")
     except Exception as e:
-        raise HTTPException(status_code=503, detail="error with connection {e}")
+        raise HTTPException(status_code=503, detail=f"503: error with db connection: {e}")
     
     return weather_station_detail
 
@@ -94,14 +97,17 @@ def station_api_weather(station_code:str,
     
     try:
         collector = Collector.from_station_code(station_code, engine = engine)
+    except NoResultFound as e:
+        raise HTTPException(status_code=404, detail=f"404: station '{station_code}' not found")
+    
     except Exception as e:
-        raise HTTPException(status_code=404, detail="fcould not work with station code {station_code}: error {e}"   )
+        raise HTTPException(status_code=404, detail=f"404 could not work with station code {station_code}: error {e}"   )
     
     try:        
         # this function uses some default timestamps if none are given        
         utc_interval =  str_to_interval(start = start, end = end)
     except ValueError as e: 
-        raise HTTPException(status_code=400, detail = "incorrectly formatted start or end parameters: {e}".format(e=e))
+        raise HTTPException(status_code=400, detail = f"incorrectly formatted start or end parameters: {e}")
 
     try:
         api_responses = collector.weather_api.get_readings(start_datetime=utc_interval.start, end_datetime=utc_interval.end)
