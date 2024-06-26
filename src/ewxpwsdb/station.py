@@ -12,47 +12,6 @@ from ewxpwsdb.weather_apis import API_CLASS_TYPES
 from ewxpwsdb.time_intervals import DateInterval
 
 
-    
-#     def weather_api(self):
-#         return (API_CLASS_TYPES[self.station_type](self))
-        
-#     def connectable(self):
-#         can_connect:bool = self.weather_api().get_test_readings()
-#         return(can_connect)
-    
-    
-#     def station_with_dates_sql(weatherstation_id, timezone='est')->str:
-#         return """
-#         select 
-#             min(reading.data_datetime at time zone '{pg_timezone}') first_reading_datetime, 
-#             min(reading.data_datetime) as first_reading_datetime_utc,
-#             max(reading.data_datetime at time zone '{pg_timezone}') as latest_reading_datetime, 
-#             max(reading.data_datetime) as latest_reading_datetime_utc,
-#             weatherstation.* 
-#         from 
-#             weatherstation inner join reading on weatherstation.id = reading.weatherstation_id 
-#         where 
-#             weatherstation.id = 2 
-#         group by 
-#             weatherstation.id
-#         """
-    
-#     @classmethod 
-#     def from_id(cls, weatherstation_id:int, engine:Engine)->Self:
-#         if not check_engine(engine):
-#             raise ValueError("invalid engine/connection string: {engine}")
-#         try:
-#             with Session(engine) as session: 
-#                 sql_str = cls.station_with_dates_sql(weatherstation_id=weatherstation_id, timezone = 'est')
-#                 result = session.exec(text(sql_str)).one()   #type: ignore
-#                 station_response  = cls(**result._asdict()) 
-
-#             return station_response
-                              
-#         except Exception as e:
-#             raise RuntimeError(f"could not get station {weatherstation_id} from database")
-
-
 class WeatherStationDetail(BaseModel):
     """WeatherStation database table with additional status information"""
     
@@ -68,12 +27,47 @@ class WeatherStationDetail(BaseModel):
     background_place: str
     api_config: SecretStr
     
+    sampling_interval: int
+    expected_readings_day: int
+    expected_readings_hour: int
     first_reading_datetime: datetime
     first_reading_datetime_utc: AwareDatetime
     latest_reading_datetime: datetime
     latest_reading_datetime_utc: AwareDatetime
-    supported_variables: list[str]
-
+    supported_variables: str
+    
+    @classmethod
+    def weatherstation_plus_sql(cls, station_code)->str:
+        return f"""select 
+            weatherstation.*,
+            stationtype.sampling_interval,
+            stationtype.supported_variables,
+            min(reading.data_datetime at time zone weatherstation.timezone) first_reading_datetime, 
+            min(reading.data_datetime) as first_reading_datetime_utc,
+            max(reading.data_datetime at time zone weatherstation.timezone) as latest_reading_datetime, 
+            max(reading.data_datetime) as latest_reading_datetime_utc,
+            60/stationtype.sampling_interval::int as expected_readings_hour,
+            (24*60)/stationtype.sampling_interval::int as expected_readings_day
+        from 
+            weatherstation inner join stationtype on weatherstation.station_type = stationtype.station_type
+            inner join reading on weatherstation.id = reading.weatherstation_id 
+        where 
+            weatherstation.station_code = '{station_code}'
+        group by 
+            weatherstation.id, stationtype.sampling_interval, stationtype.supported_variables
+        """
+        
+    @classmethod
+    def with_detail(cls, station_code, engine)->Self:
+        """ add info to a WeatherStation model"""
+        
+        if not check_engine(engine):
+            raise ValueError("invalid engine/connection string: {engine}")
+        with Session(engine) as session:             
+            result = session.exec(text(cls.weatherstation_plus_sql(station_code))).one()   #type: ignore
+        
+        return cls(**result._asdict())
+    
     
 class Station():
     """convenience functions to create WeatherStation models from database and output in various formats.   
@@ -84,9 +78,6 @@ class Station():
         self.station_code:str = weather_station.station_code
         self.weather_station = weather_station
         self.weather_api = API_CLASS_TYPES[weather_station.station_type](weather_station)
-        # to do function that converts any US timezone to 3-letter code version
-        self.pg_timezone = 'est'
-        
 
     def can_connect(self):
         if self.weather_api().get_test_readings():
@@ -149,33 +140,37 @@ class Station():
             return False
     
     
-    def station_with_dates_sql(self)->str:
+    def weatherstation_plus_sql(self)->str:
         return f"""select 
-            min(reading.data_datetime at time zone '{self.pg_timezone}') first_reading_datetime, 
+            weatherstation.*,
+            stationtype.sampling_interval,
+            stationtype.supported_variables,
+            min(reading.data_datetime at time zone weatherstation.timezone) first_reading_datetime, 
             min(reading.data_datetime) as first_reading_datetime_utc,
-            max(reading.data_datetime at time zone '{self.pg_timezone}') as latest_reading_datetime, 
+            max(reading.data_datetime at time zone weatherstation.timezone) as latest_reading_datetime, 
             max(reading.data_datetime) as latest_reading_datetime_utc,
-            weatherstation.* 
+            60/stationtype.sampling_interval::int as expected_readings_hour,
+            (24*60)/stationtype.sampling_interval::int as expected_readings_day
         from 
-            weatherstation inner join reading on weatherstation.id = reading.weatherstation_id 
+            weatherstation inner join stationtype on weatherstation.station_type = stationtype.station_type
+            inner join reading on weatherstation.id = reading.weatherstation_id 
         where 
             weatherstation.id = {self.weather_station.id}
         group by 
-            weatherstation.id
+            weatherstation.id, stationtype.sampling_interval, stationtype.supported_variables
         """
 
-    def station_dict_with_detail(self, engine)->dict:
+
+    def station_with_detail(self, engine)->WeatherStationDetail:
         """ add info to a WeatherStation model for API output"""
         if not check_engine(engine):
             raise ValueError("invalid engine/connection string: {engine}")
         
         with Session(engine) as session:             
-            result = session.exec(text(self.station_with_dates_sql())).one()   #type: ignore
+            result = session.exec(text(self.weatherstation_plus_sql())).one()   #type: ignore
             weatherstation_plus = result._asdict()
-            
-        weatherstation_plus['supported_variables'] = self.weather_api.supported_variables
-            
-        return weatherstation_plus 
+        
+        return WeatherStationDetail(**weatherstation_plus)
                               
 
     def as_dict(self):
