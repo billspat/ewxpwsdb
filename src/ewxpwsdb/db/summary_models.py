@@ -66,6 +66,10 @@ class HourlySummary(BaseModel):
     lws_wet_hourly: int | None
     lws_pwet_hourly: float | None
     
+    wdir_avg_hourly: float | None
+    wdir_sdv_hourly: float | None
+    wdir_null_avg_hourly: float | None
+    wdir_null_sdv_hourly: float | None
     wspd_avg_hourly: float | None
     wspd_max_hourly: float | None
 
@@ -120,6 +124,11 @@ class HourlySummary(BaseModel):
                 SUM(CASE when lws is not null then ( CASE when lws > 0 then 1 else 0 end) else null end) as lws_wet_hourly,
                 ROUND( (SUM(lws)/SUM(CASE when lws is not null then 1 else 0 end )) ::NUMERIC,2) as lws_pwet_hourly,            
         
+                ROUND(AVG(wdir)::numeric,2) as wdir_avg_hourly,
+                ROUND(STDDEV_POP(wdir)::numeric,2) as wdir_sdv_hourly,
+                ROUND(AVG(wdir_null)::numeric,2) as wdir_null_avg_hourly,
+                ROUND(STDDEV_POP(wdir_null)::numeric,2) as wdir_null_sdv_hourly,
+
                 ROUND(AVG(wspd)::numeric,2) as wspd_avg_hourly, 
                 ROUND(MAX(wspd_max)::numeric, 2) as wspd_max_hourly,
                 
@@ -130,6 +139,8 @@ class HourlySummary(BaseModel):
                     date_trunc('day', (reading.data_datetime at time zone weatherstation.timezone))::date as local_date,
                     EXTRACT('hour' FROM (reading.data_datetime at time zone weatherstation.timezone))+1 as local_hour,
                     reading.*,
+                    (CASE WHEN reading.wdir=0 THEN NULL ELSE reading.wdir END) AS wdir_null,
+
                     weatherstation.station_code as station_code
 
                 FROM weatherstation 
