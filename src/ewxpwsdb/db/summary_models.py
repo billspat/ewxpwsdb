@@ -9,6 +9,33 @@ from datetime import tzinfo
 from zoneinfo import ZoneInfo
 from ewxpwsdb.time_intervals import DateInterval
 
+### EWX Hourly tables:
+
+# 'year' INTEGER NOT NULL,
+# 'day' INTEGER NOT NULL,
+# 'hour' INTEGER NOT NULL,
+# rpt_time INTEGER NOT NULL,
+# 'date' DATE NOT NULL,
+# 'time' TIME WITHOUT TIME ZONE NOT NULL,
+# atmp REAL,
+# relh REAL,
+# soil0 REAL,
+# soil1 REAL,
+# mstr0 REAL,
+# mstr1 REAL,
+# srad REAL,
+# wdir REAL,
+# wspd REAL,
+# wstdv REAL,
+# wspd_max REAL,
+# wspd_maxt INTEGER,
+# pcpn REAL,
+# lws0_pwet REAL,
+# lws1_pwet REAL,
+# rpet REAL,
+# volt REAL,
+# id BIGINT NOT NULL
+
 
 
 class HourlySummary(BaseModel):
@@ -17,9 +44,10 @@ class HourlySummary(BaseModel):
     """
 
     station_code:str
-    local_date:date
-    local_hour:int
-
+    year:int
+    day:int|str|None|date
+    local_date:date  #TODO represented_date: date
+    local_hour:int   #TODO represented_hour: int
     record_count: int
 
     atmp_count: int
@@ -29,23 +57,26 @@ class HourlySummary(BaseModel):
     atmp_max_max_hourly: float | None
     atmp_min_min_hourly:  float | None
     
+    relh_avg_hourly: float | None
+    
     pcpn_count:  int
     pcpn_total_hourly:  float | None
 
     lws_count: int
     lws_hourly:  float | None
+    
+    wspd_avg_hourly: float | None
+    wspd_max_hourly: float | None
 
 
     @classmethod
-    def sql_str(cls, station_id:int, local_start_date:date, local_end_date:date, station_timezone:str = 'America/Detroit')->str:
+    def sql_str(cls, station_id:int, local_start_date:date, local_end_date:date)->str:
         """create the postgresql-compatible SQL for summarizing data in the database.   
         This method exists as it was easier to write as SQLModel documentation is lacking
         and SQLAlchemy is hard to learn and debug. 
         
         The inputs are in local time, not UTC, for user convenience.   
-        The Postgresql SQL includes timezone conversion based on pg_timezone. 
-        
-        
+                
         
         This is hear to be near to the dataclass-type model itself so the fields correspond.
         
@@ -53,7 +84,7 @@ class HourlySummary(BaseModel):
             station_id (int): database id number of a station, 
             start_date (date): date at beginning of interval, inclusive (i.e. >=)  to pull readings from, in local time  
             end_date (date): date at end of interval, excluding  (i.e. <)  to pull readings from, in local time.   to pull one day, make this 1 day after start_date 
-            pg_timezone (str): Postgresql timezone, which are not the same as Python timezones, but are lowercase 3-letter abbreviations
+            station_timezone (str): station timezone as a str
 
         Returns:
             str: valid SQL for the schema created from the tables in this system, with ids and dates inserted, with timezone adjustments for UTC data
@@ -66,32 +97,41 @@ class HourlySummary(BaseModel):
         sql_str = f"""
             SELECT 
                 station_code,
+                EXTRACT(YEAR FROM local_date)::integer as "year",
+                EXTRACT(DOY FROM local_date) as "day",
+                ' ' as rpt_time,
                 local_date, 
-                local_hour+1 as local_hour,
+                local_hour,
                 SUM(CASE when atmp is not null then 1 else 0 end) as atmp_count,
                 ROUND(AVG(atmp)::NUMERIC,2) as atmp_avg_hourly,
                 MAX(atmp) as atmp_max_hourly,
                 MIN(atmp) as atmp_min_hourly,
                 MAX(atmp_max) as atmp_max_max_hourly,
                 MIN(atmp_min) as atmp_min_min_hourly,
+                
+                ROUND(AVG(relh)::NUMERIC, 2) as relh_avg_hourly,
+                
                 SUM(CASE when pcpn is not null then 1 else 0 end) as pcpn_count,
                 SUM(pcpn) as pcpn_total_hourly,
                 SUM(CASE when lws is not null then 1 else 0 end) as lws_count,
                 SUM(lws)/SUM(CASE when lws is not null then 1 else 0 end) as lws_hourly,
+                ROUND(AVG(wspd)::numeric,2) as wspd_avg_hourly, 
+                ROUND(MAX(wspd_max)::numeric, 2) as wspd_max_hourly,
                 COUNT(*) as record_count
             FROM (
                 SELECT
-                    date_trunc('day', reading.data_datetime at time zone '{station_timezone}')::date as local_date,
-                    EXTRACT(HOUR FROM reading.data_datetime at time zone '{station_timezone}') as local_hour,
+                    (reading.data_datetime at time zone weatherstation.timezone)::timestamp as local_datetime,
+                    date_trunc('day', (reading.data_datetime at time zone weatherstation.timezone))::date as local_date,
+                    EXTRACT('hour' FROM (reading.data_datetime at time zone weatherstation.timezone))+1 as local_hour,
                     reading.*,
                     weatherstation.station_code as station_code
 
-                FROM reading inner join weatherstation
-                    ON reading.weatherstation_id = weatherstation.id
+                FROM weatherstation 
+                inner join reading ON reading.weatherstation_id = weatherstation.id
                 
                 WHERE reading.weatherstation_id = {station_id} and
-                    (reading.data_datetime at time zone '{station_timezone}')::date >= '{start_date_str}'  and
-                    (reading.data_datetime at time zone '{station_timezone}')::date <= '{end_date_str}' 
+                    (reading.data_datetime at time zone weatherstation.timezone)::date >= '{start_date_str}'  and
+                    (reading.data_datetime at time zone weatherstation.timezone)::date <= '{end_date_str}' 
                 
                 ORDER BY reading.weatherstation_id, local_date, local_hour, reading.data_datetime
                 )
@@ -141,7 +181,7 @@ class DailySummary(BaseModel):
 
 
     @classmethod
-    def sql_str(cls, station_id:int, local_start_date:date, local_end_date:date, station_timezone:str = 'America/Detroit')->str:
+    def sql_str(cls, station_id:int, local_start_date:date, local_end_date:date)->str:
         """create the postgresql-compatible SQL for summarizing data in the database.   
         This method exists as it was easier to write as SQLModel documentation is lacking
         and SQLAlchemy is hard to learn and debug. 
@@ -157,7 +197,7 @@ class DailySummary(BaseModel):
             station_id (int): database id number of a station, 
             start_date (date): date at beginning of interval, inclusive (i.e. >=)  to pull readings from, in local time  
             end_date (date): date at end of interval, excluding  (i.e. <)  to pull readings from, in local time.   to pull one day, make this 1 day after start_date 
-            pg_timezone (str): Postgresql timezone, which are not the same as Python timezones, but are lowercase 3-letter abbreviations
+            station_timezone (str): weatherstation timezone string eg. 'America/Detroit'
 
         Returns:
             str: valid SQL for the schema created from the tables in this system, with ids and dates inserted, with timezone adjustments for UTC data
@@ -186,7 +226,11 @@ class DailySummary(BaseModel):
                 COUNT(*) as record_count
             FROM (
                 SELECT
-                    (reading.data_datetime at time zone '{station_timezone}')::date as local_date,
+                    (reading.data_datetime at time zone weatherstation.timezone)::date as local_date,
+                    EXTRACT(HOUR FROM reading.data_datetime at time zone weatherstation.timezone) as local_hour,
+
+    
+                    date_trunc('year', reading.data_datetime at time zone weatherstation.timezone) as `year`,
                     reading.*,
                     weatherstation.station_code as station_code
 
@@ -194,8 +238,8 @@ class DailySummary(BaseModel):
                     ON reading.weatherstation_id = weatherstation.id
                 
                 WHERE reading.weatherstation_id = {station_id} and
-                    (reading.data_datetime at time zone '{station_timezone}')::date >= '{start_date_str}'  and
-                    (reading.data_datetime at time zone '{station_timezone}')::date <= '{end_date_str}' 
+                    (reading.data_datetime at time zone weatherstation.timezone')::date >= '{start_date_str}'  and
+                    (reading.data_datetime at time zone weatherstation.timezone)::date <= '{end_date_str}' 
                 ORDER BY reading.weatherstation_id, local_date, reading.data_datetime
                 )
                 AS readings_local_time
@@ -206,3 +250,5 @@ class DailySummary(BaseModel):
         #date_trunc('day', reading.data_datetime at time zone '{pg_timezone}')::date as local_date,
 
         return sql_str
+
+
