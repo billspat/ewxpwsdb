@@ -1,10 +1,22 @@
 # Spectrum Weather Stations
 
+## Sensors/Tranforms
+
+Spectrum [Leaf Wetness sensor overview information from their website](https://www.specmeters.com/weather-monitoring/sensors-and-accessories/sensors/environmental-sensors/leaf-wetness-sensor/)
+
+> "Grid-like, resistance-type sensor mimics moisture on vegetation from 0 (dry) to 15 (wet)."
+
+[Per the manual (PDF)](https://www.specmeters.com/assets/1/22/Product_Manual_-_Leaf_Wetness_(Item__3666).pdf)
+
+> "The sensor reads wetness by measuring the resistance on the grid. The resistance measurement is converted to a Leaf Wetness value from 0-15, in whole numbers. Any value over 6 is con- sidered ‘wet’."
+
+
 ### Authentication
 
 Spectrum weather station API requires an ***API Key*** that is a customer-specific token, for authenticating API requests.
 
 > NOTE: It should be of the form `customerApiKey=<API_KEY>` as a query parameter.
+
 
 ### Endpoint in Action
 

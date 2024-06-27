@@ -37,7 +37,7 @@ class SpectrumAPI(WeatherAPI):
     APIConfigClass: type[SpectrumAPIConfig] = SpectrumAPIConfig
     _station_type: STATION_TYPE = 'SPECTRUM'
     _sampling_interval = interval_min = 5
-    _lws_threshold = 450
+    _lws_threshold = 7  # any value over 6 is considered wet -- spectrum manual
 
 
     supported_variables = ['atmp', 'lws', 'pcpn', 'relh', 'srad', 'wspd', 'wdir', 'wspd_max']
@@ -109,8 +109,12 @@ class SpectrumAPI(WeatherAPI):
             break
 
         return False
+    
         
-
+    def _wetness_transform(self, w):
+        return 1 if w >= self._lws_threshold else 0
+    
+    
     def _transform(self, response_data)->list[dict[str,Any]]:
         """
         Transforms data into a standardized format and returns it as a WeatherStationReadings object.
@@ -132,7 +136,7 @@ class SpectrumAPI(WeatherAPI):
                     case 'Temperature':
                         reading['atmp'] = round(self.f_to_c(sensor["DecimalValue"]), 2)
                     case 'Leaf Wetness':
-                        reading['lws'] = sensor["DecimalValue"]
+                        reading['lws'] = self._wetness_transform(sensor["DecimalValue"])
                     case 'Rainfall':
                         reading['pcpn'] = sensor["DecimalValue"]  * 25.4
                     case 'Relative Humidity':
@@ -152,9 +156,6 @@ class SpectrumAPI(WeatherAPI):
             readings.append(reading)
 
         return readings
-
-    def wetness_transform(self, w):
-        return 1 if w >= self._lws_threshold else 0
     
     def _handle_error(self):
         """ place holder to remind that we need to add err handling to each class"""
