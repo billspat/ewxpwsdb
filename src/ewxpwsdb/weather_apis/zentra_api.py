@@ -14,8 +14,8 @@ Variables available from the Zentra API:
 - Lightning Activity
 - Lightning Distance
 - Logger Temperature
-- Max Precip Rate
-- Precipitation
+- Max Precip Rate (mm/h)
+- Precipitation (mm)
 - RH Sensor Temp
 - Reference Pressure
 - Relative Humidity
@@ -23,7 +23,9 @@ Variables available from the Zentra API:
 - Solar Radiation
 - VPD
 - Water Content
-- Wetness Level
+- Wetness Level (unit less)
+- Leaf Wetness (min)
+- Leaf Wetness (high) (min)
 - Wind Direction
 - Wind Speed (m/s)
 
@@ -65,7 +67,7 @@ class ZentraAPI(WeatherAPI):
     # Update this to add more types of sensors.  assumes there is no transform of these values needed
     _sensor_transforms = {
         'Air Temperature':'atmp', 
-        'Leaf Wetness':'lws',
+        'Wetness Level':'lws',
         'Precipitation':'pcpn',
         'Relative Humidity':'relh',
         'Soil Temperature': 'stmp',
@@ -75,6 +77,11 @@ class ZentraAPI(WeatherAPI):
         'Gust Speed':'wspd_max',
         
         }
+    
+    def _leaf_wetness_transform(self, lws_value):
+        """Convert data from Meter group PHYTOS 31 sensor to 1=wet, 0=not wet
+        using the 'Wetness Level' of the last minute.   This also has a "Leaf Wetness(min) which is (n minutes > 450) / minutes """
+        return 1 if lws_value >= self._lws_threshold else 0
     
     def __init__(self, weather_station:WeatherStation, max_retries: int = 2):
         self._max_retries : int = max_retries
@@ -227,14 +234,15 @@ class ZentraAPI(WeatherAPI):
                     
                     # add this sensor value to our ewx reading dict
                     ewx_field_name = self._sensor_transforms[sensor]
-                    readings_by_timestamp[timestamp][ewx_field_name] = zentra_reading['value']
+                    
+                    if ewx_field_name == 'lws':
+                        readings_by_timestamp[timestamp][ewx_field_name] = self._leaf_wetness_transform(zentra_reading['value'])
+                    else:
+                        readings_by_timestamp[timestamp][ewx_field_name] = zentra_reading['value']
 
         # no longer need the timestamp keys, and calling program is expecting a list ()
         return list(readings_by_timestamp.values())
-    
-    def wetness_transform(self, w):
-        return 1 if w >= self._lws_threshold else 0
-    
+        
     def _handle_error(self):
         """ place holder to remind that we need to add err handling to each class"""
         pass
