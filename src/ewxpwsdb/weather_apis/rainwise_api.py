@@ -23,7 +23,7 @@ The following variables are availabe from the Rainwise API:
  - wind  assuming kph
  - wind_gust assuming kph
  - wind_dir
- - leaf_wetness
+ - leaf_wetness = number of minutes wet cumulative for the day
  - heat_index
  - precip
  - solar_radiation
@@ -32,6 +32,7 @@ The following variables are availabe from the Rainwise API:
  - temperature_1_hi NOT USED always 0F or -18C
  - soil_tension  
  - soil_temperature NOT USED always 0F or -18C
+
 
 """
 #####  REQUIRES UPDATE TO WORK WITH CURRENT SYSTEM
@@ -61,8 +62,11 @@ class RainwiseAPI(WeatherAPI):
     APIConfigClass: type[RainwiseAPIConfig] = RainwiseAPIConfig
     _station_type: STATION_TYPE = 'RAINWISE'
     _sampling_interval = interval_min = 15
+    _lws_threshold = 0.50 # percent minutes wet
     supported_variables = ['atmp', 'lws', 'pcpn', 'relh', 'srad', 'smst', 'wspd', 'wdir', 'wspd_max']
-
+    
+    # rainwise only, used for leaf wetness transform
+    # previous_minutes_wet_cumulative = None
 
 
     def __init__(self, weather_station:WeatherStation):
@@ -86,6 +90,10 @@ class RainwiseAPI(WeatherAPI):
 
         # note start/end times in station timezone
         
+        from datetime import timedelta
+        start_local_time_early = self._format_time(self.dt_local_from_utc( start_datetime ) - timedelta(minutes=16) )
+        end_local_time = self._format_time(self.dt_local_from_utc( end_datetime ))
+        
         url = 'http://api.rainwise.net/main/v1.5/registered/get-historical.php'
         params: dict[str,int|str] = {
                                 'username': self.api_config.username,
@@ -94,13 +102,13 @@ class RainwiseAPI(WeatherAPI):
                                 'mac': self.api_config.mac,
                                 'format': self.api_config.ret_form,
                                 'interval': interval,
-                                'sdate': self._format_time(self.dt_local_from_utc( start_datetime )), 
-                                'edate': self._format_time(self.dt_local_from_utc( end_datetime )),
+                                'sdate': start_local_time_early,
+                                'edate': end_local_time,
                                 'units':'metric' 
                                 }
         
         response = get(url= url, params=params)
-
+        # response should have 1 extra previous reading
         return [response]
 
     
@@ -131,6 +139,31 @@ class RainwiseAPI(WeatherAPI):
             
         return False
     
+    
+    def _lws_convert(self, lws_value:int, obs_datetime:datetime)->float:
+        """handles rainwise leaf wetness which is stored as cumulative minutes wet for the day, resets at 00:00 """        
+        
+        # call it like it is
+        minutes_wet_cumulative = int(lws_value)        
+        
+        if obs_datetime.hour == 0:
+            # the minutes web so far today resets at 00:00    
+            if minutes_wet_cumulative != 0:
+                Warning("Rainwise Transform issue: at 0 hour the cumulative minutes wet was not 0 for time {t}".format(t = obs_datetime))
+            minutes_wet_for_this_interval = 0            
+            
+        else: 
+            if hasattr(self, 'previous_minutes_wet_cumulative'):
+                minutes_wet_for_this_interval = minutes_wet_cumulative - self.previous_minutes_wet_cumulative
+
+        percent_wet = minutes_wet_for_this_interval/self.interval_min
+        # set the new cumulative value. save in the class
+        
+        self.previous_minutes_wet_cumulative = minutes_wet_cumulative 
+        
+        return 1 if  percent_wet >= self._lws_threshold else 0
+
+   
     def _transform(self, response_data):
         """
         Transforms data into a standardized format and returns it as a WeatherStationReadings object.
@@ -160,16 +193,25 @@ class RainwiseAPI(WeatherAPI):
         if 'station_id' not in response_data.keys():
             return []
 
-        readings = []        
-        for key in response_data['times']:
-            #TODO confirm lws, wspd, srad transforms for this station
+        readings = []
+        
+        first_data_key = list(response_data['times'].keys())[0]
+        # leaf wetness is cumulative, so need save initial value to get the delta
+        self.previous_minutes_wet_cumulative = int(response_data['leaf_wetness'][first_data_key])
+            
+        # when rainwise "get"s data, it gets one extra previous time at the beginning to do this percent_wet calc
+        all_but_first_key  = list(response_data['times'].keys())[1:]
+        
+        for key in all_but_first_key:  # response_data['times']:
+            #TODO confirm  wspd, srad transforms for this station
+            data_datetime = self.dt_utc_from_str(response_data['times'][key])
             reading = {
-                    'data_datetime' : self.dt_utc_from_str(response_data['times'][key]),
+                    'data_datetime' : data_datetime,
                     'atmp' : float(response_data['temp'][key]),
                     #'atmp_min' : float(response_data['temp_lo'][key]),   # this is reported but always 0F
                     #'atmp_max' : float(response_data['temp_hi'][key]),   # this is reported but always 0F
                     'dwpt' : float(response_data['dewpoint'][key]),
-                    'lws'  : float(response_data['leaf_wetness'][key]),
+                    'lws'  : self._lws_convert( int(response_data['leaf_wetness'][key]), data_datetime ),
                     'pcpn' : float(response_data['precip'][key]) * 25.4,
                     'relh' : float(response_data['hum'][key]),
                     'smst' : float(response_data['soil_tension'][key]),  # units are 'CB' = ?
@@ -179,10 +221,13 @@ class RainwiseAPI(WeatherAPI):
                     'wspd' : self.kph_to_ms(float(response_data['wind'][key])),  
                     'wspd_max' : self.kph_to_ms(float(response_data['wind_gust'][key]))
                     
-                    }
+            }
             
             readings.append(reading)
-            
+        
+        # return object to previous state
+        delattr(self, "previous_minutes_wet_cumulative")
+        
         return readings
 
     def _handle_error(self):
