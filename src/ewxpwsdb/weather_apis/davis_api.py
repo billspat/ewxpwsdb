@@ -81,7 +81,7 @@ class DavisAPI(WeatherAPI):
     """Station class for Davis type stations"""
     APIConfigClass: type[DavisAPIConfig] = DavisAPIConfig
     _station_type = 'DAVIS'
-    _sampling_interval = interval_min = 15
+    _sampling_interval = interval_min = 5
     supported_variables = ['atmp', 'atmp_min', 'atmp_max', 'dwpt', 'lws', 'pcpn', 'relh', 'srad', 'smst', 'stmp','wdir', 'wspd', 'wspd_max']
     lws_threshold = 0.5
     # this is a Davis-only value to make it obvious which of the several wetness variables we are using for LWS threshold
