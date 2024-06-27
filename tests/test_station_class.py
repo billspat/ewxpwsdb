@@ -10,7 +10,11 @@ def test_instantiate_station(test_station_code, db_with_data):
     test_station_object = Station.from_station_code(station_code = test_station_code, engine=db_with_data)    
     assert isinstance(test_station_object, Station)
     assert isinstance(test_station_object.weather_station, WeatherStation)
+    ws = test_station_object.weather_station
     assert test_station_object.weather_station.station_code == test_station_code
+    assert isinstance(ws.active, bool)
+    assert ws.active == True
+
 
 
 def test_station_object_methods(test_station_code, db_with_data):
@@ -45,7 +49,7 @@ def test_weatherstation_detail(test_station_code, db_with_data):
 
     assert isinstance(ws, WeatherStationDetail)
     assert isinstance(ws.expected_readings_day, int)
-    assert ws.expected_readings_day in [60/5, 60/15, 60/30]
+    assert ws.expected_readings_hour in [60/5, 60/15, 60/30]
     assert ws.first_reading_datetime is not None
     
     
