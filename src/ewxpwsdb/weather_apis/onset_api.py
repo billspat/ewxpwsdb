@@ -6,7 +6,7 @@ methods in the parent class.
 
 import json
 from requests import get, post, Response 
-from datetime import datetime, timezone
+from datetime import datetime, timezone, UTC
 
 from pydantic import Field
 
@@ -44,7 +44,9 @@ class OnsetAPI(WeatherAPI):
     _station_type: STATION_TYPE = 'ONSET'
     _sampling_interval = interval_min = 5
     _lws_threshold = 50
-    supported_variables = ['atmp', 'dwpt', 'lws', 'pcpn', 'relh', 'srad', 'wdir', 'wspd', 'wspd_max']
+    # supported_variables = ['atmp', 'dwpt', 'lws', 'pcpn', 'relh', 'srad', 'wdir', 'wspd', 'wspd_max']
+    # lws sensor down since May 31, 2024.  removing completely from the variables here. 
+    supported_variables = ['atmp', 'dwpt', 'pcpn', 'relh', 'srad', 'wdir', 'wspd', 'wspd_max']
 
     def __init__(self, weather_station:WeatherStation):    
         """ create class from config Type"""
@@ -139,7 +141,7 @@ class OnsetAPI(WeatherAPI):
     def _transform(self, response_data):
         """
         Tranform data from Onset API to EWX database values. 
-
+        timestamps are UTC
         Readings are in a flatnames space under 'observation list, on reading per sensor per timestamp. 
         
         Weather Variables in "sensor_measurement_type" field are named as follows:
@@ -166,19 +168,13 @@ class OnsetAPI(WeatherAPI):
         readings = {}
 
         for sensor_reading in response_data["observation_list"]:
-
+            # get timestamp string from data
             ts = sensor_reading["timestamp"]
-
-            # Remove Z's from ends of timestamps, which occur in Onset data
-            ts = ts.replace('Z', '')
             
             # Create new entry if time hasn't been encountered yet
-            if ts not in readings.keys():
-                readings[ts] = {"data_datetime" : self.dt_utc_from_str(ts) }
-            
-            # readings[ts]["data_datetime"] =  self# datetime.strptime(ts, '%Y-%m-%d %H:%M:%S').astimezone(timezone.utc)
-            
-            # Set entries to contain proper data
+            if ts not in readings.keys():                
+                readings[ts] = {"data_datetime" : datetime.fromisoformat(ts) }
+                        
             match sensor_reading["sensor_measurement_type"]:
                 case 'Dew Point':
                     readings[ts]['dwpt'] = sensor_reading["si_value"]
