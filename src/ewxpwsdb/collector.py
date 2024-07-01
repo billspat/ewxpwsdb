@@ -346,7 +346,7 @@ class Collector():
             return(None)
         
     
-    def get_first_reading_date(self)->datetime:
+    def get_first_reading_date(self)->datetime|None:
         """convenience function to return the date of the first reading in the db for this station, mostly to get the date pull one reading ordered by date
         
         Returns:
@@ -424,6 +424,53 @@ class Collector():
         return self.current_reading_ids
         
         
+    def backfill(self, n_days_prior:int = 90, ending_datetime:datetime = datetime.now(UTC))->list:
+        """looks for gaps and fills them upto the number of days in the past, 
+        or the first reading date if there are not that many days of readings. 
+        The intervals to collect come from the station_readings class, but to ensure the last datetime is included, 
+        n minutes are added to the end of each interval, where n = the sampling interval for the weatherstation api
+        (that is, if start = end then no records are collected, so end <= end + sampling interval minutes)
+
+        Args:
+            n_days_prior (int, optional): Number of days in the interval to look through, or days prior to the 'ending_datetime' . Defaults to 90.
+            ending_datetime (datetime, optional): the more latest date to look through, in UTC time zone. Defaults to datetime.now(UTC).
+
+        Returns:
+            list: list of reading ids stored in database (similar to 'catchup' method)
+        """
+    
+        from ewxpwsdb.station_readings import StationReadings    
+        station_readings = StationReadings(station = self.station, engine = self._engine)        
+        
+        first_reading_date = station_readings.first_reading_date()
+        target_start_date = ending_datetime - timedelta(days = n_days_prior)
+        
+        
+        if station_readings.has_readings() and first_reading_date:
+            
+            date_to_start_looking:datetime = first_reading_date if target_start_date < first_reading_date  else target_start_date
+            gap_intervals:list[UTCInterval] = station_readings.missing_summary(start_datetime=date_to_start_looking, end_datetime=ending_datetime)
+            reading_ids_added  = []
+            api_responses = []
+            
+            if gap_intervals:
+                print(f"backfill process initiated for station {self.station.station_code} ")
+                for interval in gap_intervals:
+                    # if start = end then collector gets no records, and also many apis don't include the end datetime in responses, so end <= end + sampling interval minutes)
+                    interval.end = interval.end + timedelta(minutes = station_readings.weather_api._sampling_interval)             
+                    api_responses.extend(self.request_and_store_weather_data_utc(interval))
+                    reading_ids_added.extend(self.current_reading_ids)
+            
+                print(f"backfill: {len(api_responses)} api_responses added {len(reading_ids_added)} readings for station {self.station.station_code} ")
+                return reading_ids_added  
+            else:
+                print(f"backfill process: no missing records found for station {self.station.station_code}, backfill not started ")
+                return []                
+        else:
+            print("backfill process: no readings stored for station {self.station.station_code}, backfill not necessary")
+            return []
+        
+                
     def close(self):
         """closes the session opened for this collector"""
         self._session.close()
