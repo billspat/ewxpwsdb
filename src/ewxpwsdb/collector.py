@@ -14,6 +14,7 @@ from ewxpwsdb.weather_apis import API_CLASS_TYPES
 from ewxpwsdb.time_intervals import one_day_interval, UTCInterval, is_utc, previous_fourteen_minute_interval, fifteen_minute_mark, UTC, timedelta
 
 from ewxpwsdb.station import Station
+from ewxpwsdb.station_readings import StationReadings    
 
 
 class Collector():
@@ -197,7 +198,7 @@ class Collector():
     def reading_by_time_and_station(self, data_datetime, weatherstation_id):
         with Session(self._engine) as session:
             stmt = select(Reading).where(Reading.data_datetime == data_datetime).where(Reading.weatherstation_id == weatherstation_id)
-            reading:Reading = session.exec(stmt).first()
+            reading:Reading = session.exec(stmt).first()  # type: ignore
 
         return(reading)
     
@@ -439,7 +440,6 @@ class Collector():
             list: list of reading ids stored in database (similar to 'catchup' method)
         """
     
-        from ewxpwsdb.station_readings import StationReadings    
         station_readings = StationReadings(station = self.station, engine = self._engine)        
         
         first_reading_date = station_readings.first_reading_date()
@@ -469,8 +469,24 @@ class Collector():
         else:
             print("backfill process: no readings stored for station {self.station.station_code}, backfill not necessary")
             return []
+
+
+    def retransform(self, interval_utc:UTCInterval):
+        """ for readings in database, re-run the 'transform' method on the original API responses in order 
+        to update or fix values in readings to deal with a change, rather than re-download all the same data
         
-                
+        naive method for re-transform each api request and reading in a range 1 by 1
+        
+        """
+        
+        station_readings = StationReadings(station = self.station, engine = self._engine)
+    
+        api_responses = station_readings.api_responses_by_interval_utc(interval_utc)
+        reading_ids = self.save_readings_from_responses(api_responses)
+        
+        return(reading_ids)        
+
+                   
     def close(self):
         """closes the session opened for this collector"""
         self._session.close()
