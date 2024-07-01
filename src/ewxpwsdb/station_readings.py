@@ -264,9 +264,7 @@ class StationReadings():
   
         WHERE  ( gap_end = true or gap_start = true)
         """
-        
-        print(sql_str)
-        
+                
         with Session(self._engine) as session:
             result = session.exec(text(sql_str))   #type: ignore
 
@@ -275,8 +273,6 @@ class StationReadings():
                                 end  = r.end   if r.end   is not None else r.start) 
                     for r in result.all()
                     ]
-        
-        print(missing_data_intervals)
         
         return missing_data_intervals
     
