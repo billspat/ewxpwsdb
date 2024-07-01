@@ -112,6 +112,14 @@ class StationReadings():
         
         return reading
 
+    def earliest_reading(self)->Reading | None:        
+        stmt = select(Reading).where(Reading.weatherstation_id == self.station.id).order_by(Reading.data_datetime.asc()).limit(1) #type: ignore
+        with Session(self._engine) as session:
+            reading:Reading |None  = session.exec(stmt).first()
+
+        return reading
+
+        
     def first_reading_datetime_local(self)->datetime|None:
         """convenience function to return the date of the first reading in the db for this station, mostly to get the date pull one reading ordered by date
         
@@ -119,7 +127,7 @@ class StationReadings():
             datetime of the first reading in the db, which was inserted as UTC but does not have a timezone component
         """
 
-        reading = self.latest_reading()
+        reading = self.earliest_reading()
         return ( reading.data_datetime.astimezone(self.zone_info) if reading else None )
                 
 
@@ -130,7 +138,7 @@ class StationReadings():
             datetime of the first reading in the db, which was inserted as UTC but does not have a timezone component
         """
 
-        reading = self.latest_reading()
+        reading = self.earliest_reading()
         return ( reading.data_datetime if reading else None )
 
         
