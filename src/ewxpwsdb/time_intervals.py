@@ -190,8 +190,12 @@ class UTCInterval(BaseModel):
         
         return cls(start = beginning_of_day , end = end_of_day )
 
-    
+    def model_dump_iso(self)->dict[str, str]:
+        """dump to a dictionary of string iso format dates, suitable for sql"""
+        return {'start': self.start.isoformat(), 'end':self.end.isoformat()}
+        
     def duration(self):
+        """time delta object difference start and end"""
         return(self.end-self.start)
     
 

@@ -7,8 +7,11 @@ from typing import Self, Sequence
 from ewxpwsdb.db.models import Reading, WeatherStation
 from ewxpwsdb.db.summary_models import HourlySummary, DailySummary
 from ewxpwsdb.db.database import Engine
-from ewxpwsdb.time_intervals import UTCInterval
+from ewxpwsdb.time_intervals import UTCInterval, is_utc
 from ewxpwsdb.station import Station
+from ewxpwsdb.weather_apis import API_CLASS_TYPES
+
+from ewxpwsdb.weather_apis.weather_api import WeatherAPI
 
 from zoneinfo import ZoneInfo
 
@@ -30,8 +33,9 @@ class StationReadings():
         if not station.id:
             raise ValueError("weather station must be saved in the database and have an ID value")
         
-        self.station = station
-        self._engine = engine
+        self.station:WeatherStation = station
+        self.weather_api:WeatherAPI = API_CLASS_TYPES[station.station_type](station)
+        self._engine:Engine = engine
 
         #TODO find or write converter from Python timezone to PG timezones 
         # until that's done, put the timezone for all of our stations here
@@ -182,7 +186,94 @@ class StationReadings():
         else:
             return []
         
+       
+    def missing_summary(self, start_datetime:datetime|None=None, end_datetime:date = date.today())->list[UTCInterval]:
+        """Identify gaps in the reading record for this station"""   
         
+        assert(start_datetime) is not None
+        
+        if start_datetime is None:
+            start_datetime = self.first_reading_date()
+                    
+        elif not is_utc(start_datetime):
+            start_datetime = start_datetime.astimezone(timezone.utc)  # type: ignore
+        
+        if not end_datetime:
+            end_datetime = self.latest_reading().data_datetime # type: ignore
+
+        if not is_utc(end_datetime): # type: ignore
+            end_datetime = end_datetime.astimezone(timezone.utc) # type: ignore
+        
+        
+        utc_interval = UTCInterval(start = start_datetime, end = end_datetime).model_dump_iso() # type: ignore
+        
+               
+        sql_str = f"""
+        SELECT DISTINCT
+            CASE
+            when gap_start =true and gap_end = true then missing_datetime
+            when gap_start = false and gap_end = true then LAG(missing_datetime, 1) OVER ( ORDER BY missing_datetime ) 
+            when gap_start = true and gap_end = false then missing_datetime
+            when gap_start = false and gap_end = false then Null
+            END start, 
+            CASE
+            when gap_start =true and gap_end = true then missing_datetime
+            when gap_start = false and gap_end = true then missing_datetime
+            when gap_start = true and gap_end = false then LEAD(missing_datetime, 1) OVER ( ORDER BY missing_datetime )
+            when gap_start = false and gap_end = false then Null
+            END end
+            -- ,
+            -- missing_datetime as actual_missing_datetime, gap_start, gap_end 
+        FROM 
+            ( SELECT 
+                clock.tick as missing_datetime, 
+                data_datetime,
+                ( tick - lag(tick)  over (order by clock.tick) ) > interval '{self.weather_api._sampling_interval} minutes' as gap_start,
+                ( tick - lead(tick) over (order by clock.tick) )* -1 > interval '{self.weather_api.sampling_interval} minutes' as gap_end
+
+            FROM
+        
+                (SELECT
+                    generate_series( 
+                        '{utc_interval['start']}'::timestamp with time zone, 
+                        '{utc_interval['end']}'::timestamp with time zone, 
+                        '{self.weather_api._sampling_interval} minutes') 
+                    as tick) 
+                as clock 
+            
+                left outer join 
+                (SELECT 
+                    data_datetime 
+                FROM reading 
+                WHERE reading.weatherstation_id = {self.station.id}
+                ) 
+                as station_readings
+                    on clock.tick = station_readings.data_datetime
+
+            WHERE data_datetime is null
+
+            ) as gap_finder
+  
+        WHERE  ( gap_end = true or gap_start = true)
+        """
+        
+        print(sql_str)
+        
+        with Session(self._engine) as session:
+            result = session.exec(text(sql_str))   #type: ignore
+
+            missing_data_intervals:list[UTCInterval] =  [
+                    UTCInterval(start= r.start if r.start is not None else r.end, 
+                                end  = r.end   if r.end   is not None else r.start) 
+                    for r in result.all()
+                    ]
+        
+        print(missing_data_intervals)
+        
+        return missing_data_intervals
+    
+        
+         
     def hourly_summary(self, local_start_date:date, local_end_date:date)->list[HourlySummary]:
         """submits SQL to calculate hourly summaries of readings for this station, for whole days in the date interval, local time. 
         Will eventually use the timezone of the station, but needs to convert from Python timezone strings to postgresql timezone strings
