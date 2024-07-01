@@ -1,18 +1,22 @@
 import pytest
 from sqlmodel import Sequence
 from datetime import datetime, UTC, timedelta
-from ewxpwsdb.station_readings import StationReadings
-from ewxpwsdb.db.models import WeatherStation, Reading
+from ewxpwsdb.station_readings import StationReadings #type: ignore
+from ewxpwsdb.db.models import WeatherStation, Reading #type: ignore
 
-from ewxpwsdb.collector import Collector
-from ewxpwsdb.time_intervals import UTCInterval
+from ewxpwsdb.collector import Collector #type: ignore
+from ewxpwsdb.time_intervals import UTCInterval #type: ignore
 
 # do this only once
 @pytest.fixture(scope = 'module')
 def db_with_readings(db_with_data, weather_station):
     """insert readings into our test database for the station type sent"""
     test_collector = Collector(station = weather_station, engine = db_with_data)
-    results = test_collector.request_and_store_weather_data_utc(UTCInterval.one_day_interval())
+    yesterday_interval = UTCInterval.one_day_interval()
+    earlier_interval = UTCInterval(start = yesterday_interval.start - timedelta(days=3), end =  yesterday_interval.end - timedelta(days=3))
+
+    x = test_collector.request_and_store_weather_data_utc(earlier_interval)
+    x = test_collector.request_and_store_weather_data_utc(yesterday_interval)
     test_collector.close()
     del(test_collector)
 
@@ -75,7 +79,7 @@ def test_station_readings_first_reading_datetime(test_station_readings):
     # see comment above about checking dates
     assert dt.date() - datetime.now(UTC).date() <= timedelta(days = 1)
 
-def test_station_readings_first_reading_datetime(test_station_readings):
+def test_station_readings_by_interval(test_station_readings):
     test_interval = UTCInterval.previous_interval(delta_mins=60)
     readings = test_station_readings.readings_by_interval_utc(test_interval)
     assert isinstance(readings, list)
@@ -85,6 +89,21 @@ def test_station_readings_first_reading_datetime(test_station_readings):
     # so at most a reading would be 100 minutes ago
     assert ( readings[0].data_datetime - datetime.now(UTC) ) < timedelta(minutes = 100)
     
+def test_station_readings_gap_intervals(test_station_readings):
+    """ this essentially tests that this summary will even run.  
+    Because it uses the UTCInterval class, start > end and both guaranted to be UTC datetimes
+    """
+    missing_readings_intervals = test_station_readings.missing_summary(
+                        start_datetime = datetime.fromisoformat('2024-03-01T00:00+00:00'),
+                        end_datetime= datetime.now(UTC)
+                        )
+
+    assert isinstance(missing_readings_intervals, list)    
+    assert len(missing_readings_intervals) > 0 
+    assert isinstance(missing_readings_intervals[0], UTCInterval)
+
+        
+            
 
 
 

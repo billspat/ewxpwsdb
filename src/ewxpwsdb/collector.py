@@ -3,19 +3,18 @@
 from datetime import datetime, timedelta, timezone
 
 
-from sqlmodel import SQLModel, select, update
-from sqlalchemy import Engine, asc, desc
-from sqlalchemy.sql import func
-from sqlalchemy.exc import SQLAlchemyError
+from sqlmodel import select, update
+from sqlalchemy import Engine
 
 from typing import Sequence
 
-from ewxpwsdb.db.database import Session, get_engine
+from ewxpwsdb.db.database import Session
 from ewxpwsdb.db.models import WeatherStation, APIResponse, Reading
 from ewxpwsdb.weather_apis import API_CLASS_TYPES
-from ewxpwsdb.time_intervals import one_day_interval, UTCInterval, is_utc, previous_fourteen_minute_interval, fifteen_minute_mark
+from ewxpwsdb.time_intervals import one_day_interval, UTCInterval, is_utc, previous_fourteen_minute_interval, fifteen_minute_mark, UTC, timedelta
 
 from ewxpwsdb.station import Station
+
 
 class Collector():
     """class to enable collecting data from station apis and store in a database.  
