@@ -101,6 +101,19 @@ def test_station_readings_gap_intervals(test_station_readings):
     assert isinstance(missing_readings_intervals, list)    
     assert len(missing_readings_intervals) > 0 
     assert isinstance(missing_readings_intervals[0], UTCInterval)
+    
+
+def test_station_readings_get_responses(test_station_readings):
+
+    from ewxpwsdb.db.models import APIResponse
+    
+    interval = UTCInterval(start = test_station_readings.earliest_reading().data_datetime, end = test_station_readings.latest_reading().data_datetime)
+    assert interval.start < interval.end
+    previous_responses = test_station_readings.api_responses_by_interval_utc(interval)
+    assert isinstance(previous_responses, list)
+    assert len(previous_responses) > 1
+    assert isinstance(previous_responses[0], APIResponse)
+    
 
         
             

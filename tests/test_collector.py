@@ -218,6 +218,21 @@ def test_collector_readings_api(viable_interval, db_with_data,station_collector)
     assert readings[0].weatherstation_id == station_collector.station.id
     station_collector.close()
 
+def test_collector_retransform(viable_interval, db_with_data,station_collector):
+    # get some data 
+    n = 4
+    readings = station_collector.get_readings(n =n, order_by ='asc')
+    assert len(readings ) == n
+    readings_interval = UTCInterval(start = readings[0].data_datetime, end = readings[-1].data_datetime)
+    
+    retransform_results = station_collector.retransform( readings_interval)
+    assert isinstance(retransform_results, list)
+    assert len(retransform_results) > 0
+
+    # the API reqs that cover these readings will have many more readings than selected above    
+    assert len(retransform_results) > n
+    
+
 
     
 

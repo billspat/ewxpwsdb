@@ -4,10 +4,11 @@ from datetime import datetime, date
 from sqlmodel import select, Session, text
 from typing import Self, Sequence
 
-from ewxpwsdb.db.models import Reading, WeatherStation
+from ewxpwsdb.db.models import Reading, WeatherStation, APIResponse
 from ewxpwsdb.db.summary_models import HourlySummary, DailySummary
 from ewxpwsdb.db.database import Engine
-from ewxpwsdb.time_intervals import UTCInterval, is_utc
+from ewxpwsdb.time_intervals import UTCInterval, is_utc, DateInterval
+
 from ewxpwsdb.station import Station
 from ewxpwsdb.weather_apis import API_CLASS_TYPES
 
@@ -162,7 +163,6 @@ class StationReadings():
         else:
             return []
         
-    from ewxpwsdb.time_intervals import DateInterval
     
     def readings_by_date_interval_local(self, dates: DateInterval)->list[Reading|None]:    
         """get some readings from the DB for this station during the times that occur within the dates (local time)
@@ -194,7 +194,42 @@ class StationReadings():
         else:
             return []
         
-       
+    
+    def api_responses_by_interval_utc(self, interval:UTCInterval)->list[APIResponse]:
+        """get the set of responses that covers all readings in an interval.  
+        The time ranges of these responses may overlap if data was pulled f
+        or overlapping dates repeatedly.  This does not get api responses that may have
+        been supercede by later api requests, only those response that account for current
+        readings in this interval (linked by reading.apiresponse_id)
+
+        Args:
+            interval (UTCInterval): range of reading data_datetimes (inclusive)   
+
+        Returns:
+            list[APIResponse]: all APIResponse records linked by readings apiresponse_ids
+        """
+        
+        sql_str = f"""
+        select 
+            distinct apiresponse.* 
+        from 
+            reading inner join apiresponse on reading.apiresponse_id = apiresponse.id
+        where 
+	        reading.data_datetime >= '{interval.start.isoformat()}'::timestamp with time zone
+	        and 
+            reading.data_datetime <= '{interval.end.isoformat()}'::timestamp with time zone
+            and reading.weatherstation_id = {self.station.id};
+        """          
+        print(sql_str)
+        
+        with Session(self._engine) as session:
+            result = session.exec(text(sql_str))   #type: ignore
+            apiresponses = [APIResponse(**dict(r._asdict())) for r in result.all()]
+            
+        return apiresponses
+        
+        
+                
     def missing_summary(self, start_datetime:datetime|None=None, end_datetime:date = date.today())->list[UTCInterval]:
         """Identify gaps in the reading record for this station"""   
         
