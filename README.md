@@ -1,15 +1,139 @@
 # Enviroweather (EWX) Personal Weather Station (PWS) Database (DB): ewxpwsdb
 
-This package is to support the Personal Weather Station project of the https://enviroweather.msu.edu project.  
+This package is to support the Personal Weather Station project of the MSU Enviroweather Network and System, lead by Dr. Jeff Andresen. https://enviroweather.msu.edu  
 
-This is v2 or reconfiguration of previous packages to better combine classes to collect and harmonize data from diverse weather station vendor APIs, 
-SQL database of weather stations and readings, data collection orchestration/workflow, and an API wrapper around all of these function with type-checked code.  
+This code collects and harmonize data from 6 types of weather stations,  via their manufacturer cloud APIs, into a harmonized SQL database of weather stations and their readings.   It includes an API server to access this database. 
 
-This package is under heavy development and in transition from previous version. 
+It currently supports weather station APIs from MeterGroup (Zentra), HOBO/Onset, Spectrum Technologies, Rainwise, and [Davis Instruments](https://www.davisinstruments.com/collections/weather-stations) as well as custom-built [iRRIGATION SENSOR/LOCOMOS IoT-based Sensor Monitoring System](https://innovationcenter.msu.edu/younsuk-dong-increasing-crop-yield-and-reducing-water-consumption-with-precision-irrigation/)  from the [Dr. Younsuk Dong](https://www.canr.msu.edu/people/dongyoun) in the MSU Department of Biosystems and Ag Engineering (BA)
 
-More details about how to use the package as well as how to contribute to it's development is coming. 
+This package is under heavy development but is near feature complete. 
 
-## Developers
+## Technology
+
+The system is based Python which leans on Pydantic for type management, SQLModel for database objects, FastAPI for api access to the database.  It does not import any date/time libraries other than the python standard library.  Data is summarize using SQL in Postgresql dialect. 
+
+## Setup/Installation 
+
+## Install Postgresql
+
+The system requires a Postgresql database.   It requires a specific database type as it relies on timezone conversions and timezone is not standardized across databas platforms and not all database systems (e.g. SQLite) have a timezone feature. 
+
+You must have a Postgresql db server with an empty database in it, for which you have the priv. of creating tables and inserting data.  If you would like to run tests or try the notebooks (see below), the account you uses must have priv. of creating new databases as the tests create new empty database for each test run (and then deletes it). 
+
+For local install, on Mac, [Postgres.app](https://postgres.app) is a super easy way to install.   Once you start the db and create a database, say, `ewxpws` for the database name, your database URL is EWXPWSDB_URL=postgresql+psycopg2://localhost:5432/ewxpws
+
+On Windows etc you can isntall using the default postgresql installer.   Create  user, password and new database, maybe named `ewxpws` 
+
+The database does not need to be install on your own computer and you may use this package to access and existing EWXPWS database.   
+
+### Setting the environment
+
+You should use a file to set the database URL so you don't type passwords on the command line.   
+
+create a new file named `.env` in the top directory of this project.  Python will look for and read this file for environment variables.   
+
+see the file `example-dot-env` for what should go in into it.   Currently the default environment variable uses is set in the module 
+`ewxpwsdb.database._EWXPWSDB_URL_VAR, currently "EWXPWSDB_URL" but most functions
+and cli will take a `db_url` parameters will override that  (e.g. for a test URL or a dev URL)
+
+### Download this code
+
+From Github download a zip file and unzip.  If you will contribute to the development (see below) use git clone to download all for. 
+
+### Option 1.  Install Python and this packkage
+
+One option
+This package is single-purpose and will not be published on python distribution systems like PyPi.   Instead, download this repository from github onto your computer.  
+
+### Option 2.  Install via Docker
+
+summary: 
+1. [Install Docker](https://docs.docker.com/engine/install/)
+2. clone/download this code
+3. Build the docker image and run the container (see 'Docker' below)
+
+The docker image runs a version of the command line interface to access functions of this system including pulling weather into the database.  For more details see the 'cli' section below. 
+
+
+## Using the CLI
+
+There is a command line interface for working with the database and APIs using the terminal/command.exe.    It's been tested on MacOS and Linux
+
+If you installed via PIP with Python, then.  Developers will find it's better to use the Poetry package manager to 'run' the cli (see below)   For all the following examples, you must be in the the top directory of this project (e.g. first `cd path/to/ewxpws` if you aren't already).  
+
+The cli command is `ewxpws` 
+
+- get help/information about the arguments:   `poetry run ewxpws -h`
+- get details about a sub command `poetry run ewxpws station -h`
+- list all stations `poetry run ewxpws station list`
+- get current weather details, directly from API `poetry run ewxpws weather {station code}`
+- get recent hourly weather summary from database `poetry run ewxpws hourly {station code}`
+
+For many of these commands there are options for `--start` and `--stop` to get a range of data. For hourly data these are dates in form Y-M-D `2024-04-30`
+
+## Building an initial database
+
+If the database you want to use is empty, you can use the CLI to create an intial structure and insert starting data. 
+
+### First, get some starter station data 
+
+There is a test bed of weather stations for which you can access the API with passwords/creentials.   It is not stored in this repository since it contains passwords and secrets to access the stations' APIs.   
+
+contact Enviroweather project for this initial file of test station.  The file must be in Tab-separated values format due to a bug in python 3.11 `dictreader()`  
+
+It's recommended to save the initial list of weather stations `data/test_stations.tsv`   However You can specify the file to use in the commands (and in the tests). 
+
+### Build DB with the CLI
+
+There is a function in `init_db()` in `database.py` that will create a new blank databas and load the test stations into it.  You can run it using the CLI  ` ewxpws initdb -d <databaseurl> -f <path/to/station_file.tsv>`
+
+The database URL must have an existing, empty database in it (not just the server).  The command creates tables (relations), constraints, etc and inserts starter data but does not create a new database.  however the testing system (see below), and the Python notebooks, do create new, temporary databases for test/demonstration, and include code to delete these test databases. 
+
+## API
+
+There is a Web API (not necessarily REST but read-only) as well. 
+
+## Starting
+
+To start the API server on your local computer you can use the command line script
+
+`ewxpws startapi -d <database_url>`
+
+which runs on host address http://0.0.0.0:8000 but the host IP and the port address can be overrided.  
+The server can be run using ssl using local cert and key files,  with `--ssl` option (off by default).  For more options and details, 
+run `ewxpws startapi -h` to get help.  
+
+To use `https` SSL, you must create cert and key file, place them on disk where the server has access, and add the files paths 
+to the `.env` file.  See the `example_dot_env` file at the top of this repository for the names of the variables.   If you use self-signed   
+
+This does not run as a dev server with reload, see below for that. 
+
+If you have set up the .env file as described above, or the environment variable $EWXPWSDB_URL exported in the environment, you don't need the `-d` parameter but may use it to override the environment settings
+
+### Starting a dev api server
+
+Those used to developing with FastAPI can start a FastAPI dev server, set the database variable in .env, and run
+
+`poetry run fastapi dev src/ewxpwsdb/api/http_api.py`  
+
+this will auto-reload as code changes.  
+
+To run with a different database for example on a different server, add the URL to the environment (different for Mac/Windows). 
+For example if you set the environment variable `EWXPWSDB_AWS_URL` to the URL for a database on AWS, to use that databas, run 
+
+```shell
+source .env
+EWXPWSDB_URL=$EWXPWSDB_AWS_URL; poetry run fastapi dev src/ewxpwsdb/api/http_api.py
+```
+
+### Using the API
+
+Once the server is running, the default local parameters for the API server host and port, browse to http://0.0.0.0:8000/docs for documentation about the api.  
+
+There are several other routes available.  For example `http://0.0.0.0:8000/stations` is a list of station codes.  All data is output in JSON format.  
+
+
+## Contributors/Developers
 
 The package uses Python 'poetry' rather than standard setup tools.  Poetry suggests installing in a virtual environment, however it already creates a virtual environment for this package. 
 
@@ -63,26 +187,6 @@ Command Line instructions:
 - `poetry install`
 
 
-
-### Install Postgresql
-
-Because not all databases allow the use of timezones, and this system requires timezones, we have opted to use Postgresql.   
-You must have a Postgresql db server with a database in it for which you have the priv. of creating databases for the tests to work.  
-
-On Mac, [Postgres.app](https://postgres.app) is a super easy way to install.   Once you start the db and create a database, say, `ewxpws` for the 
-database name, your database URL is EWXPWSDB_URL=postgresql+psycopg2://localhost:5432/ewxpws
-
-On Windows etc you can isntall using the default postgresql installer.   Create  user, password and new database, maybe named `ewxpws` 
-
-### Setting the environment
-
-You can use a file to set the database URL so you don't type passwords on the command line.   
-
-create a new file named `.env` in the top directory of this project.  Python will look for and read this file for environment variables.   
-
-see the file `example-dot-env` for what should go in into it.   Currently the default environment variable uses is set in the module 
-`ewxpwsdb.database._EWXPWSDB_URL_VAR, currently "EWXPWSDB_URL" but most functions
-and cli will take a `db_url` parameters will override that  (e.g. for a test URL or a dev URL)
 
 ## Testing
 
@@ -181,64 +285,6 @@ from the top directory:
 
 Then the CLI described below can be used on your system without starting Poetry first
 
-## Using the CLI
-
-There is a command line interface for working with the database and APIs using the terminal/command.exe.    
-
-Until the package is actually installable via PIP, you have to use `poetry` to use the cli.   For all the following examples, you must be in
-the top directory of this project (e.g. first `cd path/to/ewxpws` if you aren't already).  
-
-The cli command is `ewxpws` 
-
-- get help/information about the arguments:   `poetry run ewxpws -h`
-- get details about a sub command `poetry run ewxpws station -h`
-- list all stations `poetry run ewxpws station list`
-- get current weather details, directly from API `poetry run ewxpws weather {station code}`
-- get recent hourly weather summary from database `poetry run ewxpws hourly {station code}`
-
-For many of these commands there are options for `--start` and `--stop` to get a range of data. For hourly data these are dates in form Y-M-D `2024-04-30`
-
-## API
-
-There is a Web API (not necessarily REST but read-only) as well. 
-
-## Starting
-
-To start the API server on your local computer you can use the command line script
-
-`poetry run ewxpws startapi -d <database_url>`
-
-which runs on host address http://0.0.0.0:8000 but the host IP and the port address can be overrided.  
-The server can be run using ssl using local cert and key files,  with `--ssl` option (off by default). 
-
-To use `https` SSL, you must create cert and key file, place them on disk where the server has access, and add the files paths 
-to the `.env` file.  See the `example_dot_env` file at the top of this repository for the names of the variables.   If you use self-signed   
-
-This does not run as a dev server with reload, see below for that. 
-
-If you have set up the .env file as described above, you don't need the `-d` parameter but may use it to override .env settings
-
-### Starting a dev api server
-
-Those used to developing with FastAPI can start a FastAPI dev server, set the database variable in .env, and run
-
-`poetry run fastapi dev src/ewxpwsdb/api/http_api.py`  
-
-this will auto-reload as code changes.  
-
-To run with a different database for example on a different server, add the URL to the environment (different for Mac/Windows). 
-For example if you set the environment variable `EWXPWSDB_AWS_URL` to the URL for a database on AWS, to use that databas, run 
-
-```shell
-source .env
-EWXPWSDB_URL=$EWXPWSDB_AWS_URL; poetry run fastapi dev src/ewxpwsdb/api/http_api.py
-```
-
-### Using the API
-
-Once the server is running, the default local parameters for the API server host and port, browse to http://0.0.0.0:8000/docs for documentation about the api.  
-
-There are several other routes available.  For example `http://0.0.0.0:8000/stations` is a list of station codes.  All data is output in JSON format.  
 
 
 
