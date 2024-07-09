@@ -199,7 +199,7 @@ class WeatherAPI(ABC):
         return(self.current_api_response_records)
 
 
-    def _add_response_metadata(self, response:Response, start_datetime:datetime, end_datetime:datetime, request_datetime:datetime = datetime.utcnow().astimezone(timezone.utc) )->APIResponse:
+    def _add_response_metadata(self, response: Response, start_datetime: datetime, end_datetime: datetime, request_datetime: datetime = datetime.now(timezone.utc)) -> APIResponse:
         """combine a response object with metadata from this station, etc
         
         parameters

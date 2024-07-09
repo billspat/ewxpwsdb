@@ -1,6 +1,6 @@
 """Station and StationReadings class for pulling data from the database"""
 
-from datetime import datetime, date
+from datetime import datetime, date, timezone
 from sqlmodel import select, Session, text
 from typing import Self, Sequence
 

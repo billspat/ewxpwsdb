@@ -10,7 +10,7 @@ from ewxpwsdb.db import database
 
 from typing import Any
 from dateutil.parser import parse # type: ignore
-from datetime import timedelta
+from datetime import timedelta, datetime, timezone
 from zoneinfo import ZoneInfo
 
 from ewxpwsdb.time_intervals import UTCInterval, str_to_interval

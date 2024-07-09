@@ -9,7 +9,7 @@
 
 import uvicorn
 from fastapi import FastAPI, HTTPException, Query, Depends
-from datetime import date, timedelta
+from datetime import date, timedelta, datetime, timezone
 from typing import Annotated, Any
 
 from sqlalchemy.exc import NoResultFound
