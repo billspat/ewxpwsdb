@@ -1,7 +1,7 @@
 import json
 from sqlmodel import select
 from typing import Self
-from datetime import datetime, date
+from datetime import datetime, date, timezone
 from pydantic import BaseModel, SecretStr, AwareDatetime
 from sqlalchemy.sql import text
 from sqlalchemy.exc import NoResultFound
