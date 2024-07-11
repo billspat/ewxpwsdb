@@ -1,7 +1,6 @@
 """
 parent classes and types to support data acquisition from weather station vendor web APIs. 
 The class WeatherAPI is abstract and must be sub-classed and is not used directly. 
-
 """
 
 # #TODO see some code in models.py that should be here that is a new way to organize the data classes for validation and loading
@@ -242,7 +241,6 @@ class WeatherAPI(ABC):
 
         Returns:
             bool: True if there is sensor data into the response, False if not. 
-
         """
         # if we don't get a 200, there is an error of some kind for all station types
         # assume this is a string but in case it's an int, convert to str to be safe
@@ -289,29 +287,16 @@ class WeatherAPI(ABC):
             # TODO create class to hold sensor data, currently just a dictionary
             sensor_data =  self._transform(api_response_record.response_text)
             
-            # build Reading model objects with sensor data and meta data from response model
-            if sensor_data is not None:
-                logging.debug(f"transformed_reading type {type(sensor_data)}: {sensor_data}")
-            
-                # api responses may contain a single reading or a list of readings
-                
-                # convert and accumulate readings for all of the request responses in the list
-                if isinstance(sensor_data, list):
-                    # convert those to Reading model objects with meta data
-                    readings = [Reading.model_validate_from_station(data, api_response_record, database) for data in sensor_data]
-                    all_response_readings.extend(readings)
+            # ensure sensor_data is always a list for uniform processing
+            if not isinstance(sensor_data, list):
+                sensor_data = [sensor_data]
 
-                else:
-                    # convert to Reading model object with meta data
-                    reading = Reading.model_validate_from_station(sensor_data, api_response_record)
-                    all_response_readings.append(reading)
+            # convert those to Reading model objects with meta data
+            readings = [Reading.model_validate_from_station(data, api_response_record, database) for data in sensor_data]
+            all_response_readings.extend(readings)
 
-            else:
-                logging.debug(f"could not transform {api_response_record.response_text}")
+        self.current_readings = all_response_readings
 
-        self.current_readings = all_response_readings                       
-
-        
         return self.current_readings
         
     #### station class utilities
