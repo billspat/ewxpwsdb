@@ -79,25 +79,34 @@ def test_station_readings_first_reading_datetime(test_station_readings):
     # see comment above about checking dates
     assert dt.date() - datetime.now(UTC).date() <= timedelta(days = 1)
 
-def test_station_readings_by_interval(test_station_readings):
-    test_interval = UTCInterval.previous_interval(delta_mins=60)
+def test_station_readings_by_interval(weather_station, db_with_readings):
+    
+    # setup
+    test_collector = Collector(weather_station, engine = db_with_readings)
+    test_interval = UTCInterval.previous_interval(delta_mins=100)
+    test_collector.request_and_store_weather_data_utc(test_interval)
+    test_station_readings = StationReadings(station = weather_station, engine = db_with_readings)
+    
+    
+    # run the function to be tested
     readings = test_station_readings.readings_by_interval_utc(test_interval)
+    
+    # tests
     assert isinstance(readings, list)
     assert len(readings) > 0 # stations that read every 30 minutes should have at least 1
     assert isinstance(readings[0], Reading)
     # the interval starts at most 29 minutes before hand, and asked for 60 minutes of readings, 
     # so at most a reading would be 100 minutes ago
     assert ( readings[0].data_datetime - datetime.now(UTC) ) < timedelta(minutes = 100)
+    test_collector.close()
     
 def test_station_readings_gap_intervals(test_station_readings):
     """ this essentially tests that this summary will even run.  
     Because it uses the UTCInterval class, start > end and both guaranted to be UTC datetimes
     """
-    missing_readings_intervals = test_station_readings.missing_summary(
-                        start_datetime = datetime.fromisoformat('2024-03-01T00:00+00:00'),
-                        end_datetime= datetime.now(UTC)
-                        )
-
+    test_interval = UTCInterval(start = datetime.fromisoformat('2024-03-01T00:00+00:00'),end = datetime.now(UTC) )
+    
+    missing_readings_intervals = test_station_readings.missing_summary(start_datetime=test_interval.start, end_datetime=test_interval.end)
     assert isinstance(missing_readings_intervals, list)    
     assert len(missing_readings_intervals) > 0 
     assert isinstance(missing_readings_intervals[0], UTCInterval)

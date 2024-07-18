@@ -128,8 +128,31 @@ class UTCInterval(BaseModel):
             return self
         
         raise ValueError('end date-time must come after start date-time')
+
         
-    
+    @classmethod
+    def init_from_local(cls, local_start:datetime, local_end:datetime, local_timezone:str)->Self:
+        """create UTC interval given a start and stop in non-UTC timezone (or with no timezones)
+        Args:
+            local_start (datetime): start datetime assumed to be 'local' time, with or with out timezone.  if does not have a timezone, the timezone arg is used
+            local_end (datetime): end datetime assumed to be 'local' time, with or with out timezone.  if does not have a timezone, the timezone arg is used
+            timezone (str): timezone of these
+            
+        Returns:
+            UTCInterval
+        """
+       
+        local_tz:ZoneInfo = ZoneInfo(local_timezone)  if not isinstance(local_timezone, ZoneInfo) else local_timezone
+        
+        if not is_tz_aware(local_start):
+            local_start = local_start.astimezone(local_tz)
+        
+        if not is_tz_aware(local_end):
+            local_end = local_end.astimezone(local_tz)
+            
+        return(cls(start = local_start.astimezone(UTC), end = local_end.astimezone(UTC)))
+        
+        
     @classmethod
     def previous_fifteen_minutes(cls):
         s,e = previous_fifteen_minute_period()

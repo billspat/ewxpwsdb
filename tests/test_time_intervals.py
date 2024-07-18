@@ -205,7 +205,19 @@ def test_str_to_interval():
         pytest.fail(f"could not parse test strings: {e}")
     
 
-
+def test_local_to_interval():
+    test_start =  datetime(2024, 7, 7, 12, 0)
+    test_end = test_start + timedelta(minutes = 30)
+    test_tz_str = 'US/Eastern'
+    
+    assert isinstance(UTCInterval.init_from_local(local_start=test_start, local_end=test_end, local_timezone=test_tz_str), UTCInterval)
+    
+    test_tz = ZoneInfo(test_tz_str)
+    
+    assert isinstance(UTCInterval.init_from_local(local_start=test_start, local_end=test_end, local_timezone=test_tz), UTCInterval)
+    
+    
+    
 
 
     
