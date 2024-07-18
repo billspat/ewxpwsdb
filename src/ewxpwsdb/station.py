@@ -1,4 +1,5 @@
 import json
+import logging
 from sqlmodel import select
 from typing import Self
 from datetime import datetime, date, timezone
@@ -12,6 +13,8 @@ from ewxpwsdb.db.database import Session, Engine, check_engine
 from ewxpwsdb.weather_apis import API_CLASS_TYPES
 from ewxpwsdb.time_intervals import DateInterval
 
+# Configure logger for this module
+logger = logging.getLogger(__name__)
 
 class WeatherStationDetail(BaseModel):
     """WeatherStation database table with additional status information"""
@@ -68,6 +71,7 @@ class WeatherStationDetail(BaseModel):
         with Session(engine) as session:             
             result = session.exec(text(cls.weatherstation_plus_sql(station_code))).one()   #type: ignore
         
+        logger.info(f"Retrieved detailed information for station code {station_code}")
         return cls(**result._asdict())
     
     
@@ -80,6 +84,8 @@ class Station():
         self.station_code:str = weather_station.station_code
         self.weather_station = weather_station
         self.weather_api = API_CLASS_TYPES[weather_station.station_type](weather_station)
+
+        logger.info(f"Initialized Station object for station code {self.station_code}")
 
     def can_connect(self):
         if self.weather_api().get_test_readings():
@@ -98,13 +104,17 @@ class Station():
                 stmt = select(WeatherStation).where(WeatherStation.station_code == station_code)
                 station_record:WeatherStation= session.exec(stmt).one()
         except NoResultFound as e:
+            logger.error(f"No result found for station code {station_code}")
             raise NoResultFound()
         except Exception as e:
+            logger.error(f"Could not get station {station_code} from database engine {engine}: {e}")
             raise RuntimeError(f"could not get station {station_code} from database engine {engine}")
         
         if station_record:
+            logger.info(f"Retrieved station record for station code {station_code}")
             return cls(weather_station = station_record)
         else:
+            logger.error(f"No station record found with code {station_code}")
             raise ValueError(f"no station record found with id {station_code}")
 
     @classmethod
@@ -117,11 +127,14 @@ class Station():
             try:
                 station_record:WeatherStation|None = session.get(WeatherStation, station_id)                
             except Exception as e:
+                logger.error(f"Database error retrieving station record with id {station_id}: {e}")
                 raise RuntimeError(f"database error retrieving station record with id {station_id}: {e}")
 
             if station_record:
+                logger.info(f"Retrieved station record for station ID {station_id}")
                 return cls(weather_station = station_record)
             else:
+                logger.error(f"No station record found with id {station_id}")
                 raise ValueError(f"no station record found with id {station_id}")
 
     @classmethod
@@ -130,6 +143,7 @@ class Station():
             station_codes = session.exec(select(WeatherStation.station_code)).fetchall()
         # make it a list for real
         station_codes =  [station_code for station_code in station_codes]
+        logger.info("Retrieved all station codes")
         return station_codes
 
     @classmethod
@@ -137,10 +151,12 @@ class Station():
         try:
             s = cls.from_station_code(station_code, engine)
             if s:
+                logger.info(f"Station code {station_code} is valid")
                 return True
             else:
                 return False
         except Exception as e:
+            logger.error(f"Station code {station_code} is not valid: {e}")
             return False
     
     
@@ -174,12 +190,14 @@ class Station():
             result = session.exec(text(self.weatherstation_plus_sql())).one()   #type: ignore
             weatherstation_plus = result._asdict()
         
+        logger.info(f"Retrieved detailed weather station information for station ID {self.weather_station.id}")
         return WeatherStationDetail(**weatherstation_plus)
                               
 
     def as_dict(self):
         """ dump model but do not include the config that may contain api secrets"""
         station_dict = self.weather_station.model_dump(exclude={'api_config'})  # typing note: 'exclude' param requires a 'set' type
+        logger.info(f"Converted weather station to dict for station code {self.station_code}")
         return station_dict
 
 
@@ -187,4 +205,5 @@ class Station():
         """output string version but without config that may contain api secrets"""
         station_dict = self.as_dict()
         station_str = json.dumps(station_dict, indent = 4,sort_keys=True, default=str)
+        logger.info(f"Converted weather station to JSON for station code {self.station_code}")
         return station_str

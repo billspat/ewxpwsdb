@@ -1,7 +1,7 @@
 """weather data collection class"""
 
 from datetime import datetime, timedelta, timezone
-
+import logging
 
 # Other imports
 from sqlmodel import select, update
@@ -17,6 +17,8 @@ from ewxpwsdb.time_intervals import one_day_interval, UTCInterval, is_utc, previ
 from ewxpwsdb.station import Station
 from ewxpwsdb.station_readings import StationReadings    
 
+# Set up logging
+logger = logging.getLogger(__name__)
 
 class Collector():
     """class to enable collecting data from station apis and store in a database.  
@@ -40,12 +42,14 @@ class Collector():
         Returns:
             Collector: collector object for the station with that station code 
         """
+        logger.info(f"Creating collector object for station_code: {station_code}")
 
         try:
             station_obj = Station.from_station_code(station_code=station_code, engine=engine)
             return cls(station=station_obj.weather_station, engine=engine)
         except Exception as e:
-             raise RuntimeError(f"collector class: error getting station with station_code {station_code} from database: {e}")
+            logger.error(f"Error getting station with station_code {station_code} from database: {e}")
+            raise RuntimeError(f"collector class: error getting station with station_code {station_code} from database: {e}")
 
 
     @classmethod
@@ -62,10 +66,13 @@ class Collector():
         Returns:
             Collector: collector object for the station with id = stationid
         """
+        logger.info(f"Creating collector object for station_id: {station_id}")
+
         try:
             station_obj = Station.from_station_id(station_id=station_id, engine=engine)
             return cls(station=station_obj.weather_station, engine=engine)
         except Exception as e:
+            logger.error(f"Error getting station with id {station_id} from database: {e}")
             raise RuntimeError(f"collector class error: can not load station with id {station_id}: {e}")
         
 
@@ -77,6 +84,7 @@ class Collector():
             station_id (int): Database ID (primary key) of a weather station record
             engine (Engine, optional): Engine connection for existing EWX PWS database that data is read/written to.  Defaults to global engine from database.py. 
         """
+        logger.info(f"Initializing collector for station id {station.id}")
 
         self._engine = engine
         self._session = Session(engine)
@@ -137,11 +145,14 @@ class Collector():
         Returns:
             this object for method chaining
         """
+        logger.info(f"Requesting and storing weather data for station {self.station.id} from {start_datetime} to {end_datetime}")
 
         if not is_utc(start_datetime):
+            logger.error(f"Start datetime is not UTC timezone {start_datetime}")
             raise ValueError(f"start datetime is not UTC timezone {start_datetime}")
     
         if not is_utc(end_datetime):
+            logger.error(f"End datetime is not UTC timezone: {end_datetime}")
             raise ValueError(f"end datetime is not UTC timezone: {end_datetime}")
         
         # call station vendor web API
@@ -155,9 +166,11 @@ class Collector():
             self.current_reading_ids = []
 
             for response in responses:
-                if not self.weather_api.data_present_in_response(response):    
+                if not self.weather_api.data_present_in_response(response):
+                    logger.warning(f"No data present in response for station {self.station.id} for interval {start_datetime} to {end_datetime}")
                     self.api_error_handler(start_datetime, end_datetime, response)
                     
+
                 self.current_api_response = response
                 self._session.add(response)
                 self._session.commit()
@@ -169,6 +182,7 @@ class Collector():
 
                     self.current_reading_ids.extend(reading_ids)
                 else:
+                    logger.error(f"Failed to save API response for station {self.station.id} for interval {start_datetime} to {end_datetime}")
                     self.api_error_handler(start_datetime, end_datetime, responses)
                 
             self.current_api_response_record_ids = saved_responses
@@ -176,12 +190,14 @@ class Collector():
             return(self.current_api_response_record_ids)
 
         else:
+            logger.error(f"No response from station {self.station.id} for interval {start_datetime} to {end_datetime}")
             self.api_error_handler(start_datetime, end_datetime)
             return None
             
     def request_current_weather_data(self):
         """call request weather method with no dates, so API class gets most recent 
         complete 15 minute period.   Stores the data from the request/response internally and in the database"""
+        logger.info(f"Requesting current weather data for station {self.station.id}")
 
         nowish = previous_fourteen_minute_interval()
         result = self.request_and_store_weather_data(start_datetime = nowish.start, end_datetime=nowish.end)
@@ -190,13 +206,20 @@ class Collector():
     def api_error_handler(self,start_datetime, end_datetime, responses=None):
         """error handling stub, currently raise exception"""
         if responses:
+            logger.error(f"No data present in response for station {self.station.id} for interval {start_datetime} to {end_datetime}: {responses}")
             raise RuntimeError(f"no data present in response for station for {self.station.id} for interval {start_datetime} to {end_datetime}: {responses}")
         else:
+            logger.error(f"No response from station {self.station.id} for interval {start_datetime} to {end_datetime}")
             raise RuntimeError(f"no response from station for {self.station.id} for interval {start_datetime} to {end_datetime}")
         
 
+
+    # TODO move these to station_readings class since will almost always be selecting/inserting for one station at atime
+
+
     # TODO move these to station_readings class since will almost always be selecting/inserting for one station at atime
     def reading_by_time_and_station(self, data_datetime, weatherstation_id):
+        logger.info(f"Retrieving reading for station {weatherstation_id} at {data_datetime}")
         with Session(self._engine) as session:
             stmt = select(Reading).where(Reading.data_datetime == data_datetime).where(Reading.weatherstation_id == weatherstation_id)
             reading:Reading = session.exec(stmt).first()  # type: ignore
@@ -234,6 +257,9 @@ class Collector():
         # can break relations etc.   solution would be to use a compound primary key timestamp + stationid
         # however this code _could_ cause race conditions because if the same record is read in another process right beore it gets updated, it may be the old data
 
+
+        logger.info(f"Inserting or updating reading for station {new_reading.weatherstation_id} at {new_reading.data_datetime}")
+
         existing_reading = self.reading_by_time_and_station(new_reading.data_datetime, new_reading.weatherstation_id)
         
         if existing_reading:
@@ -262,6 +288,7 @@ class Collector():
 
     def save_readings_from_responses(self, api_responses:APIResponse|list[APIResponse])->list[int]:
         """transform api response and save to the database, handling errors etc"""
+        logger.info(f"Saving readings from API responses for station {self.station.id}")
 
         # allow for single record as parameter, just turn it into a list 
         if not isinstance(api_responses, list):
@@ -277,8 +304,10 @@ class Collector():
                 if new_id:
                     saved_reading_ids.append(new_id)
                 else:
+                    logger.error(f"Could not insert PWS API response record into database for station {self.station.id}")
                     raise RuntimeError(f"could not insert PWS API response record into database")
-        else: 
+        else:
+            logger.error(f"No reading data extracted from responses for station {self.station.id}")
             raise RuntimeError(f"no reading data extracted from responses {api_responses}")
         
         return(saved_reading_ids)    
@@ -290,6 +319,8 @@ class Collector():
         Returns:
             bool: True if any readings in table with this stations id.  
         """
+        logger.info(f"Checking if there are readings in the database for station {self.station.id}")
+
         if self.get_readings(n = 1):
             return True
         
@@ -314,6 +345,7 @@ class Collector():
         Returns:
             list of Reading objects 
         """
+        logger.info(f"Getting {n} readings from the database for station {self.station.id}, ordered by {order_by}")
 
         if order_by == 'asc':
             stmt = select(Reading).where(Reading.weatherstation_id == self.station.id).order_by(Reading.data_datetime).limit(n) #type: ignore
@@ -335,12 +367,16 @@ class Collector():
         Returns:
             list of Reading objects 
         """
+        logger.info(f"Getting readings by date for station {self.station.id} in interval {interval}, ordered by {order_by}")
+
         stmt = select(Reading).where(Reading.weatherstation_id == self.station.id).where(Reading.data_datetime >= interval.start).where(Reading.data_datetime <= interval.end).order_by(Reading.data_datetime) #type:ignore       
         result = self._session.exec(stmt)
         return(result.fetchall())   
 
     def get_latest_reading(self)->Reading|None:
         """convenience function to pull one reading ordered by date"""
+        logger.info(f"Getting the latest reading from the database for station {self.station.id}")
+
         readings = self.get_readings(n=1, order_by='desc')
         if len(readings)>0:
             return(readings[0])
@@ -354,6 +390,7 @@ class Collector():
         Returns:
             datetime of the first reading in the db, which was inserted as UTC but does not have a timezone component
         """
+        logger.info(f"Getting the first reading date from the database for station {self.station.id}")
 
         readings = self.get_readings(n=1, order_by='asc')
         if len(readings)>0:
@@ -380,10 +417,12 @@ class Collector():
         Returns:
             list[int]: list of all record ids inserted into the reading table
         """
+        logger.info(f"Getting historic data for station {self.station.id}, overwrite={overwrite}, days_limit={days_limit}")
 
         if self.get_readings(n = 1):
             # already some stuff in the db, probably should use catch up instead
             if not overwrite:
+                logger.error(f"Data for station {self.station.id} already present, cancelling get historic data procedure")
                 raise RuntimeError(f"data for station {self.station.id} already present, cancelling get historic data procedure")
             
         collected_reading_ids = []
@@ -394,9 +433,9 @@ class Collector():
         
         # get all the remaining tomorrows data, up to the imposed limit (1 yr default)
         day_offset = 1
-        while api_data and day_offset <= days_limit:            
+        while api_data and day_offset <= days_limit:
             date_to_fetch = today - timedelta(days = day_offset)
-            print(f"fetching data for {self.station.station_code} for {day_offset} days ago")
+            logger.info(f"Fetching data for station {self.station.station_code} for {day_offset} days ago")
             api_data = self.request_and_store_weather_data_utc(one_day_interval(date_to_fetch))
             collected_reading_ids.extend(self.current_reading_ids)
             day_offset += 1 
@@ -417,7 +456,8 @@ class Collector():
         reading = self.get_latest_reading()
         if not reading:
             # if there are no readings at all (e.g. new station, have to run the get historic data first)
-           raise RuntimeError(f"attempting to 'catchup' weather data for station {self.station.station_code} but there is no data at all, cancelling catchup process")
+            logger.error(f"Attempting to 'catchup' weather data for station {self.station.station_code} but there is no data at all, cancelling catchup process")
+            raise RuntimeError(f"attempting to 'catchup' weather data for station {self.station.station_code} but there is no data at all, cancelling catchup process")
        
         interval_since_last_reading = UTCInterval(start = reading.data_datetime + timedelta(minutes = 1), end  = fifteen_minute_mark() )
         # this has the side effect of storing in the database, we don't keep the api data at all
@@ -440,8 +480,9 @@ class Collector():
         Returns:
             list: list of reading ids stored in database (similar to 'catchup' method)
         """
-    
-        station_readings = StationReadings(station = self.station, engine = self._engine)        
+        logger.info(f"Backfilling weather data for station {self.station.id} for the past {n_days_prior} days up to {ending_datetime}")
+
+        station_readings = StationReadings(station = self.station, engine = self._engine)
         
         first_reading_date = station_readings.first_reading_date()
         target_start_date = ending_datetime - timedelta(days = n_days_prior)
@@ -455,32 +496,32 @@ class Collector():
             api_responses = []
             
             if gap_intervals:
-                print(f"backfill process initiated for station {self.station.station_code} ")
+                logger.info(f"Backfill process initiated for station {self.station.station_code}")
                 for interval in gap_intervals:
                     # if start = end then collector gets no records, and also many apis don't include the end datetime in responses, so end <= end + sampling interval minutes)
                     interval.end = interval.end + timedelta(minutes = station_readings.weather_api._sampling_interval)             
                     api_responses.extend(self.request_and_store_weather_data_utc(interval))
                     reading_ids_added.extend(self.current_reading_ids)
             
-                print(f"backfill: {len(api_responses)} api_responses added {len(reading_ids_added)} readings for station {self.station.station_code} ")
-                return reading_ids_added  
+                logger.info(f"Backfill: {len(api_responses)} api_responses added {len(reading_ids_added)} readings for station {self.station.station_code}")
+                return reading_ids_added
             else:
-                print(f"backfill process: no missing records found for station {self.station.station_code}, backfill not started ")
-                return []                
+                logger.info(f"Backfill process: no missing records found for station {self.station.station_code}, backfill not started")
+                return []
         else:
-            print("backfill process: no readings stored for station {self.station.station_code}, backfill not necessary")
+            logger.info(f"Backfill process: no readings stored for station {self.station.station_code}, backfill not necessary")
             return []
 
-
-    def retransform(self, interval_utc:UTCInterval):
+    def retransform(self, interval_utc: UTCInterval):
         """ for readings in database, re-run the 'transform' method on the original API responses in order 
         to update or fix values in readings to deal with a change, rather than re-download all the same data
         
         naive method for re-transform each api request and reading in a range 1 by 1
         
         """
-        
-        station_readings = StationReadings(station = self.station, engine = self._engine)
+        logger.info(f"Retransforming API responses for station {self.station.id} in interval {interval_utc}")
+
+        station_readings = StationReadings(station=self.station, engine=self._engine)
     
         api_responses = station_readings.api_responses_by_interval_utc(interval_utc)
         reading_ids = self.save_readings_from_responses(api_responses)
@@ -490,5 +531,7 @@ class Collector():
                    
     def close(self):
         """closes the session opened for this collector"""
+        logger.info(f"Closing session for collector of station {self.station.id}")
+
         self._session.close()
         self._engine.dispose()

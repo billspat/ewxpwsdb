@@ -1,8 +1,10 @@
 """Station and StationReadings class for pulling data from the database"""
 
+import logging
 from datetime import datetime, date, timezone
 from sqlmodel import select, Session, text
 from typing import Self, Sequence
+from zoneinfo import ZoneInfo
 
 from ewxpwsdb.db.models import Reading, WeatherStation, APIResponse
 from ewxpwsdb.db.summary_models import HourlySummary, DailySummary
@@ -14,7 +16,8 @@ from ewxpwsdb.weather_apis import API_CLASS_TYPES
 
 from ewxpwsdb.weather_apis.weather_api import WeatherAPI
 
-from zoneinfo import ZoneInfo
+# Configure logger for this module
+logger = logging.getLogger(__name__)
 
 class StationReadings():
     """Methods for interacting (read/write) with reading table for a specific 
@@ -42,6 +45,8 @@ class StationReadings():
         # until that's done, put the timezone for all of our stations here
         self.postgtres_friendly_timezone = 'est'
 
+        logger.info(f"Initialized StationReadings for station ID {station.id}")
+
     @classmethod
     def from_station_id(cls, station_id:int, engine:Engine) -> Self:
         """Create StationReadings object given a valid weather station ID number from the database.   
@@ -53,6 +58,7 @@ class StationReadings():
         """
 
         station:Station = Station.from_station_id(station_id, engine)
+        logger.info(f"Created StationReadings from station ID {station_id}")
         return(cls(station = station.weather_station, engine = engine))
     
 
@@ -66,6 +72,7 @@ class StationReadings():
         
         """
         station:Station = Station.from_station_code(station_code, engine)
+        logger.info(f"Created StationReadings from station code {station_code}")
         return cls(station = station.weather_station, engine = engine)
 
     
@@ -89,6 +96,7 @@ class StationReadings():
         with Session(self._engine) as session:
             readings = session.exec(stmt).fetchall()
 
+        logger.info(f"Retrieved {len(readings)} recent readings for station ID {self.station.id}")
         return(readings)
 
 
@@ -101,7 +109,9 @@ class StationReadings():
         Returns:
             bool: True if any readings in table with this stations id.  
         """
-        return True if self.recent_readings(n = 1) else False
+        has_readings = True if self.recent_readings(n = 1) else False
+        logger.info(f"Station ID {self.station.id} has readings: {has_readings}")
+        return has_readings
 
 
     def latest_reading(self)->Reading|None:
@@ -111,6 +121,7 @@ class StationReadings():
         with Session(self._engine) as session:
             reading:Reading|None = session.exec(stmt).first()
         
+        logger.info(f"Latest reading for station ID {self.station.id}: {reading}")
         return reading
 
     def earliest_reading(self)->Reading | None:        
@@ -118,6 +129,7 @@ class StationReadings():
         with Session(self._engine) as session:
             reading:Reading |None  = session.exec(stmt).first()
 
+        logger.info(f"Earliest reading for station ID {self.station.id}: {reading}")
         return reading
 
         
@@ -129,7 +141,9 @@ class StationReadings():
         """
 
         reading = self.earliest_reading()
-        return ( reading.data_datetime.astimezone(self.zone_info) if reading else None )
+        first_reading_datetime_local = ( reading.data_datetime.astimezone(self.zone_info) if reading else None )
+        logger.info(f"First reading datetime local for station ID {self.station.id}: {first_reading_datetime_local}")
+        return first_reading_datetime_local
                 
 
     def first_reading_date(self)->datetime|None:
@@ -140,7 +154,9 @@ class StationReadings():
         """
 
         reading = self.earliest_reading()
-        return ( reading.data_datetime if reading else None )
+        first_reading_date = ( reading.data_datetime if reading else None )
+        logger.info(f"First reading date for station ID {self.station.id}: {first_reading_date}")
+        return first_reading_date
 
         
     def readings_by_interval_utc(self, interval:UTCInterval, order_by:str='desc')->list[Reading|None]:
@@ -158,6 +174,7 @@ class StationReadings():
         with Session(self._engine) as session:
             readings = session.exec(stmt).fetchall()
     
+        logger.info(f"Retrieved {len(readings)} readings for station ID {self.station.id} within interval {interval}")
         if readings:
             return [reading for reading in readings]
         else:
@@ -189,6 +206,7 @@ class StationReadings():
         with Session(self._engine) as session:
             readings = session.exec(stmt).fetchall()
     
+        logger.info(f"Retrieved {len(readings)} readings for station ID {self.station.id} within local date interval {dates}")
         if readings:
             return [reading for reading in readings]
         else:
@@ -226,6 +244,7 @@ class StationReadings():
             result = session.exec(text(sql_str))   #type: ignore
             apiresponses = [APIResponse(**dict(r._asdict())) for r in result.all()]
             
+        logger.info(f"Retrieved {len(apiresponses)} API responses for station ID {self.station.id} within interval {interval}")
         return apiresponses
         
         
@@ -309,6 +328,7 @@ class StationReadings():
                     for r in result.all()
                     ]
         
+        logger.info(f"Identified {len(missing_data_intervals)} missing data intervals for station ID {self.station.id}")
         return missing_data_intervals
     
         
@@ -343,6 +363,7 @@ class StationReadings():
             result = session.exec(text(sql_str))   #type: ignore
             hourly_summaries:list[HourlySummary] =  [HourlySummary(**r._asdict()) for r in result.all()]
 
+        logger.info(f"Retrieved hourly summaries for station ID {self.station.id} from {local_start_date} to {local_end_date}")
         return hourly_summaries
 
 
@@ -376,4 +397,5 @@ class StationReadings():
             result = session.exec(text(sql_str))   #type: ignore
             daily_summaries:list[DailySummary] =  [DailySummary(**r._asdict()) for r in result.all()]
 
+        logger.info(f"Retrieved daily summaries for station ID {self.station.id} from {local_start_date} to {local_end_date}")
         return daily_summaries
