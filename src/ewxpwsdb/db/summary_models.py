@@ -239,3 +239,71 @@ class DailySummary(BaseModel):
         return sql_str
 
 
+#############################################################################     
+
+
+from datetime import datetime
+from ewxpwsdb.time_intervals import UTCInterval, is_utc
+
+class MissingDataSummary(BaseModel):
+    missing_data_intervals: list[UTCInterval]
+    
+    @classmethod
+    def missing_summary_sql(cls, station_id:int, sampling_interval, start_datetime:datetime|None=None, end_datetime:date = date.today())-> str: 
+          
+
+        utc_interval = UTCInterval(start = start_datetime, end = end_datetime) # type: ignore
+        
+               
+        sql_str = f"""
+        SELECT DISTINCT
+            CASE
+            when gap_start =true and gap_end = true then missing_datetime
+            when gap_start = false and gap_end = true then LAG(missing_datetime, 1) OVER ( ORDER BY missing_datetime ) 
+            when gap_start = true and gap_end = false then missing_datetime
+            when gap_start = false and gap_end = false then Null
+            END start, 
+            CASE
+            when gap_start =true and gap_end = true then missing_datetime
+            when gap_start = false and gap_end = true then missing_datetime
+            when gap_start = true and gap_end = false then LEAD(missing_datetime, 1) OVER ( ORDER BY missing_datetime )
+            when gap_start = false and gap_end = false then Null
+            END end
+            -- ,
+            -- missing_datetime as actual_missing_datetime, gap_start, gap_end 
+        FROM 
+            ( SELECT 
+                clock.tick as missing_datetime, 
+                data_datetime,
+                ( tick - lag(tick)  over (order by clock.tick) ) > interval '{sampling_interval} minutes' as gap_start,
+                ( tick - lead(tick) over (order by clock.tick) )* -1 > interval '{sampling_interval} minutes' as gap_end
+
+            FROM
+        
+                (SELECT
+                    generate_series( 
+                        '{utc_interval.start.isoformat()}'::timestamp with time zone, 
+                        '{utc_interval.end.isoformat()}'::timestamp with time zone, 
+                        '{sampling_interval} minutes') 
+                    as tick) 
+                as clock 
+            
+                left outer join 
+                (SELECT 
+                    data_datetime 
+                FROM reading 
+                WHERE reading.weatherstation_id = {station_id}
+                ) 
+                as station_readings
+                    on clock.tick = station_readings.data_datetime
+
+            WHERE data_datetime is null
+
+            ) as gap_finder
+  
+        WHERE  ( gap_end = true or gap_start = true)
+        """
+        
+        return(sql_str)
+
+
