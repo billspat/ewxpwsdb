@@ -35,6 +35,7 @@ class LocomosAPI(WeatherAPI):
     # this list of supported vars is for 2024 test station only
 
     supported_variables = ['atmp', 'lws', 'relh']
+    standard_time_interval_minutes = 60
     
     
     # object variable may be overridden per station if necessary #TODO create a property

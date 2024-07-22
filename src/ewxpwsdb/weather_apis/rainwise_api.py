@@ -64,6 +64,7 @@ class RainwiseAPI(WeatherAPI):
     _sampling_interval = interval_min = 15
     _lws_threshold = 0.50 # percent minutes wet
     supported_variables = ['atmp', 'lws', 'pcpn', 'relh', 'srad', 'smst', 'wspd', 'wdir', 'wspd_max']
+    standard_time_interval_minutes = 44 # this should get 3 readings
     
     # rainwise only, used for leaf wetness transform
     # previous_minutes_wet_cumulative = None
