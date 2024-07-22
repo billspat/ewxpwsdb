@@ -64,6 +64,8 @@ class WeatherAPI(ABC):
     # station type must be one of STATION_TYPE type, reset this in 
     _station_type: STATION_TYPE = None
     _sampling_interval = 0 
+    standard_time_interval_minutes:int = 14
+
     supported_variables:list[str] = ['atmp', 'atmp_min', 'atmp_max', 'lws', 'pcpn', 'relh', 'srad', 'smst', 'stmp', 'wspd', 'wsp_max', 'wdir']
     empty_response = ['{}']
 
@@ -162,10 +164,12 @@ class WeatherAPI(ABC):
             interval = UTCInterval.previous_interval(end_datetime)
         
         elif not end_datetime and start_datetime: 
-            interval = UTCInterval.previous_interval(start_datetime + timedelta(minutes= 14),delta_mins=14)
+            interval = UTCInterval.previous_interval(start_datetime + timedelta(minutes= self.standard_time_interval_minutes),delta_mins=self.standard_time_interval_minutes)
         
         else : # both are null
-            interval = UTCInterval.previous_fifteen_minutes()
+            # let UTCInterval class pick endtime, startime standard interval minutes before that. 
+            interval = UTCInterval.previous_interval(delta_mins=self.standard_time_interval_minutes)
+    
        
         ###### call the sub-class to pull data from the station vendor API
         # save the response object in this object
