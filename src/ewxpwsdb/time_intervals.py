@@ -1,5 +1,6 @@
 """utils for editing time stamps"""
 
+import logging
 from datetime import datetime, timedelta, date, UTC, time, tzinfo, timezone 
 
 from dateutil import tz
@@ -10,6 +11,8 @@ from typing import Literal, Annotated
 from pydantic import WrapValidator, ConfigDict, Field
 from typing import Self
 
+# Initialize logger
+logger = logging.getLogger(__name__)
 
 def is_valid_timezone(tz:str) -> bool:
     """Simple test if a string is also a valid python timezone library timezone, e.t. "US/Eastern"
@@ -24,6 +27,7 @@ def is_valid_timezone(tz:str) -> bool:
         x = ZoneInfo(tz)
         return(True)
     except ZoneInfoNotFoundError as e: 
+        logger.warning(f"Invalid timezone: {tz}")
         return(False)
         # raise ValueError("timezone_key string must be valid IANA timezone e.g. US/Eastern")
 
@@ -449,6 +453,4 @@ def str_to_interval(start:str|None=None, end:str|None=None)->UTCInterval:
             raise ValueError(f"error creating time interval from start={start} to end={end}: {e}")
 
     return interval
-
-
 

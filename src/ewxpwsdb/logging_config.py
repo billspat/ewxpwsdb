@@ -4,6 +4,7 @@ from logging.handlers import RotatingFileHandler
 from pathlib import Path
 import os
 from datetime import datetime
+import sys
 
 # Define the directory for log files
 LOG_DIR = Path(__file__).parent.parent.parent / 'logs'
@@ -76,3 +77,15 @@ def setup_logging():
     - Email logging configuration is removed as it was not required by the issue.
     """
     logging.config.dictConfig(LOGGING_CONFIG)
+
+    def handle_exception(exc_type, exc_value, exc_traceback):
+        """Handle uncaught exceptions and log them."""
+        if issubclass(exc_type, KeyboardInterrupt):
+            # Ignore keyboard interrupts to avoid logging them
+            sys.__excepthook__(exc_type, exc_value, exc_traceback)
+            return
+        logger = logging.getLogger()
+        logger.error("Uncaught exception", exc_info=(exc_type, exc_value, exc_traceback))
+
+    # Install the exception handler
+    sys.excepthook = handle_exception
