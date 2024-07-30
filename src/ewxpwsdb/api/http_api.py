@@ -11,6 +11,7 @@ import uvicorn
 from fastapi import FastAPI, HTTPException, Query, Depends
 from datetime import date, timedelta, datetime, timezone
 from typing import Annotated, Any
+import logging
 
 from sqlalchemy.exc import NoResultFound
 from ewxpwsdb.db.models import Reading
@@ -21,6 +22,9 @@ from ewxpwsdb.collector import Collector
 from ewxpwsdb.db.database import get_engine, check_engine,default_db_env_var_name, get_db_url
 from ewxpwsdb.time_intervals import str_to_interval, UTCInterval, DateInterval
 
+
+# Set up logging
+logger = logging.getLogger(__name__)
 
 # set the db url in environment when not running with main, see db.database.py for details
 # this is overwritten by args -- see below

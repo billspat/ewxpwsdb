@@ -5,6 +5,10 @@
 from dotenv import load_dotenv
 from os import getenv, path
 from typing import Tuple
+import logging
+
+# Set up logging
+logger = logging.getLogger(__name__)
 
 def get_ssl_files()->Tuple[str, str]:
     """looks for and returns the file names configured for SSL cert and key. 
@@ -41,4 +45,5 @@ def get_ssl_files()->Tuple[str, str]:
     elif not path.exists(key_file_path):
         raise RuntimeError(f"SSL key file not found {cert_file_path}, can't load SSL")
     else:
+        logger.info("SSL files found and loaded successfully")
         return (cert_file_path, key_file_path)
