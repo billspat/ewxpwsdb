@@ -5,7 +5,10 @@ from uuid import uuid4
 from sqlalchemy import DateTime
 from pydantic import AwareDatetime, field_serializer
 import json
+import logging
 
+# Set up logging
+logger = logging.getLogger(__name__)
 
 from ewxpwsdb import __version__
 

@@ -4,6 +4,10 @@ from pydantic import BaseModel, Field
 from datetime import date    
 from sqlmodel import Session   
 from typing import Self
+import logging
+
+# Set up logging
+logger = logging.getLogger(__name__)
 
 from datetime import tzinfo
 from zoneinfo import ZoneInfo
@@ -127,13 +131,13 @@ class HourlySummary(BaseModel):
             ORDER BY station_code, local_date, local_hour
         """
 
+        logger.debug(f"Generated SQL for hourly summary: {sql_str}")
         return sql_str
     
     @classmethod
     def select_hourly_summaries(cls, engine, station_id, local_start_date=None, local_end_date=None)->list[Self]:
-        
-        sql_str = cls.sql_str(station_id=station_id, local_start_date= local_start_date, 
-                                        local_end_date = local_end_date)
+        sql_str = cls.sql_str(station_id=station_id, local_start_date=local_start_date, local_end_date=local_end_date)
+        logger.info(f"Selecting hourly summaries for station {station_id} from {local_start_date} to {local_end_date}")
         
         with Session(engine) as session:
             result = session.exec(text(sql_str))   #type: ignore
@@ -236,6 +240,7 @@ class DailySummary(BaseModel):
         
         #date_trunc('day', reading.data_datetime at time zone '{pg_timezone}')::date as local_date,
 
+        logger.debug(f"Generated SQL for daily summary: {sql_str}")
         return sql_str
 
 
@@ -303,7 +308,7 @@ class MissingDataSummary(BaseModel):
   
         WHERE  ( gap_end = true or gap_start = true)
         """
-        
+        logger.debug(f"Generated SQL for missing data summary: {sql_str}")
         return(sql_str)
 
 
