@@ -9,6 +9,9 @@ from sqlmodel import Session
 from ewxpwsdb.db.models import WeatherStation
 from sqlalchemy.exc import IntegrityError
 
+# Set up logging
+logger = logging.getLogger(__name__)
+
 # 
 def read_station_table(tsv_file_path:str)->list[dict[str, typing.Any]] | None:
     """read CSV in standard station config format, and flatten into dict useable by station configs. 
@@ -41,7 +44,7 @@ def read_station_table(tsv_file_path:str)->list[dict[str, typing.Any]] | None:
 
 
     except TypeError as e:
-        logging.error("TypeError: Exception encountered reading in ewx_pws.py.stations_from_file {}:\n {}".format(tsv_file_path, e))
+        logger.error(f"TypeError: Exception encountered reading in ewx_pws.py.stations_from_file {tsv_file_path}:\n {e}")
         raise e
     
     return(weatherstation_data)
@@ -67,8 +70,8 @@ def import_station_records(weatherstation_data:list, engine):
                 session.add(station_record)
                 session.commit()
             except IntegrityError:
-                session.rollback()  
-                print(f"Station with code '{s['station_code']}' already exists in the database, not overwriting existing record")
+                session.rollback()
+                logger.warning(f"Station with code '{s['station_code']}' already exists in the database, not overwriting existing record")
 
         # actually insert data, will fail if there are duplicate records
         session.close()
@@ -102,13 +105,11 @@ def import_station_types(engine):
         for station in station_models:
             try:
                 session.add(station)
-                session.commit()  
-                print(f"Station with type '{station.station_type}' merged into the database")
+                session.commit()
+                logger.info(f"Station with type '{station.station_type}' merged into the database")
             except IntegrityError:
-                session.rollback()  
-                print(f"Station with type '{station.station_type}' already exists in the database")
-
-
+                session.rollback()
+                logger.warning(f"Station with type '{station.station_type}' already exists in the database")
 
 def import_station_file(tsv_file:str, engine):
     """Reads TSV file and inserts all rows as station records for populating a new DB. 

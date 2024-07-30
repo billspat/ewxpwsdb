@@ -14,6 +14,9 @@ from ewxpwsdb.db.importdata import import_station_types, import_station_file
 
 load_dotenv()
 
+# Set up logging
+logger = logging.getLogger(__name__)
+
 _EWXPWSDB_URL_VAR = "EWXPWSDB_URL"
 
 def default_db_env_var_name():
@@ -55,7 +58,7 @@ def check_db_url(db_url:str, echo=False)->bool:
     try:
         engine = create_engine(url = db_url, echo = echo)
     except Exception as e:
-        # could not even parse the connection string
+        logger.error(f"Error creating engine: {e}")
         return False
     
     return check_engine(engine)
@@ -77,6 +80,7 @@ def check_engine(engine:Engine)->bool:
             result = connection.execute(text('SELECT 1;'))
 
     except Exception as e:
+        logger.error(f"Error checking engine: {e}")
         return False
 
     return True
@@ -204,8 +208,8 @@ def init_db(engine, station_tsv_file=None):
     try:
         SQLModel.metadata.create_all(engine)
     except Exception as e:
-        logging.error(f"error creating new database: {e}")
-        raise(e)
+        logger.error(f"error creating new database: {e}")
+        raise e
 
 
     # for this db, set the timezone to UTC to be sure
