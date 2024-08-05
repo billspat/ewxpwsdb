@@ -7,10 +7,14 @@ methods in the parent class.
 import json
 from requests import post, Session, Request, Response
 from datetime import datetime, timezone
+import logging
 
 from . import STATION_TYPE
 from ewxpwsdb.weather_apis.weather_api import WeatherAPIConfig, WeatherAPI
 from ewxpwsdb.db.models import WeatherStation
+
+# Initialize the logger
+logger = logging.getLogger(__name__)
 
 ## CONSTANT
 # LOCOMOS stations output leaf wetness in average millivolts.  
@@ -69,6 +73,7 @@ class LocomosAPI(WeatherAPI):
         
         # re-cast api config to correct type for static type checking
         self.api_config: LocomosAPIConfig = self.api_config
+        logger.info("Initialized LocomosAPI for station %s", weather_station.station_code)
 
 
     def _get_variables(self) -> dict[str,str]:
@@ -94,16 +99,18 @@ class LocomosAPI(WeatherAPI):
             response = Session().send(variables_request)
 
             if response.status_code != 200:
-                raise RuntimeError('could not get variable list from LOCOMOS API')
-            
+                logger.error("Failed to get variable list from LOCOMOS API")
+                return {}
+
             variable_response = json.loads(response.content)
             if 'results' not in variable_response.keys():
-                raise RuntimeError('LOCOMOS api did not return variable content as expect (no result key)')
-            
-            variables = {}   
+                logger.error("LOCOMOS API did not return variable content as expected (no result key)")
+                return {}
+
+            variables = {}
             for result in variable_response['results']:
                 variables[result['id']] = result['label']
-            #TODO add logging
+            logger.debug("Loaded variables: %s", variables)
             self.variables = variables
         
         return(self.variables)
@@ -134,9 +141,9 @@ class LocomosAPI(WeatherAPI):
         
         if isinstance(variables, dict) and len(variables) > 0: 
             variable_ids = list(variables.keys())
-
         else:
-            raise RuntimeError(f"LOCOMOS station {self.id} could not get variable list")
+            logger.error("LOCOMOS station %s could not get variable list", self.id)
+            return []
 
         response_columns = [
             'timestamp', 
@@ -155,11 +162,17 @@ class LocomosAPI(WeatherAPI):
                 'end': end_milliseconds,
         }            
         
-        response = post(url='https://industrial.api.ubidots.com/api/v1.6/data/raw/series', 
-                            headers=request_headers, 
+        try:
+            response = post(url='https://industrial.api.ubidots.com/api/v1.6/data/raw/series',
+                            headers=request_headers,
                             json=request_params)
-        
-        return([response])
+            response.raise_for_status()
+            logger.info("Successfully retrieved data for interval %s - %s", start_datetime, end_datetime)
+        except Exception as e:
+            logger.error("Failed to retrieve data for interval %s - %s: %s", start_datetime, end_datetime, e)
+            return []
+
+        return [response]
 
     def _data_present_in_response(self, response_data:dict)->bool:
         """check for presence of data in response

@@ -18,6 +18,7 @@ import json
 from requests import get, Response
 from datetime import datetime,timezone
 from zoneinfo import ZoneInfo
+import logging
 
 from typing import Any
 
@@ -25,6 +26,8 @@ from . import STATION_TYPE
 from .weather_api import WeatherAPI, WeatherAPIConfig
 from ewxpwsdb.db.models import WeatherStation, APIResponse
 
+# Initialize the logger
+logger = logging.getLogger(__name__)
 
 class SpectrumAPIConfig(WeatherAPIConfig):
         _station_type   : STATION_TYPE = 'SPECTRUM'
@@ -48,6 +51,7 @@ class SpectrumAPI(WeatherAPI):
         super().__init__(weather_station)  
         # cast api config to correct type for static type checking
         self.api_config: SpectrumAPIConfig = self.api_config
+        logger.info("Initialized SpectrumAPI for station %s", weather_station.station_code)
 
     def _format_time(self, dt:datetime)->str:
         """
@@ -72,14 +76,20 @@ class SpectrumAPI(WeatherAPI):
         start_datetime_str = self._format_time(start_datetime)
         end_datetime_str = self._format_time(end_datetime)
         
-        response = get( url='https://api.specconnect.net:6703/api/Customer/GetDataInDateTimeRange',
-                        params={'customerApiKey': self.api_config.apikey, 
-                                'serialNumber': self.api_config.sn,
-                                'startDate': start_datetime_str, 
-                                'endDate': end_datetime_str}
-                        )
-        
-        return([response])
+        try:
+            response = get( url='https://api.specconnect.net:6703/api/Customer/GetDataInDateTimeRange',
+                            params={'customerApiKey': self.api_config.apikey, 
+                                    'serialNumber': self.api_config.sn,
+                                    'startDate': start_datetime_str, 
+                                    'endDate': end_datetime_str}
+                          )
+            response.raise_for_status()
+            logger.info("Successfully retrieved data for interval %s - %s", start_datetime, end_datetime)
+        except Exception as e:
+            logger.error("Failed to retrieve data for interval %s - %s: %s", start_datetime, end_datetime, e)
+            return []
+
+        return [response]
 
 
     def _data_present_in_response(self, response_data:dict)->bool:
@@ -155,6 +165,8 @@ class SpectrumAPI(WeatherAPI):
 
             readings.append(reading)
 
+        
+        logger.debug("Transformed readings: %s", readings)
         return readings
     
     def _handle_error(self):

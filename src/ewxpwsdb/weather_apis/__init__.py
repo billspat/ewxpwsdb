@@ -1,4 +1,8 @@
+import logging
 from typing import Literal
+
+# Initialize the logger
+logger = logging.getLogger(__name__)
 
 STATION_TYPE = Literal['ZENTRA', 'ONSET', 'DAVIS', 'RAINWISE', 'SPECTRUM', 'LOCOMOS', None]
 STATION_TYPE_LIST =   ['ZENTRA', 'ONSET', 'DAVIS', 'RAINWISE', 'SPECTRUM', 'LOCOMOS']
@@ -25,3 +29,5 @@ CONFIG_CLASS_TYPES = {'DAVIS': DavisAPIConfig,
                       'SPECTRUM':SpectrumAPIConfig,
                       'ZENTRA':ZentraAPIConfig
                       }
+
+logger.info("API and Config class types initialized.")
