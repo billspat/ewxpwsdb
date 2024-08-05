@@ -43,6 +43,9 @@ from .weather_api import WeatherAPI, WeatherAPIConfig
 
 from ewxpwsdb.db.models import WeatherStation
 
+# Initialize the logger
+logger = logging.getLogger(__name__)
+
 class ZentraAPIConfig(WeatherAPIConfig):
         _station_type   : STATION_TYPE = 'ZENTRA'
         sn             : str #  The serial number of the device.
@@ -88,6 +91,7 @@ class ZentraAPI(WeatherAPI):
         super().__init__(weather_station)  
         # cast api config to Zentra type for static type checking
         self.api_config: ZentraAPIConfig = self.api_config
+        logger.info("Initialized ZentraAPI for station %s", weather_station.station_code)
 
 
     @property
@@ -155,17 +159,22 @@ class ZentraAPI(WeatherAPI):
                 retry_counter += 1
                 if retry_counter > self.max_retries:
                     err_message = f"Zentra timed out {self.max_retries} times"
+                    logger.error(err_message)
                     raise RuntimeError(err_message) 
 
                 lockout = int(response.text[response.text.find("Lock out expires in ")+20:response.text.find("Lock out expires in ")+22])
-                logging.warning(f"Zentra station {self.weather_station.station_code} API too-frequent request throttle, retrying in {lockout+1} seconds...")
+                logger.warning(f"Zentra station {self.weather_station.station_code} API too-frequent request throttle, retrying in {lockout+1} seconds...")
                 time.sleep(lockout + 1)
 
                 response = get(url, params=params, headers=headers)
             
+            if response.status_code != 200:
+                logger.error("Failed to retrieve data for page %s: %s", page_num+1, response.text)
+
             responses.append(response)
 
-        return(responses)
+        logger.info("Successfully retrieved data for interval %s - %s", start_datetime, end_datetime)
+        return responses
 
 
     def _data_present_in_response(self, response_data:dict)->bool:
@@ -240,8 +249,9 @@ class ZentraAPI(WeatherAPI):
                     else:
                         readings_by_timestamp[timestamp][ewx_field_name] = zentra_reading['value']
 
-        # no longer need the timestamp keys, and calling program is expecting a list ()
-        return list(readings_by_timestamp.values())
+        readings = list(readings_by_timestamp.values())
+        logger.debug("Transformed readings: %s", readings)
+        return readings
         
     def _handle_error(self):
         """ place holder to remind that we need to add err handling to each class"""

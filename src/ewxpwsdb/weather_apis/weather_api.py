@@ -22,6 +22,9 @@ from ewxpwsdb.time_intervals import is_tz_aware, UTCInterval, is_utc
 from ewxpwsdb.db.models import WeatherStation, Reading, APIResponse
 from . import STATION_TYPE 
 
+# Initialize the logger
+logger = logging.getLogger(__name__)
+
 #################################################################################
 class WeatherAPIConfig(BaseModel):
     """Base API configuration model to validate configuration values for connecting to various vendor APIs.  
@@ -182,7 +185,7 @@ class WeatherAPI(ABC):
             )
 
         except Exception as e:
-            logging.error(f"Error getting reading from station {self.id}: {e}")
+            logger.error(f"Error getting reading from station {self.id}: {e}")
             raise e
 
         # ensure what is returned is _always_ a list
@@ -300,7 +303,7 @@ class WeatherAPI(ABC):
             all_response_readings.extend(readings)
 
         self.current_readings = all_response_readings
-
+        logger.debug("Transformed readings: %s", self.current_readings)
         return self.current_readings
         
     #### station class utilities

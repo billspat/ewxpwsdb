@@ -70,6 +70,9 @@ from .weather_api import WeatherAPI, Response, WeatherAPIConfig
 # only used for type checking
 from ewxpwsdb.db.models import WeatherStation
 
+# Initialize the logger
+logger = logging.getLogger(__name__)
+
 class DavisAPIConfig(WeatherAPIConfig):
         _station_type   : STATION_TYPE = 'DAVIS'
         sn             : str #  The serial number of the device.
@@ -92,6 +95,7 @@ class DavisAPI(WeatherAPI):
         super().__init__(weather_station)
         # cast api config to correct type for static type checking
         self.api_config: DavisAPIConfig = self.api_config
+        logger.info("Initialized DavisAPI for station %s", weather_station.station_code)
  
         
 
@@ -118,6 +122,7 @@ class DavisAPI(WeatherAPI):
             else:
                 splits.append((curr_start_date, curr_start_date + timedelta(seconds=secondsdiff)))
                 secondsdiff -= secondsdiff
+        logger.debug("Generated intervals: %s", splits)
         return splits
     
     def _get_readings(self,start_datetime:datetime, end_datetime:datetime)->list[Response]:
@@ -142,15 +147,20 @@ class DavisAPI(WeatherAPI):
 
             apisig = self._compute_signature(timestamp_integer=now_timestamp_integer, start_timestamp=start_timestamp, end_timestamp=end_timestamp)
             self.current_api_request = Request('GET',
-                                url='https://api.weatherlink.com/v2/historic/' + self.api_config.sn,
-                                params={'api-key': self.api_config.apikey,
-                                        't': now_timestamp_integer,
-                                        'start-timestamp': start_timestamp,
-                                        'end-timestamp': end_timestamp,
-                                        'api-signature': apisig}).prepare()
-            
-            response = Session().send(self.current_api_request)
-            response_list.append(response)
+                                               url='https://api.weatherlink.com/v2/historic/' + self.api_config.sn,
+                                               params={'api-key': self.api_config.apikey,
+                                                       't': now_timestamp_integer,
+                                                       'start-timestamp': start_timestamp,
+                                                       'end-timestamp': end_timestamp,
+                                                       'api-signature': apisig}).prepare()
+            try:
+                response = Session().send(self.current_api_request)
+                response.raise_for_status()
+                response_list.append(response)
+                logger.info("Successfully retrieved data for interval %s - %s", start_datetime, end_datetime)
+            except Exception as e:
+                logger.error("Failed to retrieve data for interval %s - %s: %s", start_datetime, end_datetime, e)
+                continue
 
         return response_list
 
@@ -172,6 +182,7 @@ class DavisAPI(WeatherAPI):
             msg.encode('utf-8'),
             hashlib.sha256).hexdigest()
         
+        logger.debug("Computed API signature: %s", self.apisig)
         return self.apisig
 
     def _data_present_in_response(self, response_data:dict)->bool:
@@ -186,7 +197,7 @@ class DavisAPI(WeatherAPI):
 
         if 'sensors' not in response_data:
             return False
-        
+
         for lsid in response_data['sensors']:
             if 'data' not in lsid.keys():
                  return False
@@ -280,8 +291,8 @@ class DavisAPI(WeatherAPI):
                     readings_by_datetime[record_datetime].update(wetness_sensor_data)
 
         # convert from dictionary of dictionaries back to a list of dictionaries as expected
-        readings:list[dict] = list(readings_by_datetime.values())
-
+        readings: list[dict] = list(readings_by_datetime.values())
+        logger.debug("Transformed readings: %s", readings)
         return readings
     
 

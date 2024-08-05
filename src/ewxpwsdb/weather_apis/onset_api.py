@@ -7,6 +7,7 @@ methods in the parent class.
 import json
 from requests import get, post, Response 
 from datetime import datetime, timezone, UTC
+import logging
 
 from pydantic import Field
 
@@ -15,6 +16,8 @@ from . import STATION_TYPE
 from ewxpwsdb.weather_apis.weather_api import WeatherAPIConfig, WeatherAPI
 from ewxpwsdb.db.models import WeatherStation
 
+# Initialize the logger
+logger = logging.getLogger(__name__)
 
 ### Onset Notes
 
@@ -54,7 +57,7 @@ class OnsetAPI(WeatherAPI):
         super().__init__(weather_station)
         # cast api config to correct type for static type checking
         self.api_config: OnsetAPIConfig = self.api_config
-
+        logger.info("Initialized OnsetAPI for station %s", weather_station.station_code)
 
     def _check_config(self):
         # TODO implement 
@@ -84,9 +87,9 @@ class OnsetAPI(WeatherAPI):
                             )
         
         if response.status_code != 200:
-            raise Exception(
-                'Get Auth request failed with \'{}\' status code and \'{}\' message.'.format(response.status_code,
-                                                                                    response.text))
+            logger.error("Get Auth request failed with status code %s and message %s", response.status_code, response.text)
+            return None
+        
         response = response.json()
         # store this in the object
         self._access_token = response['access_token']
@@ -103,18 +106,27 @@ class OnsetAPI(WeatherAPI):
     
 
         access_token = self._get_auth() 
-            
+        if not access_token:
+            logger.error("Failed to retrieve access token")
+            return []
+
         start_datetime_str = self._format_time(start_datetime)
         end_datetime_str = self._format_time(end_datetime)
 
-        response = get( url=f"https://webservice.hobolink.com/ws/data/file/{self.api_config.ret_form}/user/{self.api_config.user_id}",
-                        headers={'Authorization': "Bearer " + access_token},
-                        params={
-                            'loggers': self.api_config.sn,
-                            'start_date_time': start_datetime_str,
-                            'end_date_time': end_datetime_str
-                            }
-                        )
+        try:
+            response = get( url=f"https://webservice.hobolink.com/ws/data/file/{self.api_config.ret_form}/user/{self.api_config.user_id}",
+                            headers={'Authorization': "Bearer " + access_token},
+                            params={
+                                'loggers': self.api_config.sn,
+                                'start_date_time': start_datetime_str,
+                                'end_date_time': end_datetime_str
+                                }
+                            )
+            response.raise_for_status()
+            logger.info("Successfully retrieved data for interval %s - %s", start_datetime, end_datetime)
+        except Exception as e:
+            logger.error("Failed to retrieve data for interval %s - %s: %s", start_datetime, end_datetime, e)
+            return []
 
         return([response])
     
@@ -194,8 +206,10 @@ class OnsetAPI(WeatherAPI):
                     readings[ts]['wspd'] = sensor_reading["si_value"]  # meters/sec
                 case 'Gust Speed':
                     readings[ts]['wspd_max'] = sensor_reading["si_value"]  # meters/sec
-                    
-        return list(readings.values())
+
+        transformed_readings = list(readings.values())
+        logger.debug("Transformed readings: %s", transformed_readings)
+        return transformed_readings
         
 
     def wetness_transform(self, w):
@@ -246,7 +260,7 @@ class OnsetAPI(WeatherAPI):
 
         # convert to list
         readings = [r for r in readings.values()]
-
+        logger.debug("Transformed readings by sensor serial: %s", readings)
         return readings
         
 

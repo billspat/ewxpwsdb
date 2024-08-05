@@ -41,11 +41,14 @@ The following variables are availabe from the Rainwise API:
 import json
 from requests import get, Response
 from datetime import datetime
+import logging
 
 from . import STATION_TYPE
 from ewxpwsdb.weather_apis.weather_api import WeatherAPIConfig, WeatherAPI
 from ewxpwsdb.db.models import WeatherStation, APIResponse
 
+# Initialize the logger
+logger = logging.getLogger(__name__)
 
 class RainwiseAPIConfig(WeatherAPIConfig):
         _station_type   : STATION_TYPE = 'RAINWISE'
@@ -75,6 +78,7 @@ class RainwiseAPI(WeatherAPI):
         super().__init__(weather_station)  
         # cast api config to correct type for static type checking
         self.api_config: RainwiseAPIConfig = self.api_config
+        logger.info("Initialized RainwiseAPI for station %s", weather_station.station_code)
 
 
     def _get_readings(self, start_datetime:datetime, end_datetime:datetime, 
@@ -108,7 +112,14 @@ class RainwiseAPI(WeatherAPI):
                                 'units':'metric' 
                                 }
         
-        response = get(url= url, params=params)
+        try:
+            response = get(url= url, params=params)
+            response.raise_for_status()
+            logger.info("Successfully retrieved data for interval %s - %s", start_datetime, end_datetime)
+        except Exception as e:
+            logger.error("Failed to retrieve data for interval %s - %s: %s", start_datetime, end_datetime, e)
+            return []
+
         # response should have 1 extra previous reading
         return [response]
 
@@ -229,6 +240,7 @@ class RainwiseAPI(WeatherAPI):
         # return object to previous state
         delattr(self, "previous_minutes_wet_cumulative")
         
+        logger.debug("Transformed readings: %s", readings)
         return readings
 
     def _handle_error(self):
