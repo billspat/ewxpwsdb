@@ -1,11 +1,13 @@
 """weather data collection class"""
 
 from datetime import datetime, timedelta, timezone
+from http.client import HTTPException
 import logging
 
 # Other imports
 from sqlmodel import select, update
 from sqlalchemy import Engine
+from sqlalchemy.exc import NoResultFound
 
 from typing import Sequence
 
@@ -47,6 +49,9 @@ class Collector():
         try:
             station_obj = Station.from_station_code(station_code=station_code, engine=engine)
             return cls(station=station_obj.weather_station, engine=engine)
+        except NoResultFound:
+            logger.error(f"No result found for station code {station_code}")
+            raise HTTPException(status_code=404, detail=f"Station with code '{station_code}' not found")
         except Exception as e:
             logger.error(f"Error getting station with station_code {station_code} from database: {e}")
             raise RuntimeError(f"collector class: error getting station with station_code {station_code} from database: {e}")
@@ -71,6 +76,9 @@ class Collector():
         try:
             station_obj = Station.from_station_id(station_id=station_id, engine=engine)
             return cls(station=station_obj.weather_station, engine=engine)
+        except NoResultFound:
+            logger.error(f"No result found for station ID {station_id}")
+            raise HTTPException(status_code=404, detail=f"Station with ID '{station_id}' not found")
         except Exception as e:
             logger.error(f"Error getting station with id {station_id} from database: {e}")
             raise RuntimeError(f"collector class error: can not load station with id {station_id}: {e}")

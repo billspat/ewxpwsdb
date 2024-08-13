@@ -7,7 +7,6 @@ from pydantic import BaseModel, SecretStr, AwareDatetime
 from sqlalchemy.sql import text
 from sqlalchemy.exc import NoResultFound
 
-
 from ewxpwsdb.db.models import WeatherStation, Reading
 from ewxpwsdb.db.database import Session, Engine, check_engine
 from ewxpwsdb.weather_apis import API_CLASS_TYPES
@@ -105,7 +104,7 @@ class Station():
                 station_record:WeatherStation= session.exec(stmt).one()
         except NoResultFound as e:
             logger.error(f"No result found for station code {station_code}")
-            raise NoResultFound()
+            raise NoResultFound(f"No station found with code {station_code}")
         except Exception as e:
             logger.error(f"Could not get station {station_code} from database engine {engine}: {e}")
             raise RuntimeError(f"could not get station {station_code} from database engine {engine}")
@@ -122,20 +121,25 @@ class Station():
         if not check_engine(engine):
             raise ValueError("invalid engine/connection string: {engine}")
         
-        with Session(engine) as session:
+        try:
+            with Session(engine) as session:
             # note this is SQLModel syntax, not SQLAlchemy
-            try:
                 station_record:WeatherStation|None = session.get(WeatherStation, station_id)                
-            except Exception as e:
-                logger.error(f"Database error retrieving station record with id {station_id}: {e}")
-                raise RuntimeError(f"database error retrieving station record with id {station_id}: {e}")
+                if not station_record:
+                    raise NoResultFound()
+        except NoResultFound:
+            logger.error(f"No result found for station ID {station_id}")
+            raise NoResultFound(f"No station found with ID {station_id}")
+        except Exception as e:
+            logger.error(f"Database error retrieving station record with id {station_id}: {e}")
+            raise RuntimeError(f"database error retrieving station record with id {station_id}: {e}")
 
-            if station_record:
-                logger.info(f"Retrieved station record for station ID {station_id}")
-                return cls(weather_station = station_record)
-            else:
-                logger.error(f"No station record found with id {station_id}")
-                raise ValueError(f"no station record found with id {station_id}")
+        if station_record:
+            logger.info(f"Retrieved station record for station ID {station_id}")
+            return cls(weather_station = station_record)
+        else:
+            logger.error(f"No station record found with id {station_id}")
+            raise ValueError(f"no station record found with id {station_id}")
 
     @classmethod
     def all_station_codes(cls,engine:Engine)->list[str]:
