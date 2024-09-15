@@ -149,6 +149,8 @@ def station_db_weather(station_code:str,
 
     try:
         station_readings = StationReadings.from_station_code(station_code, engine)
+    except NoResultFound as e:
+        raise HTTPException(status_code=404, detail=f"404: station '{station_code}' not found")
     except ValueError as e:
         raise HTTPException(status_code=404, detail="station_code not found {e}".format(e = e))
     except Exception as e:
@@ -199,6 +201,8 @@ def station_hourly_weather(station_code:str,
     from datetime import datetime
     try:
         station_readings = StationReadings.from_station_code(station_code, engine)
+    except NoResultFound as e:
+        raise HTTPException(status_code=404, detail=f"404: station '{station_code}' not found")
     except ValueError as e:
         raise HTTPException(status_code=404, detail="station_code not found")
     except Exception as e:
@@ -236,6 +240,8 @@ def station_daily_weather(station_code:str,
 
     try:
         station_readings = StationReadings.from_station_code(station_code, engine)
+    except NoResultFound as e:
+        raise HTTPException(status_code=404, detail=f"404: station '{station_code}' not found")
     except ValueError as e:
         raise HTTPException(status_code=404, detail="station_code not found")
     except Exception as e:

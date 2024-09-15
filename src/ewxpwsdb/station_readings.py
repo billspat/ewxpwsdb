@@ -5,6 +5,7 @@ from datetime import datetime, date, timezone
 from sqlmodel import select, Session, text
 from typing import Self, Sequence
 from zoneinfo import ZoneInfo
+from sqlalchemy.exc import NoResultFound
 
 from ewxpwsdb.db.models import Reading, WeatherStation, APIResponse
 from ewxpwsdb.db.summary_models import HourlySummary, DailySummary, MissingDataSummary
@@ -57,7 +58,11 @@ class StationReadings():
         
         """
 
-        station:Station = Station.from_station_id(station_id, engine)
+        try:
+            station:Station = Station.from_station_id(station_id, engine)
+        except NoResultFound:
+            logger.error(f"No result found for station ID {station_id}")
+            raise NoResultFound(f"No station found with ID {station_id}")
         logger.info(f"Created StationReadings from station ID {station_id}")
         return(cls(station = station.weather_station, engine = engine))
     
@@ -71,7 +76,11 @@ class StationReadings():
             engine (Engine): sqlalchemy engine object with working connection to an EWX database
         
         """
-        station:Station = Station.from_station_code(station_code, engine)
+        try:
+            station:Station = Station.from_station_code(station_code, engine)
+        except NoResultFound:
+            logger.error(f"No station found with code {station_code}")
+            raise NoResultFound(f"No station found with code {station_code}")
         logger.info(f"Created StationReadings from station code {station_code}")
         return cls(station = station.weather_station, engine = engine)
 
