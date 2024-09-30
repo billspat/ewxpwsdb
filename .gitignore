@@ -155,3 +155,7 @@ dmypy.json
 *.db
 *.sqlite3
 *.pem
+# Elastic Beanstalk Files
+.elasticbeanstalk/*
+!.elasticbeanstalk/*.cfg.yml
+!.elasticbeanstalk/*.global.yml
