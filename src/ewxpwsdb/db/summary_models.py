@@ -221,7 +221,7 @@ class DailySummary(BaseModel):
                     EXTRACT(HOUR FROM reading.data_datetime at time zone weatherstation.timezone) as local_hour,
 
     
-                    date_trunc('year', reading.data_datetime at time zone weatherstation.timezone) as `year`,
+                    date_trunc('year', reading.data_datetime at time zone weatherstation.timezone) as "year",
                     reading.*,
                     weatherstation.station_code as station_code
 
@@ -229,7 +229,7 @@ class DailySummary(BaseModel):
                     ON reading.weatherstation_id = weatherstation.id
                 
                 WHERE reading.weatherstation_id = {station_id} and
-                    (reading.data_datetime at time zone weatherstation.timezone')::date >= '{start_date_str}'  and
+                    (reading.data_datetime at time zone weatherstation.timezone)::date >= '{start_date_str}'  and
                     (reading.data_datetime at time zone weatherstation.timezone)::date <= '{end_date_str}' 
                 ORDER BY reading.weatherstation_id, local_date, reading.data_datetime
                 )
