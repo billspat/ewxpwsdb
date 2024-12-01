@@ -1,7 +1,8 @@
 
 """data models for hourly and daily statistics generated from the EWX PWS database.   Models classes include the sql to generate the statistics"""
 from pydantic import BaseModel, Field
-from datetime import date    
+from datetime import date, datetime
+
 from sqlmodel import Session   
 from typing import Self
 import logging
@@ -9,9 +10,7 @@ import logging
 # Set up logging
 logger = logging.getLogger(__name__)
 
-from datetime import tzinfo
-from zoneinfo import ZoneInfo
-from ewxpwsdb.time_intervals import DateInterval
+from ewxpwsdb.time_intervals import UTCInterval
 
 class HourlySummary(BaseModel):
     """data model for the hourly summary statistics from EWX PWS database, 
@@ -246,9 +245,6 @@ class DailySummary(BaseModel):
 
 #############################################################################     
 
-
-from datetime import datetime
-from ewxpwsdb.time_intervals import UTCInterval, is_utc
 
 class MissingDataSummary(BaseModel):
     missing_data_intervals: list[UTCInterval]
