@@ -245,6 +245,60 @@ class DailySummary(BaseModel):
 
 #############################################################################     
 
+class LatestWeatherSummary(BaseModel):
+    station_code: str
+    local_datetime: datetime
+    local_date: date
+    minutes_since_latest_reading: int
+    id: int
+    apiresponse_id: int
+    data_datetime: datetime
+    request_id: str
+    weatherstation_id: int
+    station_sampling_interval: int
+    atmp: float | None
+    atmp_min: float | None
+    atmp_max: float | None
+    dwpt: float | None
+    lws: float | None
+    pcpn: float | None
+    relh: float | None
+    rpet: float | None
+    smst: float | None
+    stmp: float | None
+    srad: float | None
+    wdir: float | None
+    wspd: float | None
+    wspd_max: float | None
+    
+    @classmethod
+    def latest_weather_sql(cls, station_id:int):
+        
+        sql_str = f"""
+            SELECT
+                weatherstation.station_code,
+                reading.data_datetime at time zone weatherstation.timezone as local_datetime,
+                (reading.data_datetime at time zone weatherstation.timezone)::date as local_date,
+                ROUND(  (EXTRACT(EPOCH FROM (CURRENT_TIMESTAMP	- reading.data_datetime) ))/60 ,  0 ) AS minutes_since_latest_reading,
+                reading.*
+            FROM
+                reading inner join weatherstation ON weatherstation.id = reading.weatherstation_id
+            WHERE 
+                reading.weatherstation_id = {station_id}
+            ORDER BY
+                reading.data_datetime DESC
+            LIMIT 1;
+        """
+        
+        logger.debug(f"Generated SQL for latest weather summary: {sql_str}")
+
+        return(sql_str)
+
+
+
+
+
+############################################################################# 
 
 class MissingDataSummary(BaseModel):
     missing_data_intervals: list[UTCInterval]

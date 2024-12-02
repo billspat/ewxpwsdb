@@ -124,7 +124,12 @@ def test_station_readings_get_responses(test_station_readings):
     assert isinstance(previous_responses[0], APIResponse)
     
 
-        
+def test_station_lastest_reading_summary(test_station_readings):    
+    from ewxpwsdb.db.summary_models import LatestWeatherSummary
+    reading = test_station_readings.latest_weather()
+    assert reading is not None
+    assert isinstance(reading, LatestWeatherSummary)
+
             
 
 

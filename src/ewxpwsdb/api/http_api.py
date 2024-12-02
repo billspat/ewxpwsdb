@@ -15,7 +15,7 @@ import logging
 
 from sqlalchemy.exc import NoResultFound
 from ewxpwsdb.db.models import Reading
-from ewxpwsdb.db.summary_models import HourlySummary, DailySummary
+from ewxpwsdb.db.summary_models import HourlySummary, DailySummary, LatestWeatherSummary
 from ewxpwsdb.station_readings import StationReadings
 from ewxpwsdb.station import Station, WeatherStationDetail
 from ewxpwsdb.collector import Collector
@@ -128,6 +128,38 @@ def station_api_weather(station_code:str,
         return(readings) 
 
 
+@app.get("/weather/{station_code}/latest")
+def station_db_latest(station_code:str) -> LatestWeatherSummary:
+    """_summary_
+
+    Args:
+        station_code (str): _description_
+
+    Returns:
+        LatestWeatherSummary: _description_
+    """
+
+    try:
+        station_readings = StationReadings.from_station_code(station_code, engine)
+    except NoResultFound as e:
+        raise HTTPException(status_code=404, detail=f"404: station '{station_code}' not found")
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail="station_code not found {e}".format(e = e))
+    except Exception as e:
+        raise HTTPException(status_code=503, detail="error with connection {e}".format(e = e))
+    
+    try:
+        latest_weather_summary = station_readings.latest_weather() 
+    except Exception as e:
+        raise HTTPException(status_code=503, detail="couldn't get any reading data from {station_code}")
+    
+    if not latest_weather_summary:
+        raise HTTPException(status_code=400, detail="no reading data available")
+    else:
+        return latest_weather_summary
+    
+    
+    
 # TODO: input param formats and requirements of UTCInterval are incompatible  date -> datetime w/timezone.  
 @app.get("/weather/{station_code}/readings")
 def station_db_weather(station_code:str, 

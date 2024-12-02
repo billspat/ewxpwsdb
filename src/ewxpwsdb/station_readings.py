@@ -8,7 +8,7 @@ from zoneinfo import ZoneInfo
 from sqlalchemy.exc import NoResultFound
 
 from ewxpwsdb.db.models import Reading, WeatherStation, APIResponse
-from ewxpwsdb.db.summary_models import HourlySummary, DailySummary, MissingDataSummary
+from ewxpwsdb.db.summary_models import HourlySummary, DailySummary, MissingDataSummary, LatestWeatherSummary
 from ewxpwsdb.db.database import Engine
 from ewxpwsdb.time_intervals import UTCInterval, is_utc, DateInterval
 
@@ -354,3 +354,33 @@ class StationReadings():
 
         logger.info(f"Retrieved daily summaries for station ID {self.station.id} from {local_start_date} to {local_end_date}")
         return daily_summaries
+
+
+    def latest_weather(self)->LatestWeatherSummary:
+        """gets a single row of readings that is the latest reading for use by 
+        the API. This is different from 'latest_reading()' above because it 
+        uses the Pydantic class model for the output, which is in turn used 
+        in the API for documentation.   
+
+        Returns:
+            LatestWeatherSummary: a single records that is the most recent 
+            (latest) reading record with some added
+            metadata from the station.   See summary_models.py for details
+        """
+        if self.station.id is None:
+            raise RuntimeError("this station must be in the database and have an ID")
+        else:
+            station_id:int = self.station.id
+            
+        sql_str:str = LatestWeatherSummary.latest_weather_sql(station_id = station_id)
+
+        with Session(self._engine) as session: 
+            # this should be one row
+            result = session.exec(text(sql_str))   #type: ignore
+            r = result.fetchone()
+            
+        latest_weather:LatestWeatherSummary =  LatestWeatherSummary(**r._asdict())
+        return(latest_weather)
+        
+        
+    
