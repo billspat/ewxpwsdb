@@ -264,27 +264,27 @@ def main()->int:
 
     weather_parser = subparsers.add_parser("weather", parents=[common_args], help="show weather conditions for specified station and times")
     weather_parser.add_argument('--show_response', action="store_true", help="optional flag to also show the raw API  response data")
-    weather_parser.add_argument('-s', '--start', default=None, help="start time UTC in format ")
-    weather_parser.add_argument('-e', '--end', default=None, help="end time UTC in format ")
+    weather_parser.add_argument('-s', '--start', default=None, help="start time UTC in format YYYY-MM-DDTHH:MM:SS+ZZ example 2024-01-01T13:00:00+00")
+    weather_parser.add_argument('-e', '--end', default=None, help="end time UTC in format YYYY-MM-DDTHH:MM:SS+ZZ example 2024-01-31T13:00:00+00")
 
 
     store_parser = subparsers.add_parser("collect", parents=[common_args], help="get data and save to database for time internval, or current time ")
-    store_parser.add_argument('-s', '--start', nargs='?', help="optional start time, UTC timezone in format TBD, if omitted uses near current time")
-    store_parser.add_argument('-e', '--end',nargs='?', help="optional end time, UTC timezone in format TBD, if omitted uses near current time")
+    store_parser.add_argument('-s', '--start', nargs='?', help="optional start time, UTC timezone in format YYYY-MM-DDTHH:MM:SS+ZZ example 2024-01-31T13:00:00+00, if omitted uses near current time")
+    store_parser.add_argument('-e', '--end',nargs='?', help="optional end time, UTC timezone in format YYYY-MM-DDTHH:MM:SS+ZZ example 2024-02-28T13:00:00+00, if omitted uses near current time")
 
     catchup_parser = subparsers.add_parser("catchup", parents=[common_args], help="get all data from last record to current time and save to database")
 
     readings_parser = subparsers.add_parser("readings", parents=[common_args], help="retrieve weather data from database, if it's there")
-    readings_parser.add_argument('-s', '--start', default=None, help="start time UTC in format ")
-    readings_parser.add_argument('-e', '--end', default=None, help="end time UTC in format ")
+    readings_parser.add_argument('-s', '--start', default=None, help="start time UTC in format YYYY-MM-DDTHH:MM:SS+ZZ example 2024-01-31T13:00:00+00")
+    readings_parser.add_argument('-e', '--end', default=None, help="end time UTC in format YYYY-MM-DDTHH:MM:SS+ZZ example 2024-02-28T13:00:00+00,")
     
     hourly_parser = subparsers.add_parser("hourly", parents=[common_args], help="retriev hourly summaries from from database")
-    hourly_parser.add_argument('-s', '--start_date', default=None, help="start date, local time ")
-    hourly_parser.add_argument('-e', '--end_date', default=None, help="end date, localtime ")
+    hourly_parser.add_argument('-s', '--start_date', default=None, help="start date, local time, ISO format YYYY-MM-DD ")
+    hourly_parser.add_argument('-e', '--end_date', default=None, help="end date, localtime ISO format YYYY-MM-DD ")
 
     daily_parser = subparsers.add_parser("daily", parents=[common_args], help="retriev hourly summaries from from database")
-    daily_parser.add_argument('-s', '--start_date', default=None, help="start date, local time ")
-    daily_parser.add_argument('-e', '--end_date', default=None, help="end date, localtime ")
+    daily_parser.add_argument('-s', '--start_date', default=None, help="start date, local time ISO format YYYY-MM-DD ")
+    daily_parser.add_argument('-e', '--end_date', default=None, help="end date, localtime ISO format YYYY-MM-DD")
     
     api_parser = subparsers.add_parser("startapi", help="start the API server")
     api_parser.add_argument('--port', default=8000, help="server port")
