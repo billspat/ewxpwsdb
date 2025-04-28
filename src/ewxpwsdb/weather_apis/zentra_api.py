@@ -138,6 +138,7 @@ class ZentraAPI(WeatherAPI):
         start_datetime, end_datetime : timezone aware datetimes in UTC, zentra converts to station-local time
         """
         
+        
         url = "https://zentracloud.com/api/v4/get_readings/"
         token =  f"Token {self.api_config.token}" # "Token {TOKEN}".format(TOKEN="your_ZENTRACLOUD_API_token")
         headers = {'content-type': 'application/json', 'Authorization': token}
@@ -145,6 +146,8 @@ class ZentraAPI(WeatherAPI):
                   'start_date': self._format_time(self.dt_local_from_utc(start_datetime)), 
                   'end_date'  : self._format_time(self.dt_local_from_utc(end_datetime)), 
                   'per_page'  : self._MAX_READINGS_PER_PAGE }
+        
+        #TODO near this point, call API to determine the units being used
         
         responses = []
         expected_page_count:int = self._expected_page_count(start_datetime, end_datetime, page_len = self._MAX_READINGS_PER_PAGE)
