@@ -92,11 +92,12 @@ def test_get_responses_and_transform(station_type, db_with_data_session):
     response_data = api_response_records[0].response_text
     response_data = json.loads(response_data)
 
+    # very implementation specific test that response data is not empty
     if station_type == 'ZENTRA':
         assert 'data' in response_data.keys()
         sensor_count = 0
         for sensor in response_data['data']:
-            if sensor in wapi.sensor_transforms:
+            if sensor in wapi._sensor_fieldnames:
                 sensor_count += 1
         assert sensor_count > 0 
 

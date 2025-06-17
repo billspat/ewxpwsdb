@@ -36,7 +36,7 @@ Zentra weather station API requires an ***API Key*** that is an user token each 
    
 3. Addtional Endpoint information
 
-   - Full information about the ZENTRA Cloud API can be found at https://zentracloud.com/api/v3/documentation/. This site includes all available API calls, their correct use and formatting.
+   - Full information about the ZENTRA Cloud API can be found at https://zentracloud.com/api/v4/documentation/. This site includes all available API calls, their correct use and formatting.
 
 ### Variable mapping
 
@@ -54,42 +54,36 @@ Zentra weather station API requires an ***API Key*** that is an user token each 
 
 > NOTE: HT: Hawaii Time / AT: Alaska Time / PT: Pacific Time / MT: Mountain Time / CT: Central Time / ET: Eastern Time
 
-- Usage
-
-```python
-local = pytz.timezone('US/Eastern')
-start_date = datetime.strptime('11-19-2021 14:00', '%m-%d-%Y %H:%M')
-end_date = datetime.strptime('11-19-2021 16:00', '%m-%d-%Y %H:%M')
-start_date_local = local.localize(start_date)
-end_date_local = local.localize(end_date)
-start_date_utc = start_date_local.astimezone(pytz.utc)
-end_date_utc = end_date_local.astimezone(pytz.utc)
-
-params = {
-    'sn': DEVICE_SN,
-    'token': API_KEY,
-    'start_datetime': start_date_utc,
-    'end_datetime': end_date_utc,
-    'tz' : 'ET'
-}
-zparams = ZentraParam(**params)
-zreadings = ZentraReadings(zparams)
-print(zreadings.response) # print raw JSON response
-print(zreadings.transformed_resp) # print transformed response in list of dict format
-```
 
 ### Data Transformation
 
--  Zentra stations may be set to utilize metric system thus no further conversion methods were necessary
-- Measurement mapping
+Zentra stations may be set to utilize metric system or english in the cloud 
+portal.  Hence you must determine the units currently used in the response
+data. 
 
-| Zentra Measurement Variable | Backend DB Variable |
-| :-------------------------: | :-----------------: |
-|       Air Temperature       |        atmp        |
-|        Precipitation        |        pcpn         |
-|      Relative Humidity      |        relh         |
+the Response has an entry for each sensor with metadata and readings, like
 
-> NOTE: To make the timestamp format equal to other station vendors, we removed the time zone notation in the back (e.g., "2022-06-07 15:10:00-04:00" --> "2022-06-07 15:10:00")
+```JSON
+{
+    "Air Temperature": [
+        {
+            "metadata": {
+                "device_name": "z6-12345",
+                "device_sn": "z6-12345",
+                "port_number": 5,
+                "sensor_name": "ATMOS 41",
+                "sensor_sn": "x",
+                "units": " °C"
+            },
+            "readings": [
+                {}
+            ]
+```
+
+Notice the units from the API swagger documentation show as " °C" but when loaded
+using Python JSON, it appears as ' \\u00b0C'
+
+The timestamp is in local time with timezone "2022-06-07 15:10:00-04:00" 
 
 ### Sample Data Output
 

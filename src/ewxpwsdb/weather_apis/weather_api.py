@@ -355,6 +355,19 @@ class WeatherAPI(ABC):
         
         return(dt.astimezone(tz=ZoneInfo(self.weather_station.timezone)))
 
+    def identity(self, f:float)->float:
+        """no-op transform function to return the same input, to be used as
+        when a transform function is needed (e.g. in the ZentraAPI subclass)
+        but no changes need to be made
+
+        Args:
+            f (float): value of a sensor
+
+        Returns:
+            float: indentical value as sent
+        """
+        return(f)
+    
     def f_to_c(self,f:float)->float:
         """utility to convert Fahrenheit to centigrade for transform functions
 
@@ -393,6 +406,18 @@ class WeatherAPI(ABC):
         conversion = 1000.0 / (60*60) 
         meters_per_second = round(kph * conversion, 2)
         return(meters_per_second)
+    
+    def in_to_mm(self, f:float) -> float:
+        """convert inches to mm
+
+        Args:
+            f (float): value of inches to convert
+
+        Returns:
+            float: value in mm
+        """
+        mm_per_inch = 25.5
+        return(mm_per_inch * f)
     
     def get_test_reading(self):
         """ test that current config is working and station is online
