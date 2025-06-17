@@ -172,7 +172,7 @@ class ZentraAPI(WeatherAPI):
         using the 'Wetness Level' of the last minute.   This also has a "Leaf Wetness(min) which is (n minutes > 450) / minutes """
         return 1 if lws_value >= self._lws_threshold else 0
     
-    def __init__(self, weather_station:WeatherStation, max_retries: int = 2):
+    def __init__(self, weather_station:WeatherStation, max_retries: int = 3):
         self._max_retries : int = max_retries
         super().__init__(weather_station)  
         # cast api config to Zentra type for static type checking
