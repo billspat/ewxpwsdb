@@ -1,5 +1,7 @@
 # Onset Weather Stations
 
+## <span style="color:red">Onset now uses the LICOR api type, api.licor.cloud</span>
+
 ### Authentication
 
 Onset weather station API requires ***client_id*** and ***client_secret*** that are assigned by Onset and use those to generate ***bearer token***.

@@ -1,0 +1,1306 @@
+{
+  "max_results": false,
+  "message": "OK: Found: 130 results.",
+  "data": [
+    {
+      "logger_sn": "99999999",
+      "sensor_sn": "21079936-1",
+      "timestamp": "2025-06-01 12:45:00Z",
+      "data_type": "CURRENT",
+      "data_type_id": "1",
+      "value": 8.094964642902212,
+      "unit": "°C",
+      "sensor_measurement_type": "Temperature"
+    },
+    {
+      "logger_sn": "99999999",
+      "sensor_sn": "21079936-2",
+      "timestamp": "2025-06-01 12:45:00Z",
+      "data_type": "CURRENT",
+      "data_type_id": "1",
+      "value": 74.99999664396135,
+      "unit": "%",
+      "sensor_measurement_type": "RH"
+    },
+    {
+      "logger_sn": "99999999",
+      "sensor_sn": "21079936-3",
+      "timestamp": "2025-06-01 12:45:00Z",
+      "data_type": "CURRENT",
+      "data_type_id": "1",
+      "value": 3.9405273348160654,
+      "unit": "°C",
+      "sensor_measurement_type": "Dew Point"
+    },
+    {
+      "logger_sn": "99999999",
+      "sensor_sn": "21085496-1",
+      "timestamp": "2025-06-01 12:45:00Z",
+      "data_type": "CURRENT",
+      "data_type_id": "1",
+      "value": 0,
+      "unit": "mm",
+      "sensor_measurement_type": "Rain"
+    },
+    {
+      "logger_sn": "99999999",
+      "sensor_sn": "21091760-1",
+      "timestamp": "2025-06-01 12:45:00Z",
+      "data_type": "CURRENT",
+      "data_type_id": "1",
+      "value": 0,
+      "unit": "m/s",
+      "sensor_measurement_type": "Wind Speed"
+    },
+    {
+      "logger_sn": "99999999",
+      "sensor_sn": "21091760-2",
+      "timestamp": "2025-06-01 12:45:00Z",
+      "data_type": "CURRENT",
+      "data_type_id": "1",
+      "value": 0.6679303337545955,
+      "unit": "m/s",
+      "sensor_measurement_type": "Gust Speed"
+    },
+    {
+      "logger_sn": "99999999",
+      "sensor_sn": "21091760-3",
+      "timestamp": "2025-06-01 12:45:00Z",
+      "data_type": "CURRENT",
+      "data_type_id": "1",
+      "value": 262.5333333333333,
+      "unit": "°",
+      "sensor_measurement_type": "Wind Direction"
+    },
+    {
+      "logger_sn": "99999999",
+      "sensor_sn": "21092695-S",
+      "timestamp": "2025-06-01 12:45:00Z",
+      "data_type": "CURRENT",
+      "data_type_id": "1",
+      "value": 8.548466308593751,
+      "unit": "V",
+      "sensor_measurement_type": "Battery"
+    },
+    {
+      "logger_sn": "99999999",
+      "sensor_sn": "21999475-1",
+      "timestamp": "2025-06-01 12:45:00Z",
+      "data_type": "CURRENT",
+      "data_type_id": "1",
+      "value": 0.5882352941176471,
+      "unit": "%",
+      "sensor_measurement_type": "Wetness"
+    },
+    {
+      "logger_sn": "99999999",
+      "sensor_sn": "4302591-1",
+      "timestamp": "2025-06-01 12:45:00Z",
+      "data_type": "CURRENT",
+      "data_type_id": "1",
+      "value": 199.375,
+      "unit": "W/m²",
+      "sensor_measurement_type": "Solar Radiation"
+    },
+    {
+      "logger_sn": "99999999",
+      "sensor_sn": "21079936-1",
+      "timestamp": "2025-06-01 12:50:00Z",
+      "data_type": "CURRENT",
+      "data_type_id": "1",
+      "value": 8.244684227478672,
+      "unit": "°C",
+      "sensor_measurement_type": "Temperature"
+    },
+    {
+      "logger_sn": "99999999",
+      "sensor_sn": "21079936-2",
+      "timestamp": "2025-06-01 12:50:00Z",
+      "data_type": "CURRENT",
+      "data_type_id": "1",
+      "value": 74.69999665738551,
+      "unit": "%",
+      "sensor_measurement_type": "RH"
+    },
+    {
+      "logger_sn": "99999999",
+      "sensor_sn": "21079936-3",
+      "timestamp": "2025-06-01 12:50:00Z",
+      "data_type": "CURRENT",
+      "data_type_id": "1",
+      "value": 4.028384837019458,
+      "unit": "°C",
+      "sensor_measurement_type": "Dew Point"
+    },
+    {
+      "logger_sn": "99999999",
+      "sensor_sn": "21085496-1",
+      "timestamp": "2025-06-01 12:50:00Z",
+      "data_type": "CURRENT",
+      "data_type_id": "1",
+      "value": 0,
+      "unit": "mm",
+      "sensor_measurement_type": "Rain"
+    },
+    {
+      "logger_sn": "99999999",
+      "sensor_sn": "21091760-1",
+      "timestamp": "2025-06-01 12:50:00Z",
+      "data_type": "CURRENT",
+      "data_type_id": "1",
+      "value": 0,
+      "unit": "m/s",
+      "sensor_measurement_type": "Wind Speed"
+    },
+    {
+      "logger_sn": "99999999",
+      "sensor_sn": "21091760-2",
+      "timestamp": "2025-06-01 12:50:00Z",
+      "data_type": "CURRENT",
+      "data_type_id": "1",
+      "value": 0.6679303337545955,
+      "unit": "m/s",
+      "sensor_measurement_type": "Gust Speed"
+    },
+    {
+      "logger_sn": "99999999",
+      "sensor_sn": "21091760-3",
+      "timestamp": "2025-06-01 12:50:00Z",
+      "data_type": "CURRENT",
+      "data_type_id": "1",
+      "value": 262.5333333333333,
+      "unit": "°",
+      "sensor_measurement_type": "Wind Direction"
+    },
+    {
+      "logger_sn": "99999999",
+      "sensor_sn": "21092695-S",
+      "timestamp": "2025-06-01 12:50:00Z",
+      "data_type": "CURRENT",
+      "data_type_id": "1",
+      "value": 8.561389160156251,
+      "unit": "V",
+      "sensor_measurement_type": "Battery"
+    },
+    {
+      "logger_sn": "99999999",
+      "sensor_sn": "21999475-1",
+      "timestamp": "2025-06-01 12:50:00Z",
+      "data_type": "CURRENT",
+      "data_type_id": "1",
+      "value": 0.5882352941176471,
+      "unit": "%",
+      "sensor_measurement_type": "Wetness"
+    },
+    {
+      "logger_sn": "99999999",
+      "sensor_sn": "4302591-1",
+      "timestamp": "2025-06-01 12:50:00Z",
+      "data_type": "CURRENT",
+      "data_type_id": "1",
+      "value": 206.875,
+      "unit": "W/m²",
+      "sensor_measurement_type": "Solar Radiation"
+    },
+    {
+      "logger_sn": "99999999",
+      "sensor_sn": "21079936-1",
+      "timestamp": "2025-06-01 12:55:00Z",
+      "data_type": "CURRENT",
+      "data_type_id": "1",
+      "value": 8.618071028416992,
+      "unit": "°C",
+      "sensor_measurement_type": "Temperature"
+    },
+    {
+      "logger_sn": "99999999",
+      "sensor_sn": "21079936-2",
+      "timestamp": "2025-06-01 12:55:00Z",
+      "data_type": "CURRENT",
+      "data_type_id": "1",
+      "value": 74.29999667528438,
+      "unit": "%",
+      "sensor_measurement_type": "RH"
+    },
+    {
+      "logger_sn": "99999999",
+      "sensor_sn": "21079936-3",
+      "timestamp": "2025-06-01 12:55:00Z",
+      "data_type": "CURRENT",
+      "data_type_id": "1",
+      "value": 4.312993073523267,
+      "unit": "°C",
+      "sensor_measurement_type": "Dew Point"
+    },
+    {
+      "logger_sn": "99999999",
+      "sensor_sn": "21085496-1",
+      "timestamp": "2025-06-01 12:55:00Z",
+      "data_type": "CURRENT",
+      "data_type_id": "1",
+      "value": 0,
+      "unit": "mm",
+      "sensor_measurement_type": "Rain"
+    },
+    {
+      "logger_sn": "99999999",
+      "sensor_sn": "21091760-1",
+      "timestamp": "2025-06-01 12:55:00Z",
+      "data_type": "CURRENT",
+      "data_type_id": "1",
+      "value": 0,
+      "unit": "m/s",
+      "sensor_measurement_type": "Wind Speed"
+    },
+    {
+      "logger_sn": "99999999",
+      "sensor_sn": "21091760-2",
+      "timestamp": "2025-06-01 12:55:00Z",
+      "data_type": "CURRENT",
+      "data_type_id": "1",
+      "value": 0.33396516687729777,
+      "unit": "m/s",
+      "sensor_measurement_type": "Gust Speed"
+    },
+    {
+      "logger_sn": "99999999",
+      "sensor_sn": "21091760-3",
+      "timestamp": "2025-06-01 12:55:00Z",
+      "data_type": "CURRENT",
+      "data_type_id": "1",
+      "value": 262.5333333333333,
+      "unit": "°",
+      "sensor_measurement_type": "Wind Direction"
+    },
+    {
+      "logger_sn": "99999999",
+      "sensor_sn": "21092695-S",
+      "timestamp": "2025-06-01 12:55:00Z",
+      "data_type": "CURRENT",
+      "data_type_id": "1",
+      "value": 8.564619873046876,
+      "unit": "V",
+      "sensor_measurement_type": "Battery"
+    },
+    {
+      "logger_sn": "99999999",
+      "sensor_sn": "21999475-1",
+      "timestamp": "2025-06-01 12:55:00Z",
+      "data_type": "CURRENT",
+      "data_type_id": "1",
+      "value": 0.5882352941176471,
+      "unit": "%",
+      "sensor_measurement_type": "Wetness"
+    },
+    {
+      "logger_sn": "99999999",
+      "sensor_sn": "4302591-1",
+      "timestamp": "2025-06-01 12:55:00Z",
+      "data_type": "CURRENT",
+      "data_type_id": "1",
+      "value": 210.625,
+      "unit": "W/m²",
+      "sensor_measurement_type": "Solar Radiation"
+    },
+    {
+      "logger_sn": "99999999",
+      "sensor_sn": "21079936-1",
+      "timestamp": "2025-06-01 13:00:00Z",
+      "data_type": "CURRENT",
+      "data_type_id": "1",
+      "value": 9.064481021364571,
+      "unit": "°C",
+      "sensor_measurement_type": "Temperature"
+    },
+    {
+      "logger_sn": "99999999",
+      "sensor_sn": "21079936-2",
+      "timestamp": "2025-06-01 13:00:00Z",
+      "data_type": "CURRENT",
+      "data_type_id": "1",
+      "value": 72.79999674240516,
+      "unit": "%",
+      "sensor_measurement_type": "RH"
+    },
+    {
+      "logger_sn": "99999999",
+      "sensor_sn": "21079936-3",
+      "timestamp": "2025-06-01 13:00:00Z",
+      "data_type": "CURRENT",
+      "data_type_id": "1",
+      "value": 4.452902429936799,
+      "unit": "°C",
+      "sensor_measurement_type": "Dew Point"
+    },
+    {
+      "logger_sn": "99999999",
+      "sensor_sn": "21085496-1",
+      "timestamp": "2025-06-01 13:00:00Z",
+      "data_type": "CURRENT",
+      "data_type_id": "1",
+      "value": 0,
+      "unit": "mm",
+      "sensor_measurement_type": "Rain"
+    },
+    {
+      "logger_sn": "99999999",
+      "sensor_sn": "21091760-1",
+      "timestamp": "2025-06-01 13:00:00Z",
+      "data_type": "CURRENT",
+      "data_type_id": "1",
+      "value": 0,
+      "unit": "m/s",
+      "sensor_measurement_type": "Wind Speed"
+    },
+    {
+      "logger_sn": "99999999",
+      "sensor_sn": "21091760-2",
+      "timestamp": "2025-06-01 13:00:00Z",
+      "data_type": "CURRENT",
+      "data_type_id": "1",
+      "value": 0.33396516687729777,
+      "unit": "m/s",
+      "sensor_measurement_type": "Gust Speed"
+    },
+    {
+      "logger_sn": "99999999",
+      "sensor_sn": "21091760-3",
+      "timestamp": "2025-06-01 13:00:00Z",
+      "data_type": "CURRENT",
+      "data_type_id": "1",
+      "value": 261.1294117647059,
+      "unit": "°",
+      "sensor_measurement_type": "Wind Direction"
+    },
+    {
+      "logger_sn": "99999999",
+      "sensor_sn": "21092695-S",
+      "timestamp": "2025-06-01 13:00:00Z",
+      "data_type": "CURRENT",
+      "data_type_id": "1",
+      "value": 8.564619873046876,
+      "unit": "V",
+      "sensor_measurement_type": "Battery"
+    },
+    {
+      "logger_sn": "99999999",
+      "sensor_sn": "21999475-1",
+      "timestamp": "2025-06-01 13:00:00Z",
+      "data_type": "CURRENT",
+      "data_type_id": "1",
+      "value": 0.5882352941176471,
+      "unit": "%",
+      "sensor_measurement_type": "Wetness"
+    },
+    {
+      "logger_sn": "99999999",
+      "sensor_sn": "4302591-1",
+      "timestamp": "2025-06-01 13:00:00Z",
+      "data_type": "CURRENT",
+      "data_type_id": "1",
+      "value": 231.875,
+      "unit": "W/m²",
+      "sensor_measurement_type": "Solar Radiation"
+    },
+    {
+      "logger_sn": "99999999",
+      "sensor_sn": "21079936-1",
+      "timestamp": "2025-06-01 13:05:00Z",
+      "data_type": "CURRENT",
+      "data_type_id": "1",
+      "value": 9.212899053280097,
+      "unit": "°C",
+      "sensor_measurement_type": "Temperature"
+    },
+    {
+      "logger_sn": "99999999",
+      "sensor_sn": "21079936-2",
+      "timestamp": "2025-06-01 13:05:00Z",
+      "data_type": "CURRENT",
+      "data_type_id": "1",
+      "value": 69.99999686769725,
+      "unit": "%",
+      "sensor_measurement_type": "RH"
+    },
+    {
+      "logger_sn": "99999999",
+      "sensor_sn": "21079936-3",
+      "timestamp": "2025-06-01 13:05:00Z",
+      "data_type": "CURRENT",
+      "data_type_id": "1",
+      "value": 4.036437141244377,
+      "unit": "°C",
+      "sensor_measurement_type": "Dew Point"
+    },
+    {
+      "logger_sn": "99999999",
+      "sensor_sn": "21085496-1",
+      "timestamp": "2025-06-01 13:05:00Z",
+      "data_type": "CURRENT",
+      "data_type_id": "1",
+      "value": 0,
+      "unit": "mm",
+      "sensor_measurement_type": "Rain"
+    },
+    {
+      "logger_sn": "99999999",
+      "sensor_sn": "21091760-1",
+      "timestamp": "2025-06-01 13:05:00Z",
+      "data_type": "CURRENT",
+      "data_type_id": "1",
+      "value": 0,
+      "unit": "m/s",
+      "sensor_measurement_type": "Wind Speed"
+    },
+    {
+      "logger_sn": "99999999",
+      "sensor_sn": "21091760-2",
+      "timestamp": "2025-06-01 13:05:00Z",
+      "data_type": "CURRENT",
+      "data_type_id": "1",
+      "value": 1.335860667509191,
+      "unit": "m/s",
+      "sensor_measurement_type": "Gust Speed"
+    },
+    {
+      "logger_sn": "99999999",
+      "sensor_sn": "21091760-3",
+      "timestamp": "2025-06-01 13:05:00Z",
+      "data_type": "CURRENT",
+      "data_type_id": "1",
+      "value": 261.1294117647059,
+      "unit": "°",
+      "sensor_measurement_type": "Wind Direction"
+    },
+    {
+      "logger_sn": "99999999",
+      "sensor_sn": "21092695-S",
+      "timestamp": "2025-06-01 13:05:00Z",
+      "data_type": "CURRENT",
+      "data_type_id": "1",
+      "value": 8.567850585937501,
+      "unit": "V",
+      "sensor_measurement_type": "Battery"
+    },
+    {
+      "logger_sn": "99999999",
+      "sensor_sn": "21999475-1",
+      "timestamp": "2025-06-01 13:05:00Z",
+      "data_type": "CURRENT",
+      "data_type_id": "1",
+      "value": 0.5882352941176471,
+      "unit": "%",
+      "sensor_measurement_type": "Wetness"
+    },
+    {
+      "logger_sn": "99999999",
+      "sensor_sn": "4302591-1",
+      "timestamp": "2025-06-01 13:05:00Z",
+      "data_type": "CURRENT",
+      "data_type_id": "1",
+      "value": 253.125,
+      "unit": "W/m²",
+      "sensor_measurement_type": "Solar Radiation"
+    },
+    {
+      "logger_sn": "99999999",
+      "sensor_sn": "21079936-1",
+      "timestamp": "2025-06-01 13:10:00Z",
+      "data_type": "CURRENT",
+      "data_type_id": "1",
+      "value": 9.829337666912423,
+      "unit": "°C",
+      "sensor_measurement_type": "Temperature"
+    },
+    {
+      "logger_sn": "99999999",
+      "sensor_sn": "21079936-2",
+      "timestamp": "2025-06-01 13:10:00Z",
+      "data_type": "CURRENT",
+      "data_type_id": "1",
+      "value": 70.49999684532368,
+      "unit": "%",
+      "sensor_measurement_type": "RH"
+    },
+    {
+      "logger_sn": "99999999",
+      "sensor_sn": "21079936-3",
+      "timestamp": "2025-06-01 13:10:00Z",
+      "data_type": "CURRENT",
+      "data_type_id": "1",
+      "value": 4.7300240816949195,
+      "unit": "°C",
+      "sensor_measurement_type": "Dew Point"
+    },
+    {
+      "logger_sn": "99999999",
+      "sensor_sn": "21085496-1",
+      "timestamp": "2025-06-01 13:10:00Z",
+      "data_type": "CURRENT",
+      "data_type_id": "1",
+      "value": 0,
+      "unit": "mm",
+      "sensor_measurement_type": "Rain"
+    },
+    {
+      "logger_sn": "99999999",
+      "sensor_sn": "21091760-1",
+      "timestamp": "2025-06-01 13:10:00Z",
+      "data_type": "CURRENT",
+      "data_type_id": "1",
+      "value": 0,
+      "unit": "m/s",
+      "sensor_measurement_type": "Wind Speed"
+    },
+    {
+      "logger_sn": "99999999",
+      "sensor_sn": "21091760-2",
+      "timestamp": "2025-06-01 13:10:00Z",
+      "data_type": "CURRENT",
+      "data_type_id": "1",
+      "value": 0.6679303337545955,
+      "unit": "m/s",
+      "sensor_measurement_type": "Gust Speed"
+    },
+    {
+      "logger_sn": "99999999",
+      "sensor_sn": "21091760-3",
+      "timestamp": "2025-06-01 13:10:00Z",
+      "data_type": "CURRENT",
+      "data_type_id": "1",
+      "value": 261.1294117647059,
+      "unit": "°",
+      "sensor_measurement_type": "Wind Direction"
+    },
+    {
+      "logger_sn": "99999999",
+      "sensor_sn": "21092695-S",
+      "timestamp": "2025-06-01 13:10:00Z",
+      "data_type": "CURRENT",
+      "data_type_id": "1",
+      "value": 8.567850585937501,
+      "unit": "V",
+      "sensor_measurement_type": "Battery"
+    },
+    {
+      "logger_sn": "99999999",
+      "sensor_sn": "21999475-1",
+      "timestamp": "2025-06-01 13:10:00Z",
+      "data_type": "CURRENT",
+      "data_type_id": "1",
+      "value": 0.5882352941176471,
+      "unit": "%",
+      "sensor_measurement_type": "Wetness"
+    },
+    {
+      "logger_sn": "99999999",
+      "sensor_sn": "4302591-1",
+      "timestamp": "2025-06-01 13:10:00Z",
+      "data_type": "CURRENT",
+      "data_type_id": "1",
+      "value": 365.625,
+      "unit": "W/m²",
+      "sensor_measurement_type": "Solar Radiation"
+    },
+    {
+      "logger_sn": "99999999",
+      "sensor_sn": "21079936-1",
+      "timestamp": "2025-06-01 13:15:00Z",
+      "data_type": "CURRENT",
+      "data_type_id": "1",
+      "value": 10.369321617097881,
+      "unit": "°C",
+      "sensor_measurement_type": "Temperature"
+    },
+    {
+      "logger_sn": "99999999",
+      "sensor_sn": "21079936-2",
+      "timestamp": "2025-06-01 13:15:00Z",
+      "data_type": "CURRENT",
+      "data_type_id": "1",
+      "value": 67.49999697956521,
+      "unit": "%",
+      "sensor_measurement_type": "RH"
+    },
+    {
+      "logger_sn": "99999999",
+      "sensor_sn": "21079936-3",
+      "timestamp": "2025-06-01 13:15:00Z",
+      "data_type": "CURRENT",
+      "data_type_id": "1",
+      "value": 4.625113763727148,
+      "unit": "°C",
+      "sensor_measurement_type": "Dew Point"
+    },
+    {
+      "logger_sn": "99999999",
+      "sensor_sn": "21085496-1",
+      "timestamp": "2025-06-01 13:15:00Z",
+      "data_type": "CURRENT",
+      "data_type_id": "1",
+      "value": 0,
+      "unit": "mm",
+      "sensor_measurement_type": "Rain"
+    },
+    {
+      "logger_sn": "99999999",
+      "sensor_sn": "21091760-1",
+      "timestamp": "2025-06-01 13:15:00Z",
+      "data_type": "CURRENT",
+      "data_type_id": "1",
+      "value": 0,
+      "unit": "m/s",
+      "sensor_measurement_type": "Wind Speed"
+    },
+    {
+      "logger_sn": "99999999",
+      "sensor_sn": "21091760-2",
+      "timestamp": "2025-06-01 13:15:00Z",
+      "data_type": "CURRENT",
+      "data_type_id": "1",
+      "value": 0.33396516687729777,
+      "unit": "m/s",
+      "sensor_measurement_type": "Gust Speed"
+    },
+    {
+      "logger_sn": "99999999",
+      "sensor_sn": "21091760-3",
+      "timestamp": "2025-06-01 13:15:00Z",
+      "data_type": "CURRENT",
+      "data_type_id": "1",
+      "value": 270.956862745098,
+      "unit": "°",
+      "sensor_measurement_type": "Wind Direction"
+    },
+    {
+      "logger_sn": "99999999",
+      "sensor_sn": "21092695-S",
+      "timestamp": "2025-06-01 13:15:00Z",
+      "data_type": "CURRENT",
+      "data_type_id": "1",
+      "value": 8.567850585937501,
+      "unit": "V",
+      "sensor_measurement_type": "Battery"
+    },
+    {
+      "logger_sn": "99999999",
+      "sensor_sn": "21999475-1",
+      "timestamp": "2025-06-01 13:15:00Z",
+      "data_type": "CURRENT",
+      "data_type_id": "1",
+      "value": 0,
+      "unit": "%",
+      "sensor_measurement_type": "Wetness"
+    },
+    {
+      "logger_sn": "99999999",
+      "sensor_sn": "4302591-1",
+      "timestamp": "2025-06-01 13:15:00Z",
+      "data_type": "CURRENT",
+      "data_type_id": "1",
+      "value": 368.125,
+      "unit": "W/m²",
+      "sensor_measurement_type": "Solar Radiation"
+    },
+    {
+      "logger_sn": "99999999",
+      "sensor_sn": "21079936-1",
+      "timestamp": "2025-06-01 13:20:00Z",
+      "data_type": "CURRENT",
+      "data_type_id": "1",
+      "value": 10.931554202089828,
+      "unit": "°C",
+      "sensor_measurement_type": "Temperature"
+    },
+    {
+      "logger_sn": "99999999",
+      "sensor_sn": "21079936-2",
+      "timestamp": "2025-06-01 13:20:00Z",
+      "data_type": "CURRENT",
+      "data_type_id": "1",
+      "value": 67.19999699298937,
+      "unit": "%",
+      "sensor_measurement_type": "RH"
+    },
+    {
+      "logger_sn": "99999999",
+      "sensor_sn": "21079936-3",
+      "timestamp": "2025-06-01 13:20:00Z",
+      "data_type": "CURRENT",
+      "data_type_id": "1",
+      "value": 5.098405683802774,
+      "unit": "°C",
+      "sensor_measurement_type": "Dew Point"
+    },
+    {
+      "logger_sn": "99999999",
+      "sensor_sn": "21085496-1",
+      "timestamp": "2025-06-01 13:20:00Z",
+      "data_type": "CURRENT",
+      "data_type_id": "1",
+      "value": 0,
+      "unit": "mm",
+      "sensor_measurement_type": "Rain"
+    },
+    {
+      "logger_sn": "99999999",
+      "sensor_sn": "21091760-1",
+      "timestamp": "2025-06-01 13:20:00Z",
+      "data_type": "CURRENT",
+      "data_type_id": "1",
+      "value": 0,
+      "unit": "m/s",
+      "sensor_measurement_type": "Wind Speed"
+    },
+    {
+      "logger_sn": "99999999",
+      "sensor_sn": "21091760-2",
+      "timestamp": "2025-06-01 13:20:00Z",
+      "data_type": "CURRENT",
+      "data_type_id": "1",
+      "value": 0.6679303337545955,
+      "unit": "m/s",
+      "sensor_measurement_type": "Gust Speed"
+    },
+    {
+      "logger_sn": "99999999",
+      "sensor_sn": "21091760-3",
+      "timestamp": "2025-06-01 13:20:00Z",
+      "data_type": "CURRENT",
+      "data_type_id": "1",
+      "value": 282.18823529411765,
+      "unit": "°",
+      "sensor_measurement_type": "Wind Direction"
+    },
+    {
+      "logger_sn": "99999999",
+      "sensor_sn": "21092695-S",
+      "timestamp": "2025-06-01 13:20:00Z",
+      "data_type": "CURRENT",
+      "data_type_id": "1",
+      "value": 8.567850585937501,
+      "unit": "V",
+      "sensor_measurement_type": "Battery"
+    },
+    {
+      "logger_sn": "99999999",
+      "sensor_sn": "21999475-1",
+      "timestamp": "2025-06-01 13:20:00Z",
+      "data_type": "CURRENT",
+      "data_type_id": "1",
+      "value": 0.5882352941176471,
+      "unit": "%",
+      "sensor_measurement_type": "Wetness"
+    },
+    {
+      "logger_sn": "99999999",
+      "sensor_sn": "4302591-1",
+      "timestamp": "2025-06-01 13:20:00Z",
+      "data_type": "CURRENT",
+      "data_type_id": "1",
+      "value": 391.875,
+      "unit": "W/m²",
+      "sensor_measurement_type": "Solar Radiation"
+    },
+    {
+      "logger_sn": "99999999",
+      "sensor_sn": "21079936-1",
+      "timestamp": "2025-06-01 13:25:00Z",
+      "data_type": "CURRENT",
+      "data_type_id": "1",
+      "value": 11.46731304707545,
+      "unit": "°C",
+      "sensor_measurement_type": "Temperature"
+    },
+    {
+      "logger_sn": "99999999",
+      "sensor_sn": "21079936-2",
+      "timestamp": "2025-06-01 13:25:00Z",
+      "data_type": "CURRENT",
+      "data_type_id": "1",
+      "value": 66.59999701983767,
+      "unit": "%",
+      "sensor_measurement_type": "RH"
+    },
+    {
+      "logger_sn": "99999999",
+      "sensor_sn": "21079936-3",
+      "timestamp": "2025-06-01 13:25:00Z",
+      "data_type": "CURRENT",
+      "data_type_id": "1",
+      "value": 5.480790714812348,
+      "unit": "°C",
+      "sensor_measurement_type": "Dew Point"
+    },
+    {
+      "logger_sn": "99999999",
+      "sensor_sn": "21085496-1",
+      "timestamp": "2025-06-01 13:25:00Z",
+      "data_type": "CURRENT",
+      "data_type_id": "1",
+      "value": 0,
+      "unit": "mm",
+      "sensor_measurement_type": "Rain"
+    },
+    {
+      "logger_sn": "99999999",
+      "sensor_sn": "21091760-1",
+      "timestamp": "2025-06-01 13:25:00Z",
+      "data_type": "CURRENT",
+      "data_type_id": "1",
+      "value": 0,
+      "unit": "m/s",
+      "sensor_measurement_type": "Wind Speed"
+    },
+    {
+      "logger_sn": "99999999",
+      "sensor_sn": "21091760-2",
+      "timestamp": "2025-06-01 13:25:00Z",
+      "data_type": "CURRENT",
+      "data_type_id": "1",
+      "value": 0.6679303337545955,
+      "unit": "m/s",
+      "sensor_measurement_type": "Gust Speed"
+    },
+    {
+      "logger_sn": "99999999",
+      "sensor_sn": "21091760-3",
+      "timestamp": "2025-06-01 13:25:00Z",
+      "data_type": "CURRENT",
+      "data_type_id": "1",
+      "value": 282.18823529411765,
+      "unit": "°",
+      "sensor_measurement_type": "Wind Direction"
+    },
+    {
+      "logger_sn": "99999999",
+      "sensor_sn": "21092695-S",
+      "timestamp": "2025-06-01 13:25:00Z",
+      "data_type": "CURRENT",
+      "data_type_id": "1",
+      "value": 8.567850585937501,
+      "unit": "V",
+      "sensor_measurement_type": "Battery"
+    },
+    {
+      "logger_sn": "99999999",
+      "sensor_sn": "21999475-1",
+      "timestamp": "2025-06-01 13:25:00Z",
+      "data_type": "CURRENT",
+      "data_type_id": "1",
+      "value": 0.5882352941176471,
+      "unit": "%",
+      "sensor_measurement_type": "Wetness"
+    },
+    {
+      "logger_sn": "99999999",
+      "sensor_sn": "4302591-1",
+      "timestamp": "2025-06-01 13:25:00Z",
+      "data_type": "CURRENT",
+      "data_type_id": "1",
+      "value": 420.625,
+      "unit": "W/m²",
+      "sensor_measurement_type": "Solar Radiation"
+    },
+    {
+      "logger_sn": "99999999",
+      "sensor_sn": "21079936-1",
+      "timestamp": "2025-06-01 13:30:00Z",
+      "data_type": "CURRENT",
+      "data_type_id": "1",
+      "value": 11.783030370985642,
+      "unit": "°C",
+      "sensor_measurement_type": "Temperature"
+    },
+    {
+      "logger_sn": "99999999",
+      "sensor_sn": "21079936-2",
+      "timestamp": "2025-06-01 13:30:00Z",
+      "data_type": "CURRENT",
+      "data_type_id": "1",
+      "value": 65.79999705563542,
+      "unit": "%",
+      "sensor_measurement_type": "RH"
+    },
+    {
+      "logger_sn": "99999999",
+      "sensor_sn": "21079936-3",
+      "timestamp": "2025-06-01 13:30:00Z",
+      "data_type": "CURRENT",
+      "data_type_id": "1",
+      "value": 5.607562472018629,
+      "unit": "°C",
+      "sensor_measurement_type": "Dew Point"
+    },
+    {
+      "logger_sn": "99999999",
+      "sensor_sn": "21085496-1",
+      "timestamp": "2025-06-01 13:30:00Z",
+      "data_type": "CURRENT",
+      "data_type_id": "1",
+      "value": 0,
+      "unit": "mm",
+      "sensor_measurement_type": "Rain"
+    },
+    {
+      "logger_sn": "99999999",
+      "sensor_sn": "21091760-1",
+      "timestamp": "2025-06-01 13:30:00Z",
+      "data_type": "CURRENT",
+      "data_type_id": "1",
+      "value": 0,
+      "unit": "m/s",
+      "sensor_measurement_type": "Wind Speed"
+    },
+    {
+      "logger_sn": "99999999",
+      "sensor_sn": "21091760-2",
+      "timestamp": "2025-06-01 13:30:00Z",
+      "data_type": "CURRENT",
+      "data_type_id": "1",
+      "value": 0.33396516687729777,
+      "unit": "m/s",
+      "sensor_measurement_type": "Gust Speed"
+    },
+    {
+      "logger_sn": "99999999",
+      "sensor_sn": "21091760-3",
+      "timestamp": "2025-06-01 13:30:00Z",
+      "data_type": "CURRENT",
+      "data_type_id": "1",
+      "value": 282.18823529411765,
+      "unit": "°",
+      "sensor_measurement_type": "Wind Direction"
+    },
+    {
+      "logger_sn": "99999999",
+      "sensor_sn": "21092695-S",
+      "timestamp": "2025-06-01 13:30:00Z",
+      "data_type": "CURRENT",
+      "data_type_id": "1",
+      "value": 8.548466308593751,
+      "unit": "V",
+      "sensor_measurement_type": "Battery"
+    },
+    {
+      "logger_sn": "99999999",
+      "sensor_sn": "21999475-1",
+      "timestamp": "2025-06-01 13:30:00Z",
+      "data_type": "CURRENT",
+      "data_type_id": "1",
+      "value": 0.5882352941176471,
+      "unit": "%",
+      "sensor_measurement_type": "Wetness"
+    },
+    {
+      "logger_sn": "99999999",
+      "sensor_sn": "4302591-1",
+      "timestamp": "2025-06-01 13:30:00Z",
+      "data_type": "CURRENT",
+      "data_type_id": "1",
+      "value": 440.625,
+      "unit": "W/m²",
+      "sensor_measurement_type": "Solar Radiation"
+    },
+    {
+      "logger_sn": "99999999",
+      "sensor_sn": "21079936-1",
+      "timestamp": "2025-06-01 13:35:00Z",
+      "data_type": "CURRENT",
+      "data_type_id": "1",
+      "value": 11.297049618413766,
+      "unit": "°C",
+      "sensor_measurement_type": "Temperature"
+    },
+    {
+      "logger_sn": "99999999",
+      "sensor_sn": "21079936-2",
+      "timestamp": "2025-06-01 13:35:00Z",
+      "data_type": "CURRENT",
+      "data_type_id": "1",
+      "value": 63.999997136180355,
+      "unit": "%",
+      "sensor_measurement_type": "RH"
+    },
+    {
+      "logger_sn": "99999999",
+      "sensor_sn": "21079936-3",
+      "timestamp": "2025-06-01 13:35:00Z",
+      "data_type": "CURRENT",
+      "data_type_id": "1",
+      "value": 4.746821902341404,
+      "unit": "°C",
+      "sensor_measurement_type": "Dew Point"
+    },
+    {
+      "logger_sn": "99999999",
+      "sensor_sn": "21085496-1",
+      "timestamp": "2025-06-01 13:35:00Z",
+      "data_type": "CURRENT",
+      "data_type_id": "1",
+      "value": 0,
+      "unit": "mm",
+      "sensor_measurement_type": "Rain"
+    },
+    {
+      "logger_sn": "99999999",
+      "sensor_sn": "21091760-1",
+      "timestamp": "2025-06-01 13:35:00Z",
+      "data_type": "CURRENT",
+      "data_type_id": "1",
+      "value": 0.33396516687729777,
+      "unit": "m/s",
+      "sensor_measurement_type": "Wind Speed"
+    },
+    {
+      "logger_sn": "99999999",
+      "sensor_sn": "21091760-2",
+      "timestamp": "2025-06-01 13:35:00Z",
+      "data_type": "CURRENT",
+      "data_type_id": "1",
+      "value": 1.669825834386489,
+      "unit": "m/s",
+      "sensor_measurement_type": "Gust Speed"
+    },
+    {
+      "logger_sn": "99999999",
+      "sensor_sn": "21091760-3",
+      "timestamp": "2025-06-01 13:35:00Z",
+      "data_type": "CURRENT",
+      "data_type_id": "1",
+      "value": 276.57254901960783,
+      "unit": "°",
+      "sensor_measurement_type": "Wind Direction"
+    },
+    {
+      "logger_sn": "99999999",
+      "sensor_sn": "21092695-S",
+      "timestamp": "2025-06-01 13:35:00Z",
+      "data_type": "CURRENT",
+      "data_type_id": "1",
+      "value": 8.567850585937501,
+      "unit": "V",
+      "sensor_measurement_type": "Battery"
+    },
+    {
+      "logger_sn": "99999999",
+      "sensor_sn": "21999475-1",
+      "timestamp": "2025-06-01 13:35:00Z",
+      "data_type": "CURRENT",
+      "data_type_id": "1",
+      "value": 0.5882352941176471,
+      "unit": "%",
+      "sensor_measurement_type": "Wetness"
+    },
+    {
+      "logger_sn": "99999999",
+      "sensor_sn": "4302591-1",
+      "timestamp": "2025-06-01 13:35:00Z",
+      "data_type": "CURRENT",
+      "data_type_id": "1",
+      "value": 455.625,
+      "unit": "W/m²",
+      "sensor_measurement_type": "Solar Radiation"
+    },
+    {
+      "logger_sn": "99999999",
+      "sensor_sn": "21079936-1",
+      "timestamp": "2025-06-01 13:40:00Z",
+      "data_type": "CURRENT",
+      "data_type_id": "1",
+      "value": 12.049701804089125,
+      "unit": "°C",
+      "sensor_measurement_type": "Temperature"
+    },
+    {
+      "logger_sn": "99999999",
+      "sensor_sn": "21079936-2",
+      "timestamp": "2025-06-01 13:40:00Z",
+      "data_type": "CURRENT",
+      "data_type_id": "1",
+      "value": 62.0999972212,
+      "unit": "%",
+      "sensor_measurement_type": "RH"
+    },
+    {
+      "logger_sn": "99999999",
+      "sensor_sn": "21079936-3",
+      "timestamp": "2025-06-01 13:40:00Z",
+      "data_type": "CURRENT",
+      "data_type_id": "1",
+      "value": 5.028099745742631,
+      "unit": "°C",
+      "sensor_measurement_type": "Dew Point"
+    },
+    {
+      "logger_sn": "99999999",
+      "sensor_sn": "21085496-1",
+      "timestamp": "2025-06-01 13:40:00Z",
+      "data_type": "CURRENT",
+      "data_type_id": "1",
+      "value": 0,
+      "unit": "mm",
+      "sensor_measurement_type": "Rain"
+    },
+    {
+      "logger_sn": "99999999",
+      "sensor_sn": "21091760-1",
+      "timestamp": "2025-06-01 13:40:00Z",
+      "data_type": "CURRENT",
+      "data_type_id": "1",
+      "value": 0.33396516687729777,
+      "unit": "m/s",
+      "sensor_measurement_type": "Wind Speed"
+    },
+    {
+      "logger_sn": "99999999",
+      "sensor_sn": "21091760-2",
+      "timestamp": "2025-06-01 13:40:00Z",
+      "data_type": "CURRENT",
+      "data_type_id": "1",
+      "value": 1.335860667509191,
+      "unit": "m/s",
+      "sensor_measurement_type": "Gust Speed"
+    },
+    {
+      "logger_sn": "99999999",
+      "sensor_sn": "21091760-3",
+      "timestamp": "2025-06-01 13:40:00Z",
+      "data_type": "CURRENT",
+      "data_type_id": "1",
+      "value": 96.87058823529411,
+      "unit": "°",
+      "sensor_measurement_type": "Wind Direction"
+    },
+    {
+      "logger_sn": "99999999",
+      "sensor_sn": "21092695-S",
+      "timestamp": "2025-06-01 13:40:00Z",
+      "data_type": "CURRENT",
+      "data_type_id": "1",
+      "value": 8.567850585937501,
+      "unit": "V",
+      "sensor_measurement_type": "Battery"
+    },
+    {
+      "logger_sn": "99999999",
+      "sensor_sn": "21999475-1",
+      "timestamp": "2025-06-01 13:40:00Z",
+      "data_type": "CURRENT",
+      "data_type_id": "1",
+      "value": 0.5882352941176471,
+      "unit": "%",
+      "sensor_measurement_type": "Wetness"
+    },
+    {
+      "logger_sn": "99999999",
+      "sensor_sn": "4302591-1",
+      "timestamp": "2025-06-01 13:40:00Z",
+      "data_type": "CURRENT",
+      "data_type_id": "1",
+      "value": 468.125,
+      "unit": "W/m²",
+      "sensor_measurement_type": "Solar Radiation"
+    },
+    {
+      "logger_sn": "99999999",
+      "sensor_sn": "21079936-1",
+      "timestamp": "2025-06-01 13:45:00Z",
+      "data_type": "CURRENT",
+      "data_type_id": "1",
+      "value": 10.565137799014167,
+      "unit": "°C",
+      "sensor_measurement_type": "Temperature"
+    },
+    {
+      "logger_sn": "99999999",
+      "sensor_sn": "21079936-2",
+      "timestamp": "2025-06-01 13:45:00Z",
+      "data_type": "CURRENT",
+      "data_type_id": "1",
+      "value": 65.49999706905957,
+      "unit": "%",
+      "sensor_measurement_type": "RH"
+    },
+    {
+      "logger_sn": "99999999",
+      "sensor_sn": "21079936-3",
+      "timestamp": "2025-06-01 13:45:00Z",
+      "data_type": "CURRENT",
+      "data_type_id": "1",
+      "value": 4.382099932272933,
+      "unit": "°C",
+      "sensor_measurement_type": "Dew Point"
+    },
+    {
+      "logger_sn": "99999999",
+      "sensor_sn": "21085496-1",
+      "timestamp": "2025-06-01 13:45:00Z",
+      "data_type": "CURRENT",
+      "data_type_id": "1",
+      "value": 0,
+      "unit": "mm",
+      "sensor_measurement_type": "Rain"
+    },
+    {
+      "logger_sn": "99999999",
+      "sensor_sn": "21091760-1",
+      "timestamp": "2025-06-01 13:45:00Z",
+      "data_type": "CURRENT",
+      "data_type_id": "1",
+      "value": 1.0018955006318935,
+      "unit": "m/s",
+      "sensor_measurement_type": "Wind Speed"
+    },
+    {
+      "logger_sn": "99999999",
+      "sensor_sn": "21091760-2",
+      "timestamp": "2025-06-01 13:45:00Z",
+      "data_type": "CURRENT",
+      "data_type_id": "1",
+      "value": 2.3377561681410843,
+      "unit": "m/s",
+      "sensor_measurement_type": "Gust Speed"
+    },
+    {
+      "logger_sn": "99999999",
+      "sensor_sn": "21091760-3",
+      "timestamp": "2025-06-01 13:45:00Z",
+      "data_type": "CURRENT",
+      "data_type_id": "1",
+      "value": 265.34117647058827,
+      "unit": "°",
+      "sensor_measurement_type": "Wind Direction"
+    },
+    {
+      "logger_sn": "99999999",
+      "sensor_sn": "21092695-S",
+      "timestamp": "2025-06-01 13:45:00Z",
+      "data_type": "CURRENT",
+      "data_type_id": "1",
+      "value": 8.567850585937501,
+      "unit": "V",
+      "sensor_measurement_type": "Battery"
+    },
+    {
+      "logger_sn": "99999999",
+      "sensor_sn": "21999475-1",
+      "timestamp": "2025-06-01 13:45:00Z",
+      "data_type": "CURRENT",
+      "data_type_id": "1",
+      "value": 0.5882352941176471,
+      "unit": "%",
+      "sensor_measurement_type": "Wetness"
+    },
+    {
+      "logger_sn": "99999999",
+      "sensor_sn": "4302591-1",
+      "timestamp": "2025-06-01 13:45:00Z",
+      "data_type": "CURRENT",
+      "data_type_id": "1",
+      "value": 481.875,
+      "unit": "W/m²",
+      "sensor_measurement_type": "Solar Radiation"
+    }
+  ]
+}
