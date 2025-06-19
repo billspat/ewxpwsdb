@@ -59,7 +59,7 @@ def is_utc(dt:datetime)->bool:
     return False
 
         
-def str_to_timezone(timezone_str:str):
+def str_to_timezone(timezone_str:str)->ZoneInfo:
     if is_valid_timezone(timezone_str):
         local_timezone = ZoneInfo(timezone_str)
         return(local_timezone)
@@ -67,6 +67,59 @@ def str_to_timezone(timezone_str:str):
         raise ValueError(f"could not set timezone - invalide timezone {timezone_str}")
 
 
+def utc_datetime_to_local_datetime(utc_datetime:datetime, local_timezone:str, strip_timezone = False)->datetime:
+    """convert a UTC datetime that is timezone aware into local dateime
+    of the given timezone string.   Optionally strip off the timezone part 
+    of the datetime for compatibility with some APIs
+
+    Args:
+        utc_datetime (datetime): datetime that is UTC with a timezone.  add UTC
+            timezone before calling this function
+        local_timezone (str): valid python timezone string
+        strip_timezone (bool, optional): should we strip off timezone and 
+            make the return value not time zone aware (naive). Defaults to False.
+
+    Raises:
+        ValueError: if datetime is not UTC.  
+
+    Returns:
+        datetime: datetime wiht or with our timezone info
+    """
+    
+    if not is_utc(utc_datetime):
+        raise ValueError("utc_datetime parameter is not a UTC datetime")
+        return None
+    
+    local_tz:ZoneInfo = str_to_timezone(local_timezone)
+    
+    local_datetime = utc_datetime.astimezone(local_tz)
+    
+    # some APIs can't handle having a timezone string on the timestamp
+    if strip_timezone:
+        local_datetime = local_datetime.replace(tzinfo=None)
+        
+    return(local_datetime)
+
+
+def local_datetime_to_utc_datetime(local_datetime:datetime, local_timezone:str)->datetime:
+        """create UTC datetime from local time (or with no timezones)
+        Args:
+            local_datetime (datetime): if is 'timezone aware' datetime then  assumed to be 'local' time, with or with out timezone.  if does not have a timezone, the timezone arg is used
+            timezone (str): timezone of these
+            
+        Returns:
+            datetime with 
+        """
+       
+        local_tz:ZoneInfo = str_to_timezone(local_timezone)
+        # local_tz:ZoneInfo = ZoneInfo(local_timezone)  if not isinstance(local_timezone, ZoneInfo) else local_timezone
+        
+        if not is_tz_aware(local_datetime):
+            local_datetime = local_datetime.astimezone(local_tz)
+            
+        return(local_datetime.astimezone(UTC))
+    
+    
 def local_date_to_utc_datetime(local_date:date, boundary:str,  local_timezone:tzinfo|str = ZoneInfo('America/Detroit'))->datetime:
     """convert the local time start date to a UTC start time, given the start of the sttart day is midnight"""
     
