@@ -389,8 +389,11 @@ class WeatherAPI(ABC):
         Returns:
             float: equiv value in meters per second
         """
-
-        m_per_s:float = mph * 0.44704
+        if isinstance(mph, (int, float)):
+            m_per_s:float = mph * 0.44704
+        else:
+            # non numeric, return what we got
+            m_per_s = mph
 
         return(m_per_s)
     
