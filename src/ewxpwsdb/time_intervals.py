@@ -279,6 +279,24 @@ class UTCInterval(BaseModel):
         return(self.end-self.start)
     
 
+# convenience function 
+def multiday_interval(num_days:int = 2):
+    """ create an interval from now to back num_days for backfill process
+
+    Args:
+        num_days (int, optional): days to go back. Defaults to 2.
+
+    Returns:
+        UTCInterval: dateteim interval in UTC from previous fifteen minute mark
+            to number days back
+    """
+    
+    end_datetime = fifteen_minute_mark_utc()
+    start_date:date = (end_datetime - timedelta(days = num_days)).date()
+    
+    return UTCInterval(start = datetime.combine(date=start_date, time=time(hour=0, minute=0, second=0)).replace(tzinfo=UTC), end = end_datetime)
+
+
 class DateInterval(BaseModel):
     """ ordered dates and the time zone that does with them.   Time Zone is required to convert to UTC.  
     
