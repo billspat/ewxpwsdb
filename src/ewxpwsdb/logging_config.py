@@ -15,8 +15,8 @@ LOG_FILE = LOG_DIR / f"app_{datetime.now().strftime('%Y-%m-%d')}.log"
 ERROR_LOG_FILE = LOG_DIR / 'errors.log'
 
 # Environment variables for log level configuration
-CONSOLE_LOG_LEVEL = os.getenv('LOG_LEVEL_CONSOLE', 'DEBUG')
-FILE_LOG_LEVEL = os.getenv('LOG_LEVEL_FILE', 'DEBUG')
+CONSOLE_LOG_LEVEL = os.getenv('LOG_LEVEL_CONSOLE', 'ERROR')
+FILE_LOG_LEVEL = os.getenv('LOG_LEVEL_FILE', 'ERROR')
 
 # Define the logging configuration dictionary
 LOGGING_CONFIG = {
