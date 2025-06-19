@@ -11,4 +11,4 @@ __version__ = "0.1"
 logger = logging.getLogger(__name__)
 
 # Log that the package has been initialized
-logger.info("Package initialized")
+logger.debug("Package initialized")
