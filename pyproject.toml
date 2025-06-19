@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "ewxpwsdb"
-version = "0.1"
+version = "0.1.2"
 description = "package for collecting and harmonizing weather data from diverse models of weather stations into a database"
 authors = ["Pat Bills <billspat@msu.edu>"]
 readme = "README.md"
