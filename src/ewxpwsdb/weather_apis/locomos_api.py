@@ -56,12 +56,20 @@ class LocomosAPI(WeatherAPI):
     # }
 
     # 2024 variables
+    # ewx_var_mapping = {
+    #     # LOCOMOS: EWX
+    #     'humid':'relh',
+    #     'temp':'atmp',
+    #     'precip':'pcpn',
+    #     'lws1':'lws',  
+    # }
+        
+    # 2025 variables
     ewx_var_mapping = {
-        # LOCOMOS: EWX
-        'humid':'relh',
-        'temp':'atmp',
+        'humidity':'relh',
+        'temperature':'atmp',
         'precip':'pcpn',
-        'lws1':'lws',  
+        'lws':'lws', 
     }
 
 
@@ -138,7 +146,7 @@ class LocomosAPI(WeatherAPI):
         }
 
         variables = self._get_variables()
-        
+        logger.debug(f"locomos variables: {variables}")
         if isinstance(variables, dict) and len(variables) > 0: 
             variable_ids = list(variables.keys())
         else:
