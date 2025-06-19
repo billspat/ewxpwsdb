@@ -9,6 +9,3 @@ __version__ = "0.1"
 
 # Get the logger for this module
 logger = logging.getLogger(__name__)
-
-# Log that the package has been initialized
-logger.debug("Package initialized")
