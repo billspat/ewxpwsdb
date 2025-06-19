@@ -247,6 +247,9 @@ def startapi(db_url, host:str|None=None, port:str|None=None, ssl=False):
 def main()->int:
     """Console script for ewx_pws."""
     parser = argparse.ArgumentParser(prog='ewxpws')
+    
+    from importlib.metadata import version
+    parser.add_argument('-v', '--version', action='version', version=version('ewxpwsdb'), help="show version and exit") 
 
     subparsers = parser.add_subparsers(dest='command', required=True, help="Personal weather stations database operations")
     
