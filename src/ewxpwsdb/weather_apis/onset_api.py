@@ -57,7 +57,7 @@ class OnsetAPI(WeatherAPI):
         super().__init__(weather_station)
         # cast api config to correct type for static type checking
         self.api_config: OnsetAPIConfig = self.api_config
-        logger.info("Initialized OnsetAPI for station %s", weather_station.station_code)
+        logger.debug("Initialized OnsetAPI for station %s", weather_station.station_code)
 
     def _check_config(self):
         # TODO implement 
@@ -123,7 +123,7 @@ class OnsetAPI(WeatherAPI):
                                 }
                             )
             response.raise_for_status()
-            logger.info("Successfully retrieved data for interval %s - %s", start_datetime, end_datetime)
+            logger.debug("Successfully retrieved data for interval %s - %s", start_datetime, end_datetime)
         except Exception as e:
             logger.error("Failed to retrieve data for interval %s - %s: %s", start_datetime, end_datetime, e)
             return []

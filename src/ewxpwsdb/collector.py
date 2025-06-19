@@ -44,7 +44,7 @@ class Collector():
         Returns:
             Collector: collector object for the station with that station code 
         """
-        logger.info(f"Creating collector object for station_code: {station_code}")
+        logger.debug(f"Creating collector object for station_code: {station_code}")
 
         try:
             station_obj = Station.from_station_code(station_code=station_code, engine=engine)
@@ -71,7 +71,7 @@ class Collector():
         Returns:
             Collector: collector object for the station with id = stationid
         """
-        logger.info(f"Creating collector object for station_id: {station_id}")
+        logger.debug(f"Creating collector object for station_id: {station_id}")
 
         try:
             station_obj = Station.from_station_id(station_id=station_id, engine=engine)
@@ -92,7 +92,7 @@ class Collector():
             station_id (int): Database ID (primary key) of a weather station record
             engine (Engine, optional): Engine connection for existing EWX PWS database that data is read/written to.  Defaults to global engine from database.py. 
         """
-        logger.info(f"Initializing collector for station id {station.id}")
+        logger.debug(f"Initializing collector for station id {station.id}")
 
         self._engine = engine
         self._session = Session(engine)
@@ -153,7 +153,7 @@ class Collector():
         Returns:
             this object for method chaining
         """
-        logger.info(f"Requesting and storing weather data for station {self.station.id} from {start_datetime} to {end_datetime}")
+        logger.debug(f"Requesting and storing weather data for station {self.station.id} from {start_datetime} to {end_datetime}")
 
         if not is_utc(start_datetime):
             logger.error(f"Start datetime is not UTC timezone {start_datetime}")
@@ -205,7 +205,7 @@ class Collector():
     def request_current_weather_data(self):
         """call request weather method with no dates, so API class gets most recent 
         complete 15 minute period.   Stores the data from the request/response internally and in the database"""
-        logger.info(f"Requesting current weather data for station {self.station.id}")
+        logger.debug(f"Requesting current weather data for station {self.station.id}")
 
         nowish = previous_fourteen_minute_interval()
         result = self.request_and_store_weather_data(start_datetime = nowish.start, end_datetime=nowish.end)
@@ -227,7 +227,7 @@ class Collector():
 
     # TODO move these to station_readings class since will almost always be selecting/inserting for one station at atime
     def reading_by_time_and_station(self, data_datetime, weatherstation_id):
-        logger.info(f"Retrieving reading for station {weatherstation_id} at {data_datetime}")
+        logger.debug(f"Retrieving reading for station {weatherstation_id} at {data_datetime}")
         with Session(self._engine) as session:
             stmt = select(Reading).where(Reading.data_datetime == data_datetime).where(Reading.weatherstation_id == weatherstation_id)
             reading:Reading = session.exec(stmt).first()  # type: ignore
@@ -266,7 +266,7 @@ class Collector():
         # however this code _could_ cause race conditions because if the same record is read in another process right beore it gets updated, it may be the old data
 
 
-        logger.info(f"Inserting or updating reading for station {new_reading.weatherstation_id} at {new_reading.data_datetime}")
+        logger.debug(f"Inserting or updating reading for station {new_reading.weatherstation_id} at {new_reading.data_datetime}")
 
         existing_reading = self.reading_by_time_and_station(new_reading.data_datetime, new_reading.weatherstation_id)
         
@@ -296,7 +296,7 @@ class Collector():
 
     def save_readings_from_responses(self, api_responses:APIResponse|list[APIResponse])->list[int]:
         """transform api response and save to the database, handling errors etc"""
-        logger.info(f"Saving readings from API responses for station {self.station.id}")
+        logger.debug(f"Saving readings from API responses for station {self.station.id}")
 
         # allow for single record as parameter, just turn it into a list 
         if not isinstance(api_responses, list):
@@ -327,8 +327,6 @@ class Collector():
         Returns:
             bool: True if any readings in table with this stations id.  
         """
-        logger.info(f"Checking if there are readings in the database for station {self.station.id}")
-
         if self.get_readings(n = 1):
             return True
         
@@ -353,7 +351,7 @@ class Collector():
         Returns:
             list of Reading objects 
         """
-        logger.info(f"Getting {n} readings from the database for station {self.station.id}, ordered by {order_by}")
+        logger.debug(f"Getting {n} readings from the database for station {self.station.id}, ordered by {order_by}")
 
         if order_by == 'asc':
             stmt = select(Reading).where(Reading.weatherstation_id == self.station.id).order_by(Reading.data_datetime).limit(n) #type: ignore
@@ -375,7 +373,7 @@ class Collector():
         Returns:
             list of Reading objects 
         """
-        logger.info(f"Getting readings by date for station {self.station.id} in interval {interval}, ordered by {order_by}")
+        logger.debug(f"Getting readings by date for station {self.station.id} in interval {interval}, ordered by {order_by}")
 
         stmt = select(Reading).where(Reading.weatherstation_id == self.station.id).where(Reading.data_datetime >= interval.start).where(Reading.data_datetime <= interval.end).order_by(Reading.data_datetime) #type:ignore       
         result = self._session.exec(stmt)
@@ -383,7 +381,7 @@ class Collector():
 
     def get_latest_reading(self)->Reading|None:
         """convenience function to pull one reading ordered by date"""
-        logger.info(f"Getting the latest reading from the database for station {self.station.id}")
+        logger.debug(f"Getting the latest reading from the database for station {self.station.id}")
 
         readings = self.get_readings(n=1, order_by='desc')
         if len(readings)>0:
@@ -398,7 +396,7 @@ class Collector():
         Returns:
             datetime of the first reading in the db, which was inserted as UTC but does not have a timezone component
         """
-        logger.info(f"Getting the first reading date from the database for station {self.station.id}")
+        logger.debug(f"Getting the first reading date from the database for station {self.station.id}")
 
         readings = self.get_readings(n=1, order_by='asc')
         if len(readings)>0:
@@ -425,7 +423,7 @@ class Collector():
         Returns:
             list[int]: list of all record ids inserted into the reading table
         """
-        logger.info(f"Getting historic data for station {self.station.id}, overwrite={overwrite}, days_limit={days_limit}")
+        logger.debug(f"Getting historic data for station {self.station.id}, overwrite={overwrite}, days_limit={days_limit}")
 
         if self.get_readings(n = 1):
             # already some stuff in the db, probably should use catch up instead
@@ -443,7 +441,7 @@ class Collector():
         day_offset = 1
         while api_data and day_offset <= days_limit:
             date_to_fetch = today - timedelta(days = day_offset)
-            logger.info(f"Fetching data for station {self.station.station_code} for {day_offset} days ago")
+            logger.debug(f"Fetching data for station {self.station.station_code} for {day_offset} days ago")
             api_data = self.request_and_store_weather_data_utc(one_day_interval(date_to_fetch))
             collected_reading_ids.extend(self.current_reading_ids)
             day_offset += 1 
@@ -488,7 +486,7 @@ class Collector():
         Returns:
             list: list of reading ids stored in database (similar to 'catchup' method)
         """
-        logger.info(f"Backfilling weather data for station {self.station.id} for the past {n_days_prior} days up to {ending_datetime}")
+        logger.debug(f"Backfilling weather data for station {self.station.id} for the past {n_days_prior} days up to {ending_datetime}")
 
         station_readings = StationReadings(station = self.station, engine = self._engine)
         
@@ -504,20 +502,20 @@ class Collector():
             api_responses = []
             
             if gap_intervals:
-                logger.info(f"Backfill process initiated for station {self.station.station_code}")
+                logger.debug(f"Backfill process initiated for station {self.station.station_code}")
                 for interval in gap_intervals:
                     # if start = end then collector gets no records, and also many apis don't include the end datetime in responses, so end <= end + sampling interval minutes)
                     interval.end = interval.end + timedelta(minutes = station_readings.weather_api._sampling_interval)             
                     api_responses.extend(self.request_and_store_weather_data_utc(interval))
                     reading_ids_added.extend(self.current_reading_ids)
             
-                logger.info(f"Backfill: {len(api_responses)} api_responses added {len(reading_ids_added)} readings for station {self.station.station_code}")
+                logger.debug(f"Backfill: {len(api_responses)} api_responses added {len(reading_ids_added)} readings for station {self.station.station_code}")
                 return reading_ids_added
             else:
-                logger.info(f"Backfill process: no missing records found for station {self.station.station_code}, backfill not started")
+                logger.debug(f"Backfill process: no missing records found for station {self.station.station_code}, backfill not started")
                 return []
         else:
-            logger.info(f"Backfill process: no readings stored for station {self.station.station_code}, backfill not necessary")
+            logger.debug(f"Backfill process: no readings stored for station {self.station.station_code}, backfill not necessary")
             return []
 
     def retransform(self, interval_utc: UTCInterval):
@@ -527,7 +525,7 @@ class Collector():
         naive method for re-transform each api request and reading in a range 1 by 1
         
         """
-        logger.info(f"Retransforming API responses for station {self.station.id} in interval {interval_utc}")
+        logger.debug(f"Retransforming API responses for station {self.station.id} in interval {interval_utc}")
 
         station_readings = StationReadings(station=self.station, engine=self._engine)
     
@@ -539,7 +537,7 @@ class Collector():
                    
     def close(self):
         """closes the session opened for this collector"""
-        logger.info(f"Closing session for collector of station {self.station.id}")
+        logger.debug(f"Closing session for collector of station {self.station.id}")
 
         self._session.close()
         self._engine.dispose()

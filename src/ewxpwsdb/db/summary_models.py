@@ -136,7 +136,7 @@ class HourlySummary(BaseModel):
     @classmethod
     def select_hourly_summaries(cls, engine, station_id, local_start_date=None, local_end_date=None)->list[Self]:
         sql_str = cls.sql_str(station_id=station_id, local_start_date=local_start_date, local_end_date=local_end_date)
-        logger.info(f"Selecting hourly summaries for station {station_id} from {local_start_date} to {local_end_date}")
+        logger.debug(f"Selecting hourly summaries for station {station_id} from {local_start_date} to {local_end_date}")
         
         with Session(engine) as session:
             result = session.exec(text(sql_str))   #type: ignore

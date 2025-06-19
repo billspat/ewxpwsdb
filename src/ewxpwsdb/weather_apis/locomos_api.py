@@ -73,7 +73,7 @@ class LocomosAPI(WeatherAPI):
         
         # re-cast api config to correct type for static type checking
         self.api_config: LocomosAPIConfig = self.api_config
-        logger.info("Initialized LocomosAPI for station %s", weather_station.station_code)
+        logger.debug("Initialized LocomosAPI for station %s", weather_station.station_code)
 
 
     def _get_variables(self) -> dict[str,str]:
@@ -167,7 +167,7 @@ class LocomosAPI(WeatherAPI):
                             headers=request_headers,
                             json=request_params)
             response.raise_for_status()
-            logger.info("Successfully retrieved data for interval %s - %s", start_datetime, end_datetime)
+            logger.debug("Successfully retrieved data for interval %s - %s", start_datetime, end_datetime)
         except Exception as e:
             logger.error("Failed to retrieve data for interval %s - %s: %s", start_datetime, end_datetime, e)
             return []

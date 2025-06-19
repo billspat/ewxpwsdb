@@ -95,7 +95,7 @@ class DavisAPI(WeatherAPI):
         super().__init__(weather_station)
         # cast api config to correct type for static type checking
         self.api_config: DavisAPIConfig = self.api_config
-        logger.info("Initialized DavisAPI for station %s", weather_station.station_code)
+        logger.debug("Initialized DavisAPI for station %s", weather_station.station_code)
  
         
 
@@ -157,7 +157,7 @@ class DavisAPI(WeatherAPI):
                 response = Session().send(self.current_api_request)
                 response.raise_for_status()
                 response_list.append(response)
-                logger.info("Successfully retrieved data for interval %s - %s", start_datetime, end_datetime)
+                logger.debug("Successfully retrieved data for interval %s - %s", start_datetime, end_datetime)
             except Exception as e:
                 logger.error("Failed to retrieve data for interval %s - %s: %s", start_datetime, end_datetime, e)
                 continue

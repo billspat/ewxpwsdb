@@ -177,7 +177,7 @@ class ZentraAPI(WeatherAPI):
         super().__init__(weather_station)  
         # cast api config to Zentra type for static type checking
         self.api_config: ZentraAPIConfig = self.api_config
-        logger.info("Initialized ZentraAPI for station %s", weather_station.station_code)
+        logger.debug("Initialized ZentraAPI for station %s", weather_station.station_code)
 
     @property
     def max_retries(self) -> int:
@@ -261,7 +261,7 @@ class ZentraAPI(WeatherAPI):
 
             responses.append(response)
 
-        logger.info("Successfully retrieved data for interval %s - %s", start_datetime, end_datetime)
+        logger.debug("Successfully retrieved data for interval %s - %s", start_datetime, end_datetime)
         return responses
 
 

@@ -59,7 +59,7 @@ class LicorAPI(WeatherAPI):
         super().__init__(weather_station)
         # cast api config to correct type for static type checking
         self.api_config: LicorAPIConfig = self.api_config
-        logger.info("Initialized LicorAPI for station %s", weather_station.station_code)
+        logger.debug("Initialized LicorAPI for station %s", weather_station.station_code)
 
     def _check_config(self):
         # TODO implement 

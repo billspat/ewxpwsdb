@@ -51,7 +51,7 @@ class SpectrumAPI(WeatherAPI):
         super().__init__(weather_station)  
         # cast api config to correct type for static type checking
         self.api_config: SpectrumAPIConfig = self.api_config
-        logger.info("Initialized SpectrumAPI for station %s", weather_station.station_code)
+        logger.debug("Initialized SpectrumAPI for station %s", weather_station.station_code)
 
     def _format_time(self, dt:datetime)->str:
         """
@@ -84,7 +84,7 @@ class SpectrumAPI(WeatherAPI):
                                     'endDate': end_datetime_str}
                           )
             response.raise_for_status()
-            logger.info("Successfully retrieved data for interval %s - %s", start_datetime, end_datetime)
+            logger.debug("Successfully retrieved data for interval %s - %s", start_datetime, end_datetime)
         except Exception as e:
             logger.error("Failed to retrieve data for interval %s - %s: %s", start_datetime, end_datetime, e)
             return []

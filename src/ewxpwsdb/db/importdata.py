@@ -106,7 +106,7 @@ def import_station_types(engine):
             try:
                 session.add(station)
                 session.commit()
-                logger.info(f"Station with type '{station.station_type}' merged into the database")
+                logger.debug(f"Station with type '{station.station_type}' merged into the database")
             except IntegrityError:
                 session.rollback()
                 logger.warning(f"Station with type '{station.station_type}' already exists in the database")

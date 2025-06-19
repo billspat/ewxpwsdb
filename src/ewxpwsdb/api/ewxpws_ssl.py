@@ -45,5 +45,5 @@ def get_ssl_files()->Tuple[str, str]:
     elif not path.exists(key_file_path):
         raise RuntimeError(f"SSL key file not found {cert_file_path}, can't load SSL")
     else:
-        logger.info("SSL files found and loaded successfully")
+        logger.debug("SSL files found and loaded successfully")
         return (cert_file_path, key_file_path)
