@@ -1,3 +1,7 @@
+# dependencies are listed in pyproject.toml
+# to install, can use 
+# pip install poetry; poetry install 
+# 
 # SQLAlchemy >= 2.0.0, <2.1.0
 # pydantic >= 2.0.0, <3.0.0
 # alembic ~= 1.12
