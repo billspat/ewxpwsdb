@@ -19,6 +19,13 @@ Weather Variables in "sensor_measurement_type" field are named as follows:
 - Wind Direction "°
 - Wind Speed "m/s"
 
+This API returns a max of 100,000 records, each item in response counts. 
+There are about 288 obs/readings per day for 5 mninute interval, approx 10 "records" 
+per reading for 31 day month estimate 89,280 and the API reported 88,891 records
+
+TODO: if the timedelta of start/end is > 31 days, break it up into chunks like 
+Davis does.  
+
 """
 
 import json
