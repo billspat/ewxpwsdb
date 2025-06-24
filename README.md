@@ -275,12 +275,19 @@ EWXPWSDB_URL=postgresql+psycopg2://localhost:5432/ewxpws
 EWXPWSDB_DOCKER_URL=postgresql+psycopg2://ewxuser:****nTgoX****@ewxpwsdev-db.etc.us-east-1.rds.amazonaws.com:5432/ewxpws
 ```
 
-With a local .env file like this, could use this from the command line: 
+Three ways to use environment variables.  Source file to environment and explicitly 
+set with `-e`, or with a local .env file like this with `--end-file=`
 
 ```shell
 source .env; docker run -d --env-file=docker.env  -e EWXPWSDB_URL=$EWXPWSDB_DOCKER_URL  -p 80:80 ewxpwsdb:v0
 ```
 
+On a Linux server, store the env file where it's accessible by systemd, for example
+
+```shell
+export TAG=0.1.2
+docker run --rm --name testapiserver --env-file=/etc/.pwsapienv -p 8000:8000 ewxpwsdb:$TAG startapi --port 8000 --no-ssl
+```
 
 # Weather Station record fields and format
 
