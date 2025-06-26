@@ -1,0 +1,6 @@
+#Ignore passwords file
+.env
+*.env
+
+#Ignore logs directory
+logs/
