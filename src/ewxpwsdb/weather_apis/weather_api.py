@@ -111,7 +111,17 @@ class WeatherAPI(ABC):
     def id(self):
         return self.weather_station.id
     
-
+    @property
+    def expected_hourly_frequency(self)->int:
+        """number of readings per hour"""
+        return(int(60/self._sampling_interval))
+    
+    @property
+    def expected_daily_frequency(self)->int:
+        """number of readings per day"""
+        return(int(60/self._sampling_interval)*24)
+    
+    
     #### abstract methods to be implemented in subclass
     # @abstractmethod
     # def _check_config(self)->bool:

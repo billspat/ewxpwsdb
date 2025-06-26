@@ -27,7 +27,7 @@ def db_with_readings(db_with_data, weather_station):
     # hygiene to leave the database the way we found it
 
 @pytest.fixture(scope = "module")
-def test_station_readings(weather_station, db_with_readings):
+def station_readings(weather_station, db_with_readings):
     return StationReadings(station = weather_station, engine=db_with_readings)
         
 def test_instantiate_station_readings_from_code(test_station_code, db_with_readings):
@@ -43,11 +43,11 @@ def test_instantiate_station_readings(weather_station, db_with_readings):
     assert isinstance(station_readings.station, WeatherStation)
     assert station_readings.station.station_code == weather_station.station_code
 
-def test_station_readings_has_readings(test_station_readings):
-    assert test_station_readings.has_readings()
+def test_station_readings_has_readings(station_readings):
+    assert station_readings.has_readings()
 
-def test_station_readings_latest_reading(test_station_readings):
-    reading = test_station_readings.latest_reading()
+def test_station_readings_latest_reading(station_readings):
+    reading = station_readings.latest_reading()
     assert isinstance(reading, Reading)
     assert reading.id is not None
     assert reading.atmp is not None
@@ -63,8 +63,8 @@ def test_station_readings_latest_reading(test_station_readings):
     assert reading.data_datetime.date() - datetime.now(UTC).date() <= timedelta(days = 1)
 
 
-def test_station_readings_recent_readings(test_station_readings):
-    readings = test_station_readings.recent_readings(n = 5)
+def test_station_readings_recent_readings(station_readings):
+    readings = station_readings.recent_readings(n = 5)
     assert isinstance(readings, list)
     assert len(readings) > 0
     reading = readings[0]
@@ -73,8 +73,8 @@ def test_station_readings_recent_readings(test_station_readings):
     assert reading.atmp is not None
     assert isinstance( reading.atmp, float)
 
-def test_station_readings_first_reading_datetime(test_station_readings):
-    dt = test_station_readings.first_reading_date()  
+def test_station_readings_first_reading_datetime(station_readings):
+    dt = station_readings.first_reading_date()  
     assert isinstance(dt, datetime)
     # see comment above about checking dates
     assert dt.date() - datetime.now(UTC).date() <= timedelta(days = 1)
@@ -85,11 +85,11 @@ def test_station_readings_by_interval(weather_station, db_with_readings):
     test_collector = Collector(weather_station, engine = db_with_readings)
     test_interval = UTCInterval.previous_interval(delta_mins=100)
     test_collector.request_and_store_weather_data_utc(test_interval)
-    test_station_readings = StationReadings(station = weather_station, engine = db_with_readings)
+    station_readings = StationReadings(station = weather_station, engine = db_with_readings)
     
     
     # run the function to be tested
-    readings = test_station_readings.readings_by_interval_utc(test_interval)
+    readings = station_readings.readings_by_interval_utc(test_interval)
     
     # tests
     assert isinstance(readings, list)
@@ -100,33 +100,33 @@ def test_station_readings_by_interval(weather_station, db_with_readings):
     assert ( readings[0].data_datetime - datetime.now(UTC) ) < timedelta(minutes = 100)
     test_collector.close()
     
-def test_station_readings_gap_intervals(test_station_readings):
+def test_station_readings_gap_intervals(station_readings):
     """ this essentially tests that this summary will even run.  
     Because it uses the UTCInterval class, start > end and both guaranted to be UTC datetimes
     """
     test_interval = UTCInterval(start = datetime.fromisoformat('2024-03-01T00:00+00:00'),end = datetime.now(UTC) )
     
-    missing_readings_intervals = test_station_readings.missing_summary(start_datetime=test_interval.start, end_datetime=test_interval.end)
+    missing_readings_intervals = station_readings.missing_summary(start_datetime=test_interval.start, end_datetime=test_interval.end)
     assert isinstance(missing_readings_intervals, list)    
     assert len(missing_readings_intervals) > 0 
     assert isinstance(missing_readings_intervals[0], UTCInterval)
     
 
-def test_station_readings_get_responses(test_station_readings):
+def test_station_readings_get_responses(station_readings):
 
     from ewxpwsdb.db.models import APIResponse
     
-    interval = UTCInterval(start = test_station_readings.earliest_reading().data_datetime, end = test_station_readings.latest_reading().data_datetime)
+    interval = UTCInterval(start = station_readings.earliest_reading().data_datetime, end = station_readings.latest_reading().data_datetime)
     assert interval.start < interval.end
-    previous_responses = test_station_readings.api_responses_by_interval_utc(interval)
+    previous_responses = station_readings.api_responses_by_interval_utc(interval)
     assert isinstance(previous_responses, list)
     assert len(previous_responses) > 1
     assert isinstance(previous_responses[0], APIResponse)
     
 
-def test_station_lastest_reading_summary(test_station_readings):    
+def test_station_lastest_reading_summary(station_readings):    
     from ewxpwsdb.db.summary_models import LatestWeatherSummary
-    reading = test_station_readings.latest_weather()
+    reading = station_readings.latest_weather()
     assert reading is not None
     assert isinstance(reading, LatestWeatherSummary)
 

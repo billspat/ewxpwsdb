@@ -289,9 +289,10 @@ class StationReadings():
          
          
     def hourly_summary(self, local_start_date:date, local_end_date:date)->list[HourlySummary]:
-        """submits SQL to calculate hourly summaries of readings for this station, for whole days in the date interval, local time. 
-        Will eventually use the timezone of the station, but needs to convert from Python timezone strings to postgresql timezone strings
-        so this version uses just one timezone: est since that is what is used.  Not sure what will happen when it's EDT 
+        """Uses th HourlySummary class to generate SQL, and submits to 
+        calculate hourly summaries of readings for this 
+        station, for whole days in the date interval, using the timezone stored
+        in the station, which must be a location-based time zone like US/Detroit. 
 
         Args:
             local_date_interval (DateInterval): a date interval (start < end ), not times but whole days, for local time
@@ -305,16 +306,18 @@ class StationReadings():
         
         if self.station.id is None:
             raise RuntimeError("this station must be in the database and have an ID")
-        else:
-            station_id:int = self.station.id
          
         if local_start_date > local_end_date:
             raise ValueError("end date must come after start date")
         
-        sql_str = HourlySummary.sql_str(station_id=station_id, local_start_date= local_start_date, 
+        # sending entire weather_api object so receiver can have access to
+        # weather api details like sampling frequency, and also station 
+        # details like station.id
+        sql_str = HourlySummary.sql_str(weather_api=self.weather_api, 
+                                        local_start_date= local_start_date, 
                                         local_end_date = local_end_date)
                 
-        with Session(self._engine) as session: 
+        with Session(self._engine) as session:  
             result = session.exec(text(sql_str))   #type: ignore
             hourly_summaries:list[HourlySummary] =  [HourlySummary(**r._asdict()) for r in result.all()]
 
@@ -323,10 +326,13 @@ class StationReadings():
 
 
     def daily_summary(self, local_start_date:date, local_end_date:date)->list[DailySummary]:
-        """submits SQL to calculate daily summaries of readings for this station, for whole days in the date interval, local time. 
-        Will eventually use the timezone of the station, but needs to convert from Python timezone strings to postgresql timezone strings
-        so this version uses just one timezone: est since that is what is used.  Not sure what will happen when it's EDT 
-
+        """
+        Uses th DailySummary class to generate SQL, and submits to 
+        calculate hourly summaries of readings for this 
+        station, for whole days in the date interval, using the timezone stored
+        in the station, which must be a location-based time zone like US/Detroit. 
+        See HourlySummary.sql_str()  for details.  
+        
         Args:
             local_date_interval (DateInterval): a date interval (start < end ), not times but whole days, for local time
 
@@ -345,6 +351,9 @@ class StationReadings():
         if local_start_date > local_end_date:
             raise ValueError("end date must come after start date")
         
+        # Sends the entire weather_api object to DailySummary.sql_str() so that 
+        # receiver method can have access to weather api details like sampling 
+        # frequency, and also station details like station.id
         sql_str = DailySummary.sql_str(station_id=station_id, local_start_date= local_start_date, 
                                         local_end_date = local_end_date)
                 
