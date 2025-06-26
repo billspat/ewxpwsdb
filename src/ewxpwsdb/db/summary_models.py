@@ -247,7 +247,7 @@ class DailySummary(BaseModel):
                 FROM reading inner join weatherstation
                     ON reading.weatherstation_id = weatherstation.id
                 
-                WHERE reading.weatherstation_id = {station_id} and
+                WHERE reading.weatherstation_id = {weather_api.id} and
                     (reading.data_datetime at time zone weatherstation.timezone)::date >= '{start_date_str}'  and
                     (reading.data_datetime at time zone weatherstation.timezone)::date <= '{end_date_str}' 
                 ORDER BY reading.weatherstation_id, local_date, reading.data_datetime

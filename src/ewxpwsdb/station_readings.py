@@ -354,8 +354,9 @@ class StationReadings():
         # Sends the entire weather_api object to DailySummary.sql_str() so that 
         # receiver method can have access to weather api details like sampling 
         # frequency, and also station details like station.id
-        sql_str = DailySummary.sql_str(station_id=station_id, local_start_date= local_start_date, 
-                                        local_end_date = local_end_date)
+        sql_str = DailySummary.sql_str(weather_api=self.weather_api, 
+                                       local_start_date= local_start_date, 
+                                       local_end_date = local_end_date)
                 
         with Session(self._engine) as session: 
             result = session.exec(text(sql_str))   #type: ignore
