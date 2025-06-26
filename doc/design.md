@@ -207,3 +207,26 @@ if there is a weather event where a grower needs a model for a day, can't tolera
  - [ ] run tasks on cluster workers.  
  - [ ] run postgresql in separate job
 
+## Auth options for management interface
+
+EWX project wants to have users manage their PWS station config/info from the EWX 'admin' forms.  This should req
+
+Goals: 
+ - allow EWX users to access their PWS stations and edit fields via the 'admin' forms
+ - only allow the owner of the station or a system admin to modify a PWS config
+ - allow 
+ - prevent issues with syncing data from EWX user accounts and PWS system.   
+ - make access to PWS stations 'owned' by an EWX user seamless
+ - if the EWX user makes a change to the PWS station (or adds one), they should see changes in the website quickly
+ - EWX users should be able to confirm the data their station is generating
+ - EWX users should be able to 'refresh' the data in the system from their station but asking it to re-download (or download for the first time) the data in the cloud into the PWS readings table
+
+
+an easy way to start is to use a user ID + PWS API token created when the user creates the first station.   That would require just one new data field on your part.  It  seems like the only part of the system that will need to write PWS station data is from the front end forms, so user ID and token could be posted to the PWS api.     My goal is to save you as much hassle as possible.   I would generate the tokens here and store with the EWX user ids and we'd have to get those into your user table  (maybe from the front end via a logged in user). the user would never see the PWS tokens.     Kind of how you can log into your extra Benefits website directly from EBS.  that way you don 't have to share any other user data with the PWS system except user IDs.  I'd give the server(s) you run your APIs full access for reading data (based on IP address or something else).       
+
+short term goal, create a POC set of forms using a JS front-end that uses the APIs to work with PWS.  
+The JS app would need to have access to a list of users and tokens that is not embedded in the app but some how 'secret'  perhaps auth0 to start. 
+
+https://auth0.com/blog/using-nextjs-server-actions-to-call-external-apis/
+
+goal - use Auth0 for all logins
