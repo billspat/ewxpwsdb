@@ -99,6 +99,8 @@ class Collector():
         self.station = station
         # instatiate API class for this station to collect data         
         self.weather_api = API_CLASS_TYPES[self.station.station_type](self.station)
+        # initialize side-effects vars from collection process
+        self.current_reading_ids = []
 
 
     @property
@@ -459,16 +461,29 @@ class Collector():
         # get readings, transform, and store in the database
         # if there is a problem, don't try to catch the exception let the caller catch, but -some- data may be written 
         
-        reading = self.get_latest_reading()
-        if not reading:
+        latest_reading = self.get_latest_reading()
+        if not latest_reading:
             # if there are no readings at all (e.g. new station, have to run the get historic data first)
             logger.error(f"Attempting to 'catchup' weather data for station {self.station.station_code} but there is no data at all, cancelling catchup process")
             raise RuntimeError(f"attempting to 'catchup' weather data for station {self.station.station_code} but there is no data at all, cancelling catchup process")
-       
-        interval_since_last_reading = UTCInterval(start = reading.data_datetime + timedelta(minutes = 1), end  = fifteen_minute_mark() )
-        # this has the side effect of storing in the database, we don't keep the api data at all
-        # this can raise an exception sometime in the middle, for example if the station is turned off and there is no data
-        saved_api_data = self.request_and_store_weather_data_utc(interval= interval_since_last_reading)
+        
+        # has it been long enough since the latest reading to even get new one?
+        # i current time - sampling interval - a few minutes less than last reading time?
+        
+        collection_end_time = (datetime.now(UTC) -  timedelta(minutes = ( self.weather_api.sampling_interval+ 5)))
+        collection_start_time = latest_reading.data_datetime + timedelta(minutes = 1)
+        logger.debug(f"initiating Collector.catchup with [start={collection_start_time}, end={collection_end_time}]")
+        
+        if collection_end_time <= collection_start_time :
+            # all caught up, let's return 0
+            logger.debug("Collector catchup - allready caught up, returning empty list")
+            self.current_reading_ids = []
+        else:
+            interval_since_last_reading = UTCInterval(start = collection_start_time, end  = collection_end_time  )
+            # this has the side effect of storing in the database, we don't keep the api data at all
+            # this can raise an exception sometime in the middle, for example if the station is turned off and there is no data
+            saved_api_data = self.request_and_store_weather_data_utc(interval= interval_since_last_reading)
+        
         return self.current_reading_ids
         
         
