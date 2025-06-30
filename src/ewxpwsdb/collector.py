@@ -1,5 +1,5 @@
 """weather data collection class"""
-
+import os
 from datetime import datetime, timedelta, timezone
 from http.client import HTTPException
 import logging
@@ -51,10 +51,12 @@ class Collector():
             return cls(station=station_obj.weather_station, engine=engine)
         except NoResultFound:
             logger.error(f"No result found for station code {station_code}")
-            raise HTTPException(status_code=404, detail=f"Station with code '{station_code}' not found")
+            if __debug__ or os.getenv('DEBUG'):
+                raise HTTPException(status_code=404, detail=f"Station with code '{station_code}' not found")
         except Exception as e:
             logger.error(f"Error getting station with station_code {station_code} from database: {e}")
-            raise RuntimeError(f"collector class: error getting station with station_code {station_code} from database: {e}")
+            if __debug__ or os.getenv('DEBUG'):
+                raise RuntimeError(f"collector class: error getting station with station_code {station_code} from database: {e}")
 
 
     @classmethod
@@ -177,7 +179,7 @@ class Collector():
 
             for response in responses:
                 if not self.weather_api.data_present_in_response(response):
-                    logger.warning(f"No data present in response for station {self.station.id} for interval {start_datetime} to {end_datetime}")
+                    logger.warning(f"No data present in response for station {self.station.id} for interval {start_datetime} to {end_datetime}")            
                     self.api_error_handler(start_datetime, end_datetime, response)
                     
 
@@ -217,10 +219,11 @@ class Collector():
         """error handling stub, currently raise exception"""
         if responses:
             logger.error(f"No data present in response for station {self.station.id} for interval {start_datetime} to {end_datetime}: {responses}")
-            raise RuntimeError(f"no data present in response for station for {self.station.id} for interval {start_datetime} to {end_datetime}: {responses}")
+            
+            # raise RuntimeError(f"no data present in response for station for {self.station.id} for interval {start_datetime} to {end_datetime}: {responses}")
         else:
             logger.error(f"No response from station {self.station.id} for interval {start_datetime} to {end_datetime}")
-            raise RuntimeError(f"no response from station for {self.station.id} for interval {start_datetime} to {end_datetime}")
+            # raise RuntimeError(f"no response from station for {self.station.id} for interval {start_datetime} to {end_datetime}")
         
 
 
