@@ -34,10 +34,10 @@ class WeatherStationDetail(BaseModel):
     sampling_interval: int
     expected_readings_day: int
     expected_readings_hour: int
-    first_reading_datetime: datetime
-    first_reading_datetime_utc: AwareDatetime
-    latest_reading_datetime: datetime
-    latest_reading_datetime_utc: AwareDatetime
+    first_reading_datetime: datetime | None
+    first_reading_datetime_utc: AwareDatetime | None
+    latest_reading_datetime: datetime | None
+    latest_reading_datetime_utc: AwareDatetime | None
     supported_variables: str
     
     @classmethod
@@ -54,7 +54,7 @@ class WeatherStationDetail(BaseModel):
             (24*60)/stationtype.sampling_interval::int as expected_readings_day
         from 
             weatherstation inner join stationtype on weatherstation.station_type = stationtype.station_type
-            inner join reading on weatherstation.id = reading.weatherstation_id 
+            left outer join reading on weatherstation.id = reading.weatherstation_id 
         where 
             weatherstation.station_code = '{station_code}'
         group by 
