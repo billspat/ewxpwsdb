@@ -378,7 +378,7 @@ class WeatherAPI(ABC):
         """
         return(f)
 
-    def f_to_c(self,f:float)->float:
+    def f_to_c(self,f:float)->float|None:
         """utility to convert Fahrenheit to centigrade for transform functions
 
         Args:
@@ -387,10 +387,13 @@ class WeatherAPI(ABC):
         Returns:
             float: temperature in Celsius/centigrade
         """
-        c:float = (f - 32.0) * (5.0 / 9.0)
+        if isinstance(f, (int, float)):
+            c:float = (f - 32.0) * (5.0 / 9.0)
+        else:
+            c = None
         return(c)
     
-    def mph_to_ms(self, mph:float) -> float:  
+    def mph_to_ms(self, mph:float) -> float|None:  
         """convert mile per hour to meters per second   
 
         Args:
@@ -403,11 +406,11 @@ class WeatherAPI(ABC):
             m_per_s:float = mph * 0.44704
         else:
             # non numeric, return what we got
-            m_per_s = mph
+            m_per_s = None
 
         return(m_per_s)
     
-    def kph_to_ms(self, kph:float) ->float:
+    def kph_to_ms(self, kph:float) ->float|None:
         """convert kilometers per hour to meters per second
 
         Args:
@@ -417,10 +420,13 @@ class WeatherAPI(ABC):
             float: converted value in meters/sec
         """
         conversion = 1000.0 / (60*60) 
-        meters_per_second = round(kph * conversion, 2)
-        return(meters_per_second)
+        if isinstance(kph, (int, float)):
+            meters_per_second = round(kph * conversion, 2)        
+            return(meters_per_second)
+        else:
+            return(None)
     
-    def in_to_mm(self, f:float) -> float:
+    def in_to_mm(self, f:float) -> float|None:
         """convert inches to mm
 
         Args:
@@ -430,7 +436,10 @@ class WeatherAPI(ABC):
             float: value in mm
         """
         mm_per_inch = 25.5
-        return(mm_per_inch * f)
+        if isinstance(f, (int, float)):
+            return(mm_per_inch * f)
+        else:
+            return(None)
     
     def get_test_reading(self):
         """ test that current config is working and station is online
