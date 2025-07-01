@@ -102,23 +102,29 @@ class SpectrumAPI(WeatherAPI):
             bool: True if data is present in any of the records in the response, else False
         """
         
-        if 'EquipmentRecords' not in response_data.keys():
+        if  'EquipmentRecords' not in response_data.keys():
             return False
-                
+        
+        if response_data['EquipmentRecords'] == []:
+            return False
+        
+        if response_data['ApiCallStatus'] == "NoDataFound: No Data Found for Equipment":
+            return False
+        
+        # any of the records has data, the 'OR' logic will set it to be 
+        # true forever 
+        has_data_state = False        
         for record in response_data['EquipmentRecords']:
             if not 'SensorData' in record.keys():
-                return False
+                has_data_state = (has_data_state or False)
             
-            # if any one of these sensors have non-empty data, return true
+            # if any one of these sensors have non-empty data, make it true
             if record['SensorData'][0]["DecimalValue"] or \
                 record['SensorData'][1]["DecimalValue"] or \
                 record['SensorData'][2]["DecimalValue"]:
-                return True
+                has_data_state = (has_data_state or True)
 
-            # just check the first one    
-            break
-
-        return False
+        return has_data_state 
     
         
     def _wetness_transform(self, w):
