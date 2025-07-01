@@ -6,13 +6,16 @@ import os
 from datetime import datetime
 import sys
 
+from dotenv import load_dotenv
+load_dotenv()
+
 # Define the directory for log files
 LOG_DIR = Path(__file__).parent.parent.parent / 'logs'
 LOG_DIR.mkdir(exist_ok=True)
 
 # Define the log file name with the current date
-LOG_FILE = LOG_DIR / f"app_{datetime.now().strftime('%Y-%m-%d')}.log"
-ERROR_LOG_FILE = LOG_DIR / 'errors.log'
+LOG_FILE = os.path.join( LOG_DIR, f"app_{datetime.now().strftime('%Y-%m-%d')}.log")
+ERROR_LOG_FILE = os.path.join(LOG_DIR, 'errors.log')
 
 # Environment variables for log level configuration
 CONSOLE_LOG_LEVEL = os.getenv('LOG_LEVEL_CONSOLE', 'ERROR')
@@ -74,7 +77,6 @@ def setup_logging():
     
     Note:
     - The log file size is set to 512MB with up to 5 backup files.
-    - Email logging configuration is removed as it was not required by the issue.
     """
     logging.config.dictConfig(LOGGING_CONFIG)
 
