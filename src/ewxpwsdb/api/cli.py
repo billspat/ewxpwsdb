@@ -124,7 +124,7 @@ def catchup(db_url:str, station_code:str)->str:
     try:
         response_ids = collector.catch_up()
         n_readings = len(collector.current_reading_ids)
-        return f"store {n_readings} readings for {station_code}"
+        return f"stor e {n_readings} readings for {station_code}"
     except Exception as e:
         return (f"error on catch-up process for station {station_code}: {e}")
 
