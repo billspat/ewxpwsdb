@@ -216,7 +216,7 @@ class Collector():
         return(result)
 
     def api_error_handler(self,start_datetime, end_datetime, responses=None):
-        """error handling stub, currently raise exception"""
+        """error handling stub, currently logs"""
         if responses:
             logger.error(f"No data present in response for station {self.station.id} for interval {start_datetime} to {end_datetime}: {responses}")
             
