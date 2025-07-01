@@ -47,7 +47,7 @@ def initdb(db_url:str, station_file:str|None=None):
         database.init_db(engine, station_tsv_file=station_file)
         return("database initialized")
     except Exception as e:
-        raise RuntimeError(f"error when initializing database: {e}")
+        return (f"error when initializing database: {e}")
 
 
 def station(db_url:str, station_code:str)->str:
@@ -74,7 +74,7 @@ def station(db_url:str, station_code:str)->str:
             # station_codes_with_dates = [f"{sr.station.station_code}: {sr.first_reading_date()}" for sr in all_station_readings ]
             output = "\n".join( station_codes )
         except Exception as e:
-            raise RuntimeError(f"Error getting stations from db: {e}")
+            return (f"Error getting stations from db: {e}")
 
     elif station_code.upper() in ['TYPE', 'TYPES']:
         from ewxpwsdb.weather_apis import STATION_TYPE_LIST as station_types
@@ -86,7 +86,7 @@ def station(db_url:str, station_code:str)->str:
             # weather_station_detail:WeatherStationDetail = station.station_with_detail(engine)
             output = weather_station_detail.model_dump_json(indent=4)
         except Exception as e:
-            raise RuntimeError(f"Error getting station with code '{station_code}' from db: {e}")
+            return (f"Error getting station with code '{station_code}' from db: {e}")
 
     return(output)
 
@@ -99,7 +99,7 @@ def collect(db_url:str, station_code:str, start: str|None = None, end: str|None 
     try:
         collector = Collector.from_station_code(station_code, engine)
     except Exception as e:
-        raise RuntimeError(f"error creating a collector for station {station_code}: {e}")
+        return f"error creating a collector for station {station_code}: {e}"
 
     interval = str_to_interval(start, end)
 
@@ -108,7 +108,7 @@ def collect(db_url:str, station_code:str, start: str|None = None, end: str|None 
         n_readings = len(collector.current_reading_ids)
         return f"stored {n_readings} readings for {station_code}"
     except Exception as e:
-        raise RuntimeError(f"error collecting weather from {station_code}: {e}")
+        return f"error collecting weather from {station_code}: {e}"
 
 
 def catchup(db_url:str, station_code:str)->str:
@@ -119,14 +119,14 @@ def catchup(db_url:str, station_code:str)->str:
     try:
         collector = Collector.from_station_code(station_code, engine)
     except Exception as e:
-        raise RuntimeError(f"error creating a collector for station {station_code}: {e}")
+        return (f"error creating a collector for station {station_code}: {e}")
 
     try:
         response_ids = collector.catch_up()
         n_readings = len(collector.current_reading_ids)
         return f"store {n_readings} readings for {station_code}"
     except Exception as e:
-        raise RuntimeError(f"error on catch-up process for station {station_code}: {e}")
+        return (f"error on catch-up process for station {station_code}: {e}")
 
 
 def weather(db_url:str, station_code:str, start:str|None = None, end:str|None = None, show_response:bool=False)->str:
@@ -135,7 +135,7 @@ def weather(db_url:str, station_code:str, start:str|None = None, end:str|None = 
     try:
         engine = database.get_engine(db_url)
     except Exception as e:
-        raise RuntimeError(f"error connecting to database: {e}")
+        return (f"error connecting to database: {e}")
 
     try:
         collector = Collector.from_station_code(station_code, engine = engine)
@@ -150,7 +150,7 @@ def weather(db_url:str, station_code:str, start:str|None = None, end:str|None = 
     try:
         api_responses = collector.weather_api.get_readings(start_datetime=utc_interval.start, end_datetime=utc_interval.end)
     except Exception as e:
-        raise RuntimeError(f"error getting weather from {station_code} with params start={start}, end={end}: {e}")
+        return (f"error getting weather from {station_code} with params start={start}, end={end}: {e}")
 
     if show_response:
         responses_text = [ json.loads(resp.response_text) for resp in api_responses]
