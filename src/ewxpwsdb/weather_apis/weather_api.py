@@ -66,8 +66,13 @@ class WeatherAPI(ABC):
     APIConfigClass = WeatherAPIConfig  
     # station type must be one of STATION_TYPE type, reset this in 
     _station_type: STATION_TYPE = None
+    
+    # how many minutes between this API's data reports: 5, 15, or 30 mintues
     _sampling_interval = 0 
-    standard_time_interval_minutes:int = 14
+    
+    # this is the interval on the hour when the API can be queried, used by 
+    # methods like get_readings to set default time periods
+    standard_time_interval_minutes:int = 15
 
     supported_variables:list[str] = ['atmp', 'atmp_min', 'atmp_max', 'lws', 'pcpn', 'relh', 'srad', 'smst', 'stmp', 'wspd', 'wsp_max', 'wdir']
     empty_response = ['{}']

@@ -24,18 +24,45 @@ def sample_interval():
 
 @pytest.fixture(scope='module')
 def viable_interval(station_type):
+    #TODO revisit this number and consider using API properties
     duration_min = 70
-
-    # temporary adjustment for this down station, use 
-    # if station_type == 'RAINWISE':
-    #     # rainwise goes down, so set the period for when the station was up and there is data
-    #     from datetime import datetime, UTC
-    #     datetime_rainwise_was_working = datetime(year=2024, month=2, day=19, hour=12, minute=0, second=0, tzinfo=UTC)
-    #     interval = UTCInterval.previous_interval(dtm = datetime_rainwise_was_working, delta_mins=duration_min) # previous_fourteen_minute_interval(datetime_rainwise_was_working)
-    # else:
     interval = UTCInterval.previous_interval(delta_mins=duration_min)
     
     return(interval)
+
+
+@pytest.fixture(scope='module')
+def station_collector(test_station_code, db_with_data):
+    """collector instance, and add readings to the database"""
+    collector = Collector.from_station_code(station_code = test_station_code, engine=db_with_data)
+    yesterday_utc = (datetime.now(timezone.utc) - timedelta(days=1)).date()
+    
+    # readings = station_collector.get_readings_by_date(UTCInterval.one_day_interval(yesterday_utc))
+    # recent_interval = UTCInterval.one_day_interval() 
+    # recent_interval.start = recent_interval.start - timedelta(days = 1), 
+    # recent_interval.end  = recent_interval.end - timedelta(minutes = 120)
+    reading_ids = collector.request_and_store_weather_data_utc(UTCInterval.one_day_interval(yesterday_utc))
+    yield(collector)
+    collector.close()
+
+# @pytest.fixture(scope='module')
+# def db_with_readings(db_with_data, weather_station):
+#     """fixture to ensure we have a database with data in it"""
+#     # this is just to ensure that the db has data in it, so we can test the collector
+#     # this is not a test, just a fixture
+#     collector = Collector.from_station_id(station_id=weather_station.id, engine=db_with_data)
+    
+#     # recent interval is used to get readings from the previous day, but not
+#     # right up to the minute, so the catchup script can be tested
+#     recent_interval = UTCInterval.one_day_interval() 
+#     recent_interval.start = recent_interval.start - timedelta(days = 1), 
+#     recent_interval.end  = recent_interval.end - timedelta(minutes = 120)
+#     reading_uds = collector.request_and_store_weather_data_utc(recent_interval)
+
+#     collector.close()
+#     yield  db_with_data
+
+
 
 def test_collector_class(weather_station, db_with_data):
     """can we instantiate a collector object given a station table id?
@@ -77,11 +104,6 @@ def test_collector_class_from_station_code(test_station_code, db_with_data):
     collector.close()
     
 
-@pytest.fixture(scope='module')
-def station_collector(test_station_code, db_with_data):
-    collector = Collector.from_station_code(station_code = test_station_code, engine=db_with_data)
-    yield(collector)
-    collector.close()
 
 def test_collect_request(weather_station,db_with_data, station_collector):
     
@@ -174,33 +196,48 @@ def test_collect_request(weather_station,db_with_data, station_collector):
     collector.close()
 
 
-def test_collector_readings_api(viable_interval, db_with_data,station_collector):
-    # must run after putting readings into the db
-    today_interval = UTCInterval.one_day_interval()  # this defaults to getting the time range from midnight to now
-    two_day_interval = UTCInterval(start = (today_interval.start - timedelta(days = 1)), end = today_interval.end)
-
-    response_ids = station_collector.request_and_store_weather_data_utc(two_day_interval)
-    assert len(response_ids) > 0 
-
-    some_time_yesterday = UTCInterval(start=viable_interval.start - timedelta(days = 1), 
-                           end = viable_interval.end - timedelta(days = 1)
-                           )
+def test_collector_readings_api(viable_interval,station_collector):
+    """testing how a collector can get readings from the database, 
+    but most of this has been replaced by StationReadings class. 
+    the tests assume that the collector has already pulled data from the API 
+    and stored it in the db.
     
-    readings = station_collector.get_readings_by_date(some_time_yesterday)
-    assert isinstance(readings, list)
-    assert len(readings) > 0 
-    assert isinstance(readings[0], Reading)
-    assert readings[0].weatherstation_id == station_collector.station.id
-    print(db_with_data)
 
+    Args:
+        viable_interval (UTCInterval): fixture with internal to get readings
+        station_collector (Collector): collector instance with readings in the db
+    """
+    
+    # response_ids = station_collector.request_and_store_weather_data_utc(two_day_interval)
+    # assert len(response_ids) > 0 
+    
+    # yesterday_utc = (datetime.now(timezone.utc) - timedelta(days=1)).date()
+    
+    # readings = station_collector.get_readings_by_date(UTCInterval.one_day_interval(yesterday_utc))
+    # assert isinstance(readings, list)
+    # assert len(readings) > 0 
+    # assert isinstance(readings[0], Reading)
+    # assert readings[0].weatherstation_id == station_collector.station.id
+
+    # can we say for sure what the first reading date is?
     dt = station_collector.get_first_reading_date()
     assert isinstance(dt, datetime)
-    assert dt.year == datetime.today().year
+    # year should be after start of the project    
+    assert dt.year >= 2022
+
 
     reading = station_collector.get_latest_reading()
-    
     assert isinstance(reading, Reading)
-    assert (datetime.now(timezone.utc) - reading.data_datetime) < timedelta(minutes=21)
+    
+    # get the mostest latestest readings
+    # reading_ids = station_collector.catch_up()
+    # ignore reading ids, could be that no new records were collected
+    
+    
+    wapi:WeatherAPI = station_collector.weather_api
+    # meter group stations take 10 minutes to report new data, so padding this value
+    max_time_difference = timedelta(minutes=(wapi.standard_time_interval_minutes + 10) )
+    assert (datetime.now(timezone.utc) - reading.data_datetime) < max_time_difference
 
     readings = station_collector.get_readings(n = 4)
     assert len(readings) == 4

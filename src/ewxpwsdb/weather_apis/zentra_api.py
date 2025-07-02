@@ -71,7 +71,7 @@ class ZentraAPI(WeatherAPI):
     _sampling_interval = interval_min = 5
     _lws_threshold = 450
 
-
+    standard_time_interval_minutes:int = 20
     _MAX_READINGS_PER_PAGE:int = 2000
     supported_variables = ['atmp', 'lws', 'pcpn', 'relh', 'srad', 'smst', 'stmp', 'wspd', 'wdir', 'wspd_max']
 

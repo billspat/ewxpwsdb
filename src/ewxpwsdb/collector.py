@@ -1,4 +1,7 @@
 """weather data collection class"""
+
+# TODO handle "save_readings_from_responses()"" runtime errors by enclosing in try/except
+
 import os
 from datetime import datetime, timedelta, timezone
 from http.client import HTTPException
@@ -13,7 +16,7 @@ from typing import Sequence
 
 from ewxpwsdb.db.database import Session
 from ewxpwsdb.db.models import WeatherStation, APIResponse, Reading
-from ewxpwsdb.weather_apis import API_CLASS_TYPES
+from ewxpwsdb.weather_apis import API_CLASS_TYPES,STATION_TYPE
 from ewxpwsdb.time_intervals import one_day_interval, UTCInterval, is_utc, previous_fourteen_minute_interval, fifteen_minute_mark, UTC, timedelta
 
 from ewxpwsdb.station import Station
@@ -106,17 +109,19 @@ class Collector():
 
 
     @property
-    def id(self):
+    def id(self)->int:
         """convenience method, identify this collector by the station id, which is core element"""
         return self.station.id
     
+    
+    
     @property
-    def station_type(self):
+    def station_type(self)->STATION_TYPE:
         """convenience method to get the type of station this is working with"""
         return self.station.station_type
 
     @property
-    def station_code(self):
+    def station_code(self)->str:
         """convenience method to get the human-readable station code/id for use in logging/debug"""
         return self.station.station_code
     
@@ -142,11 +147,11 @@ class Collector():
     #########################
     # primary methods
 
-    def request_and_store_weather_data_utc(self, interval:UTCInterval):
+    def request_and_store_weather_data_utc(self, interval:UTCInterval)->None|list[int]:
         return(self.request_and_store_weather_data(interval.start, interval.end))
 
 
-    def request_and_store_weather_data(self, start_datetime:datetime, end_datetime:datetime):
+    def request_and_store_weather_data(self, start_datetime:datetime, end_datetime:datetime)->None|list[int]:
         """use API class to request data for a range of UTC timestamps.  
          Stores the data from the request/response internally and in the database
          
@@ -206,7 +211,7 @@ class Collector():
             self.api_error_handler(start_datetime, end_datetime)
             return None
             
-    def request_current_weather_data(self):
+    def request_current_weather_data(self)->None|list[int]:
         """call request weather method with no dates, so API class gets most recent 
         complete 15 minute period.   Stores the data from the request/response internally and in the database"""
         logger.debug(f"Requesting current weather data for station {self.station.id}")
@@ -225,13 +230,14 @@ class Collector():
             logger.error(f"No response from station {self.station.id} for interval {start_datetime} to {end_datetime}")
             # raise RuntimeError(f"no response from station for {self.station.id} for interval {start_datetime} to {end_datetime}")
         
+        return None  # or raise an exception, or do something else, but for now just return None
 
 
     # TODO move these to station_readings class since will almost always be selecting/inserting for one station at atime
 
 
     # TODO move these to station_readings class since will almost always be selecting/inserting for one station at atime
-    def reading_by_time_and_station(self, data_datetime, weatherstation_id):
+    def reading_by_time_and_station(self, data_datetime, weatherstation_id)->Reading|None:
         logger.debug(f"Retrieving reading for station {weatherstation_id} at {data_datetime}")
         with Session(self._engine) as session:
             stmt = select(Reading).where(Reading.data_datetime == data_datetime).where(Reading.weatherstation_id == weatherstation_id)
@@ -239,7 +245,7 @@ class Collector():
 
         return(reading)
     
-    def insert_or_update_reading(self, new_reading:Reading):
+    def insert_or_update_reading(self, new_reading:Reading)->int:
         """inserts the reading data into the database.   If there is a conflict with existing record (e.g. in same time and station), 
         (see Reading model, but currently this is a unique constractin on [data_datetime, weatherstation_id]), instead of throwing a
         SQL error, is uses the SQLAlchemy + Postgresql special 'upsert' feature. 
@@ -248,10 +254,10 @@ class Collector():
         updates all the other data from the reading sent (ostensibly  transformed from a current APIResponse)
 
         Args:
-            reading: Reading a reading object with data for inserting
+            reading: (Reading) a reading object with data for inserting
 
         Returns:
-            Reading: reading model as retrieved from the db after inserting 
+            record_id: (int) reading model as retrieved from the db after inserting 
 
         """
 
@@ -300,7 +306,18 @@ class Collector():
     
 
     def save_readings_from_responses(self, api_responses:APIResponse|list[APIResponse])->list[int]:
-        """transform api response and save to the database, handling errors etc"""
+        """transform api response into Readings and saves them to the database
+
+        Args:
+            api_responses (APIResponse | list[APIResponse]): An API Response 
+                  object or a list of APIResponse objects to be transformed and saved.
+        Raises:
+            RuntimeError: database error if the readings could not be inserted or updated, 
+            RuntimeError: if no reading data was extracted from the responses
+
+        Returns:
+            list[int]: _description_
+        """
         logger.debug(f"Saving readings from API responses for station {self.station.id}")
 
         # allow for single record as parameter, just turn it into a list 
@@ -321,6 +338,9 @@ class Collector():
                     raise RuntimeError(f"could not insert PWS API response record into database")
         else:
             logger.error(f"No reading data extracted from responses for station {self.station.id}")
+            # TODO handle this exception better, maybe just return empty list
+            # or raise an exception, but this is a problem with the API response, not the database
+           
             raise RuntimeError(f"no reading data extracted from responses {api_responses}")
         
         return(saved_reading_ids)    
@@ -454,7 +474,7 @@ class Collector():
         return collected_reading_ids
 
 
-    def catch_up(self):
+    def catch_up(self)->list[int]:
         """determines the most recent timestamp of weather data, and attempts to request all data missing and stores in the database= """
 
         # look in database to get most recent reading (e.g. sort by data descending limit 1)
@@ -536,12 +556,20 @@ class Collector():
             logger.debug(f"Backfill process: no readings stored for station {self.station.station_code}, backfill not necessary")
             return []
 
-    def retransform(self, interval_utc: UTCInterval):
-        """ for readings in database, re-run the 'transform' method on the original API responses in order 
-        to update or fix values in readings to deal with a change, rather than re-download all the same data
-        
-        naive method for re-transform each api request and reading in a range 1 by 1
-        
+    def retransform(self, interval_utc: UTCInterval)->list:
+        """ for readings in database, re-run the 'transform' method on the 
+        original API responses in order to update or fix values in readings to 
+        deal with a change, rather than re-download all the same data
+        This looks for existing readings within the time interval, and then
+        retrieves the API responses for those readings, and then re-transforms 
+        them.  The new set of readings is then saved to the database, but the 
+        saving process overwrites any existing readings with the same timestamp 
+        and station id, so this is a safe operation. 
+        Args:
+            interval_utc (UTCInterval): time period to look for existing readings
+            
+        Returns:
+            list: list if IDs or readings re-transformed and saved to the database
         """
         logger.debug(f"Retransforming API responses for station {self.station.id} in interval {interval_utc}")
 
@@ -551,11 +579,20 @@ class Collector():
         reading_ids = self.save_readings_from_responses(api_responses)
         
         return(reading_ids)        
-
                    
-    def close(self):
-        """closes the session opened for this collector"""
+    def close(self)->bool:
+        """closes the session opened for this collector
+
+        Returns:
+            bool: true if session closed successfully, false if there was an error
+        """
+        
         logger.debug(f"Closing session for collector of station {self.station.id}")
 
-        self._session.close()
-        self._engine.dispose()
+        try:
+            self._session.close()
+            self._engine.dispose()
+            return True
+        except Exception as e:
+            logger.error(f"Error closing session for collector of station {self.station.id}: {e}")
+            return False 
