@@ -99,7 +99,16 @@ def test_daily_summary_can_make_a_list(station_readings: StationReadings):
     assert len(daily_summaries) > 0  
     
 def test_daily_summary_fields(station_readings: StationReadings):
+    """test that the daily sql is running and model is getting 
+    fields.  The pydantic model already checks for types so no need to add specific
+    type checks here.  Just check that the fields are there and not None.
     
+    We don't test if individual sensors counts > 0 because some stations
+    don't have all sensors and some sensors may not have data for a given day.
+
+    Args:
+        station_readings (StationReadings): _description_
+    """
     two_days_ago = date.today() - timedelta(days = 2)
     yesterday:date = date.today() - timedelta(days = 2)
     
@@ -110,9 +119,15 @@ def test_daily_summary_fields(station_readings: StationReadings):
     
     assert isinstance( daily_summaries[0], DailySummary)
     ds:DailySummary = daily_summaries[0]
-    assert 'atmp_avg_daily' in ds.model_fields
+    
+    assert 'atmp_avg_daily' in ds.model_fields and ds.atmp_avg_daily is not None
     assert isinstance(ds.atmp_avg_daily, float)
+    assert isinstance(ds.atmp_count, int) and ds.atmp_count is not None
+    
+    assert 'relh_avg_daily' in ds.model_fields and ds.relh_avg_daily is not None
+    assert isinstance(ds.relh_avg_daily, float)
+    assert isinstance(ds.relh_count, int) and ds.relh_count is not None
+    
     assert ds.api_daily_frequency == station_readings.weather_api.expected_daily_frequency
     assert ds.record_count > 0
-    assert ds.record_count <= station_readings.weather_api.expected_daily_frequency
-    
+    assert ds.record_count <= station_readings.weather_api.expected_daily_frequency    

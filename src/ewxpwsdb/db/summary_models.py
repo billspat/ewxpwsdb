@@ -183,6 +183,9 @@ class DailySummary(BaseModel):
     atmp_max_max_daily: float | None
     atmp_min_min_daily:  float | None
     
+    relh_count: int
+    relh_avg_daily: float | None
+    
     pcpn_count:  int
     pcpn_total_daily:  float | None
 
@@ -229,6 +232,8 @@ class DailySummary(BaseModel):
                 MIN(atmp) as atmp_min_daily,
                 MAX(atmp_max) as atmp_max_max_daily,
                 MIN(atmp_min) as atmp_min_min_daily,
+                SUM(CASE when relh is not null then 1 else 0 end) as relh_count,
+                ROUND(AVG(relh)::NUMERIC,2) as relh_avg_daily,
                 SUM(CASE when pcpn is not null then 1 else 0 end) as pcpn_count,
                 SUM(pcpn) as pcpn_total_daily,
                 SUM(CASE when lws is not null then 1 else 0 end) as lws_count,
