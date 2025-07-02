@@ -4,6 +4,7 @@ requesting data (_get_readings) and transforming data (_transform) called by
 methods in the parent class.
 """
 
+
 import json
 from requests import post, Session, Request, Response
 from datetime import datetime, timezone
@@ -28,6 +29,7 @@ class LocomosAPIConfig(WeatherAPIConfig):
         _station_type   : STATION_TYPE = 'LOCOMOS'
         token          : str # Device token
         id             : str # ID field on device webpage
+        var_mapping    : dict[str,str]
 
 
 class LocomosAPI(WeatherAPI):
@@ -35,44 +37,13 @@ class LocomosAPI(WeatherAPI):
 
     APIConfigClass: type[LocomosAPIConfig] = LocomosAPIConfig
     _station_type: STATION_TYPE = 'LOCOMOS'
-    _sampling_interval = interval_min = 30
-    # this list of supported vars is for 2024 test station only
-
-    supported_variables = ['atmp', 'lws', 'relh']
+    _sampling_interval:int =  30
+    ewx_var_mapping:dict[str,str] = {}
+    supported_variables:list[str] = []
+    
+    # this is the interval on the hour when the API can be queried
     standard_time_interval_minutes = 60
     
-    
-    # object variable may be overridden per station if necessary #TODO create a property
-
-    # LOCOMOS uses variable names to identify sensors, and this dict maps to PWS database names
-    # var names must be assigned manual when the station is added to Ubidots, so may change 
-    # 2023 variables - saved for reference
-    # ewx_var_mapping = {
-    #     # LOCOMOS: EWX
-    #     'rh':'relh',
-    #     'temp':'atmp',
-    #     'prep':'pcpn',
-    #     'lws1':'lws',   # this is not percent wet, but wet y/n -> 0/1
-    # }
-
-    # 2024 variables
-    # ewx_var_mapping = {
-    #     # LOCOMOS: EWX
-    #     'humid':'relh',
-    #     'temp':'atmp',
-    #     'precip':'pcpn',
-    #     'lws1':'lws',  
-    # }
-        
-    # 2025 variables
-    ewx_var_mapping = {
-        'humidity':'relh',
-        'temperature':'atmp',
-        'precip':'pcpn',
-        'lws':'lws', 
-    }
-
-
     def __init__(self, weather_station:WeatherStation, lws_threshold:int = LOCOMOS_LWS_THRESHOLD):    
 
         self.lws_threshold = lws_threshold
@@ -81,6 +52,8 @@ class LocomosAPI(WeatherAPI):
         
         # re-cast api config to correct type for static type checking
         self.api_config: LocomosAPIConfig = self.api_config
+        self.ewx_var_mapping:dict[str,str] = self.api_config.var_mapping
+        self.supported_variables:list[str] = list(self.ewx_var_mapping.values())
         logger.debug("Initialized LocomosAPI for station %s", weather_station.station_code)
 
 
@@ -357,3 +330,35 @@ class LocomosAPI(WeatherAPI):
         """ place holder to remind that we need to add err handling to each class"""
         pass
 
+
+
+### Notes on variable mapping
+    # object variable may be overridden per station if necessary #TODO create a property
+
+    # LOCOMOS uses variable names to identify sensors, and this dict maps to PWS database names
+    # var names must be assigned manual when the station is added to Ubidots, so may change 
+    # 2023 variables - saved for reference
+    # ewx_var_mapping = {
+    #     # LOCOMOS: EWX
+    #     'rh':'relh',
+    #     'temp':'atmp',
+    #     'prep':'pcpn',
+    #     'lws1':'lws',   # this is not percent wet, but wet y/n -> 0/1
+    # }
+
+    # 2024 variables
+    # ewx_var_mapping = {
+    #     # LOCOMOS: EWX
+    #     'humid':'relh',
+    #     'temp':'atmp',
+    #     'precip':'pcpn',
+    #     'lws1':'lws',  
+    # }
+        
+    # # 2025 variables
+    # ewx_var_mapping = {
+    #     'humidity':'relh',
+    #     'temperature':'atmp',
+    #     'precip':'pcpn',
+    #     'lws':'lws', 
+    # }
