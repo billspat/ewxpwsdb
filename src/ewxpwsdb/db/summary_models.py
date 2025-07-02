@@ -31,7 +31,9 @@ class HourlySummary(BaseModel):
     atmp_max_max_hourly: float | None
     atmp_min_min_hourly:  float | None
     
+    relh_max_hourly: float | None
     relh_avg_hourly: float | None
+    relh_min_hourly: float | None
     
     pcpn_count:  int
     pcpn_total_hourly:  float | None
