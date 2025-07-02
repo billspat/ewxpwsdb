@@ -186,9 +186,11 @@ class DailySummary(BaseModel):
     atmp_min_daily: float | None
     atmp_max_max_daily: float | None
     atmp_min_min_daily:  float | None
-    
+   
     relh_count: int
+    relh_min_daily: float | None
     relh_avg_daily: float | None
+    relh_max_daily: float | None
     
     pcpn_count:  int
     pcpn_total_daily:  float | None
