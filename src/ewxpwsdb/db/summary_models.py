@@ -31,7 +31,9 @@ class HourlySummary(BaseModel):
     atmp_max_max_hourly: float | None
     atmp_min_min_hourly:  float | None
     
+    relh_max_hourly: float | None
     relh_avg_hourly: float | None
+    relh_min_hourly: float | None
     
     pcpn_count:  int
     pcpn_total_hourly:  float | None
@@ -91,7 +93,9 @@ class HourlySummary(BaseModel):
                 MAX(atmp_max) as atmp_max_max_hourly,
                 MIN(atmp_min) as atmp_min_min_hourly,
                 
-                ROUND(AVG(relh)::NUMERIC, 2) as relh_avg_hourly,
+                ROUND(MIN(relh)::NUMERIC,2) as relh_min_hourly,
+                ROUND(AVG(relh)::NUMERIC,2) as relh_avg_hourly,
+                ROUND(MAX(relh)::NUMERIC,2) as relh_max_hourly,
                 
                 SUM(CASE when pcpn is not null then 1 else 0 end) as pcpn_count,
                 SUM(pcpn) as pcpn_total_hourly,
@@ -183,11 +187,18 @@ class DailySummary(BaseModel):
     atmp_max_max_daily: float | None
     atmp_min_min_daily:  float | None
     
+    relh_count: int
+    relh_avg_daily: float | None
+    
     pcpn_count:  int
     pcpn_total_daily:  float | None
 
     lws_count: int
     lws_daily:  float | None
+    
+    wspd_count: int
+    wspd_avg_daily: float | None
+    wspd_max_daily: float | None
 
 
     @classmethod
@@ -224,15 +235,27 @@ class DailySummary(BaseModel):
                 COUNT(*)::int  as record_count,
                 {weather_api.expected_daily_frequency}::int as api_daily_frequency,
                 SUM(CASE when atmp is not null then 1 else 0 end) as atmp_count,
+                
                 ROUND(AVG(atmp)::NUMERIC,2) as atmp_avg_daily,
                 MAX(atmp) as atmp_max_daily,
                 MIN(atmp) as atmp_min_daily,
                 MAX(atmp_max) as atmp_max_max_daily,
                 MIN(atmp_min) as atmp_min_min_daily,
+                
+                SUM(CASE when relh is not null then 1 else 0 end) as relh_count,                
+                ROUND(AVG(relh)::NUMERIC,2) as relh_avg_daily,
+                ROUND(MIN(relh)::NUMERIC,2) as relh_min_daily,
+                ROUND(MAX(relh)::NUMERIC,2) as relh_max_daily,
+                
                 SUM(CASE when pcpn is not null then 1 else 0 end) as pcpn_count,
                 SUM(pcpn) as pcpn_total_daily,
+                
                 SUM(CASE when lws is not null then 1 else 0 end) as lws_count,
-                SUM(lws)/SUM(CASE when lws is not null then 1 else 0 end) as lws_daily
+                SUM(lws)/SUM(CASE when lws is not null then 1 else 0 end) as lws_daily,
+                
+                SUM(CASE when wspd is not null then 1 else 0 end) as wspd_count,
+                ROUND(AVG(wspd)::numeric,2) as wspd_avg_daily,
+                ROUND(MAX(wspd)::numeric,2) as wspd_max_daily
 
             FROM (
                 SELECT
