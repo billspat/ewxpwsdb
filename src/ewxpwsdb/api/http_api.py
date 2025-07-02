@@ -28,10 +28,9 @@ logger = logging.getLogger(__name__)
 
 # set the db url in environment when not running with main, see db.database.py for details
 # this is overwritten by args -- see below
-
-_version = 0.1
 global engine
 engine = get_engine(get_db_url())
+
 if not check_engine(engine):
     raise RuntimeError(f"invalid database connection for engine {engine}")
 
@@ -40,14 +39,19 @@ app = FastAPI(title="EWX PWS DB", description="Read-only access to Enviroweather
 from .ewxpws_ssl import *
     
 def version():
-    return(_version)
+    """use version of the package from pyproject.toml, or
+    """
+    from importlib.metadata import version
+    version = version('ewxpwsdb') or '0.0'
+    return(version)
 
 def date_pattern()->str:
     return "^20[0-9][0-9]-[0-9]{1,2}-[0-9]{1,2}$"
 
+
 @app.get("/")
 def home():
-    return(f"Personal Weather Station Project, {_version}")
+    return(f"Personal Weather Station Project, {version()}")
 
 
 @app.get("/stations/")
