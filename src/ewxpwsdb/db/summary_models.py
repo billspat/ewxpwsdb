@@ -16,39 +16,38 @@ class HourlySummary(BaseModel):
     and the sql that can create this data from the database. 
     """
 
-    station_code:str
-    year:int
-    day:int|str|None|date
-    represented_date:date = Field(examples = ['2024-06-25'], description = "date of the reading for the station's timezone")
-    represented_hour:int
-    record_count: int = Field(description = "number of readings from the database used to calculate this hours summary")
-    api_hourly_frequency: int = Field(description = "expected number of readings per hour from this API")
+    station_code: str = Field(description="Unique code identifying the weather station")
+    year: int = Field(description="Year of the reading (station local time)")
+    day: int | str | None | date = Field(description="Day of year (DOY) or date for the reading (station local time)")
+    represented_date: date = Field(examples=['2024-06-25'], description="Date of the reading for the station's timezone")
+    represented_hour: int = Field(description="Hour of the day (0-23) in station local time")
+    record_count: int = Field(description="Number of readings from the database used to calculate this hour's summary")
+    api_hourly_frequency: int = Field(description="Expected number of readings per hour from this API")
 
-    atmp_count: int
-    atmp_avg_hourly: float | None 
-    atmp_max_hourly: float | None
-    atmp_min_hourly: float | None
-    atmp_max_max_hourly: float | None
-    atmp_min_min_hourly:  float | None
+    atmp_count: int = Field(description="Number of non-null air temperature readings")
+    atmp_avg_hourly: float | None = Field(description="Average air temperature for the hour (Celsius)")
+    atmp_max_hourly: float | None = Field(description="Maximum air temperature for the hour (Celsius)")
+    atmp_min_hourly: float | None = Field(description="Minimum air temperature for the hour (Celsius)")
+    atmp_max_max_hourly: float | None = Field(description="Maximum of the maximum air temperature readings for the hour (Celsius)")
+    atmp_min_min_hourly: float | None = Field(description="Minimum of the minimum air temperature readings for the hour (Celsius)")
     
-    relh_max_hourly: float | None
-    relh_avg_hourly: float | None
-    relh_min_hourly: float | None
+    relh_max_hourly: float | None = Field(description="Maximum relative humidity for the hour (%)")
+    relh_avg_hourly: float | None = Field(description="Average relative humidity for the hour (%)")
+    relh_min_hourly: float | None = Field(description="Minimum relative humidity for the hour (%)")
     
-    pcpn_count:  int
-    pcpn_total_hourly:  float | None
+    pcpn_count: int = Field(description="Number of non-null precipitation readings")
+    pcpn_total_hourly: float | None = Field(description="Total precipitation for the hour (mm)")
 
-    lws_count: int
-    lws_wet_hourly: int | None
-    lws_pwet_hourly: float | None
+    lws_count: int = Field(description="Number of non-null leaf wetness sensor readings")
+    lws_wet_hourly: int | None = Field(description="Number of wet leaf wetness sensor readings for the hour")
+    lws_pwet_hourly: float | None = Field(description="Proportion of wet leaf wetness sensor readings for the hour")
     
-    wdir_avg_hourly: float | None
-    wdir_sdv_hourly: float | None
-    wdir_null_avg_hourly: float | None
-    wdir_null_sdv_hourly: float | None
-    wspd_avg_hourly: float | None
-    wspd_max_hourly: float | None
-
+    wdir_avg_hourly: float | None = Field(description="Average wind direction for the hour (degrees from North)")
+    wdir_sdv_hourly: float | None = Field(description="Standard deviation of wind direction for the hour")
+    wdir_null_avg_hourly: float | None = Field(description="Average wind direction for the hour (excluding 0 values)")
+    wdir_null_sdv_hourly: float | None = Field(description="Standard deviation of wind direction for the hour (excluding 0 values)")
+    wspd_avg_hourly: float | None = Field(description="Average wind speed for the hour (m/s)")
+    wspd_max_hourly: float | None = Field(description="Maximum wind speed for the hour (m/s)")
 
     @classmethod
     def sql_str(cls, weather_api:WeatherAPI, local_start_date:date, local_end_date:date)->str:
@@ -174,34 +173,33 @@ class DailySummary(BaseModel):
     and the sql that can create this data from the database. 
     """
 
-    station_code:str
-    represented_date:date
+    station_code: str = Field(description="Unique code identifying the weather station")
+    represented_date: date = Field(description="Date for which the daily summary is calculated (station local time)")
     
-    record_count: int
-    api_daily_frequency: int
+    record_count: int = Field(description="Number of readings used to calculate this day's summary")
+    api_daily_frequency: int = Field(description="Expected number of readings per day from this API")
     
-    atmp_count: int
-    atmp_avg_daily: float | None 
-    atmp_max_daily: float | None
-    atmp_min_daily: float | None
-    atmp_max_max_daily: float | None
-    atmp_min_min_daily:  float | None
+    atmp_count: int = Field(description="Number of non-null air temperature readings")
+    atmp_avg_daily: float | None = Field(description="Average air temperature for the day (Celsius)")
+    atmp_max_daily: float | None = Field(description="Maximum air temperature for the day (Celsius)")
+    atmp_min_daily: float | None = Field(description="Minimum air temperature for the day (Celsius)")
+    atmp_max_max_daily: float | None = Field(description="Maximum of the maximum air temperature readings for the day (Celsius)")
+    atmp_min_min_daily: float | None = Field(description="Minimum of the minimum air temperature readings for the day (Celsius)")
    
-    relh_count: int
-    relh_min_daily: float | None
-    relh_avg_daily: float | None
-    relh_max_daily: float | None
+    relh_count: int = Field(description="Number of non-null relative humidity readings")
+    relh_min_daily: float | None = Field(description="Minimum relative humidity for the day (%)")
+    relh_avg_daily: float | None = Field(description="Average relative humidity for the day (%)")
+    relh_max_daily: float | None = Field(description="Maximum relative humidity for the day (%)")
     
-    pcpn_count:  int
-    pcpn_total_daily:  float | None
+    pcpn_count: int = Field(description="Number of non-null precipitation readings")
+    pcpn_total_daily: float | None = Field(description="Total precipitation for the day (mm)")
 
-    lws_count: int
-    lws_daily:  float | None
+    lws_count: int = Field(description="Number of non-null leaf wetness sensor readings")
+    lws_daily: float | None = Field(description="Average leaf wetness sensor value for the day")
     
-    wspd_count: int
-    wspd_avg_daily: float | None
-    wspd_max_daily: float | None
-
+    wspd_count: int = Field(description="Number of non-null wind speed readings")
+    wspd_avg_daily: float | None = Field(description="Average wind speed for the day (m/s)")
+    wspd_max_daily: float | None = Field(description="Maximum wind speed for the day (m/s)")
 
     @classmethod
     def sql_str(cls,  weather_api:WeatherAPI, local_start_date:date, local_end_date:date)->str:
