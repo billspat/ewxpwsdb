@@ -5,7 +5,7 @@ from .logging_config import setup_logging
 setup_logging()
 
 # Define the package version
-__version__ = "0.1.2"
+__version__ = "0.1.3"
 
 # Get the logger for this module
 logger = logging.getLogger(__name__)
