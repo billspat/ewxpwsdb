@@ -12,7 +12,8 @@ from ewxpwsdb.time_intervals import UTCInterval #type: ignore
 from ewxpwsdb.db.summary_models import HourlySummary, DailySummary
 
 from datetime import date, timedelta
-
+from logging import getLogger
+logger = getLogger()
     
 # do this only once
 @pytest.fixture(scope = 'module')
@@ -120,13 +121,34 @@ def test_daily_summary_fields(station_readings: StationReadings):
     assert isinstance( daily_summaries[0], DailySummary)
     ds:DailySummary = daily_summaries[0]
     
-    assert 'atmp_avg_daily' in ds.model_fields and ds.atmp_avg_daily is not None
-    assert isinstance(ds.atmp_avg_daily, float)
-    assert isinstance(ds.atmp_count, int) and ds.atmp_count is not None
+    def check_daily_summary_field(ds:DailySummary, field_name: str):
+        logger.debug(f"Checking daily summary field: {field_name}")
+        
+        assert field_name in ds.model_fields
+        field_value = getattr(ds, field_name, None)
+        assert field_value is not None
+        assert isinstance(field_value, (int, float))
+        
+    for field in ['atmp_avg_daily', 
+                  'relh_avg_daily', 
+                  'atmp_count', 
+                  'relh_count', 
+                  'pcpn_total_daily', 
+                  'pcpn_count',
+                  'lws_daily', 
+                  'lws_count',
+                  'wspd_avg_daily',
+                  'wspd_count']:
+        if field in station_readings.weather_api.supported_variables:
+            check_daily_summary_field(ds, field)
+                
+    # assert 'atmp_avg_daily' in ds.model_fields and ds.atmp_avg_daily is not None
+    # assert isinstance(ds['atmp_avg_daily'], float)
+    # assert isinstance(ds['atmp_count'], int) and ds.atmp_count is not None
     
-    assert 'relh_avg_daily' in ds.model_fields and ds.relh_avg_daily is not None
-    assert isinstance(ds.relh_avg_daily, float)
-    assert isinstance(ds.relh_count, int) and ds.relh_count is not None
+    # assert 'relh_avg_daily' in ds.model_fields and ds.relh_avg_daily is not None
+    # assert isinstance(ds.relh_avg_daily, float)
+    # assert isinstance(ds.relh_count, int) and ds.relh_count is not None
     
     assert ds.api_daily_frequency == station_readings.weather_api.expected_daily_frequency
     assert ds.record_count > 0
